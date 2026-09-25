@@ -66,7 +66,7 @@ export default function SeolyNavbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-12">
             
-            {/* Logo Brand Ruang Suara */}
+            {/* Logo Brand RELASI */}
             <Link href="/" className="flex items-center gap-3 group">
               <div className="w-10 h-10 rounded-xl bg-[#E02B2B] flex items-center justify-center text-white shadow-sm transition-transform duration-150 group-hover:scale-[1.02]">
                 <Shield className="w-5 h-5 fill-current" />
@@ -265,7 +265,7 @@ export default function SeolyNavbar() {
                   <div className="w-8 h-8 rounded-lg bg-[#E02B2B] flex items-center justify-center text-white">
                     <Shield className="w-4 h-4" />
                   </div>
-                  <span className="font-bold text-slate-900 text-base">Ruang Suara</span>
+                  <span className="font-bold text-slate-900 text-base">RELASI</span>
                 </div>
                 <button
                   onClick={() => setMobileOpen(false)}

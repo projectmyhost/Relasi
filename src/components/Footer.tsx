@@ -13,7 +13,7 @@ export default function Footer() {
               <div className="w-9 h-9 rounded-xl bg-teal-500 text-slate-950 flex items-center justify-center font-bold">
                 <ShieldCheck className="w-5 h-5 text-slate-950" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-white">RuangSuara</span>
+              <span className="text-xl font-bold tracking-tight text-white">RELASI</span>
             </div>
             <p className="text-slate-400 text-xs leading-relaxed max-w-sm">
               Sistem pendukung pelaporan dan penanganan kasus perundungan sekolah. Mengedepankan prinsip:
@@ -144,7 +144,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>© 2026 RuangSuara. Sesuai Permendikbudristek No. 46 Tahun 2023 tentang Pencegahan dan Penanganan Kekerasan di Lingkungan Satuan Pendidikan.</p>
+          <p>© 2026 RELASI. Sesuai Permendikbudristek No. 46 Tahun 2023 tentang Pencegahan dan Penanganan Kekerasan di Lingkungan Satuan Pendidikan.</p>
           <div className="flex items-center gap-4">
             <span className="text-slate-400">Prinsip Etika: Multiple Reports ≠ Proof</span>
             <span>•</span>

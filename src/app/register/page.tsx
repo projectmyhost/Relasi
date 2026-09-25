@@ -47,10 +47,25 @@ export default function RegisterPage() {
         <div className="text-center space-y-1">
           <Link href="/" className="inline-flex items-center gap-2 group">
             <div className="w-7 h-7 rounded-lg bg-[#E02B2B] flex items-center justify-center text-white text-xs font-medium tracking-tight transition-transform group-hover:scale-105">
-              RS
+              <svg 
+                className="w-4 h-4 text-white" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <path 
+                  d="M6 3.5v17M6 4.5h7.5a5 5 0 0 1 0 10H6M13.5 14.5l6 6.5" 
+                  stroke="currentColor" 
+                  strokeWidth="2.75" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                />
+                <circle cx="15.5" cy="9.5" r="2" fill="currentColor" />
+              </svg>
             </div>
-            <span className="text-base font-medium tracking-tight text-slate-900 group-hover:text-[#E02B2B] transition-colors">
-              Ruang<span className="text-[#E02B2B]">Suara</span>
+            <span className="text-base font-bold tracking-tight text-slate-900 group-hover:text-[#E02B2B] transition-colors">
+              RELASI
             </span>
           </Link>
           <h1 className="text-xl sm:text-2xl font-semibold text-slate-950 tracking-tight">
@@ -146,7 +161,7 @@ export default function RegisterPage() {
                   className="mt-0.5 w-4 h-4 rounded text-[#E02B2B] focus:ring-[#E02B2B] border-slate-300 cursor-pointer accent-[#E02B2B] shrink-0"
                 />
                 <span className="leading-tight">
-                  Saya menyetujui <span className="text-[#E02B2B] font-medium underline">Syarat &amp; Ketentuan</span> serta Kebijakan Privasi perlindungan data siswa RuangSuara *
+                  Saya menyetujui <span className="text-[#E02B2B] font-medium underline">Syarat &amp; Ketentuan</span> serta Kebijakan Privasi perlindungan data siswa RELASI *
                 </span>
               </label>
             </div>
