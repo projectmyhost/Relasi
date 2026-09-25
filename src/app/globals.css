@@ -1,0 +1,491 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Primary Brand & Neutral Palette */
+  --brand-primary: #E02B2B;
+  --brand-secondary: #64748B;
+
+  /* Surface & Canvas Colors */
+  --surface-ground: #FFFFFF;
+  --bg-canvas: #FFFFFF;
+  --surface-card: #FFFFFF;
+
+  /* High-Contrast Neutral Typography Colors */
+  --text-primary: #0F172A;
+  --text-muted: #64748B;
+
+  /* Structural Borders & Clean Shadows */
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover: 0 8px 16px -4px rgba(15, 23, 42, 0.06), 0 2px 6px -2px rgba(15, 23, 42, 0.04);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+}
+
+/* UNIVERSAL LAYOUT RESET */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body,
+button,
+input,
+select,
+textarea,
+p,
+span,
+a,
+li,
+label,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.wpb_wrapper h1,
+.wpb_wrapper h2,
+.wpb_wrapper h3,
+.wpb_wrapper p,
+.row h1,
+.row h2,
+.row h3,
+.row p,
+#ajax-content-wrap h1,
+#ajax-content-wrap h2,
+#ajax-content-wrap h3,
+#ajax-content-wrap p,
+.nectar-split-heading *,
+header,
+#header-outer,
+#header-outer *,
+nav,
+nav * {
+  font-family: 'Inter', var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Inter', var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  letter-spacing: -0.02em;
+  font-weight: 500 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* UNIVERSAL NO-BOLD RULE: Ensure no text on any page is bold */
+b,
+strong,
+th,
+.font-bold,
+.font-extrabold,
+.font-black,
+.font-semibold {
+  font-weight: 500 !important;
+}
+
+/* 
+ * CRITICAL BORDER FIX: 
+ * Salient theme CSS reset in 1ccb5ee1_style.css applies 'border: 0' to all HTML tags (div, form, p, span, etc.), 
+ * which resets border-style to 'none'. Tailwind's border width utilities (.border, .border-2, .border-[1.5px], etc.) 
+ * only declare border-width without border-style, expecting border-style: solid.
+ * This rule guarantees that all elements with Tailwind border utilities properly render their borders.
+ */
+[class*="border"]:not([class*="border-none"]):not([class*="border-dashed"]):not([class*="border-dotted"]) {
+  border-style: solid !important;
+}
+
+[class*="border-none"],
+.border-none {
+  border-style: none !important;
+}
+
+[class*="border-dashed"],
+.border-dashed {
+  border-style: dashed !important;
+}
+
+[class*="border-dotted"],
+.border-dotted {
+  border-style: dotted !important;
+}
+
+/* Ensure .sr-only correctly hides visually without breaking screen readers */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border-width: 0 !important;
+  display: inline-block !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* UNIVERSAL FORM INPUT BOXES: Crisp visible borders across all form pages */
+input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="range"]):not([type="color"]):not([type="hidden"]),
+select,
+textarea {
+  border: 1.5px solid #94A3B8 !important;
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-radius: 14px !important;
+  font-family: 'Inter', var(--font-inter), sans-serif !important;
+  font-weight: 400 !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="range"]):not([type="color"]):not([type="hidden"]):focus,
+select:focus,
+textarea:focus {
+  border-color: #E02B2B !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(224, 43, 43, 0.12) !important;
+}
+
+i[class*="fa"],
+i[class*="nectar"],
+.fa,
+[class^="icon-"],
+[class*=" icon-"],
+.svg-icon-holder {
+  font-family: FontAwesome, icomoon, 'Font Awesome 5 Free', sans-serif !important;
+}
+
+img,
+video,
+canvas,
+audio,
+iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+body {
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: 'Inter', var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Ensure animated elements become visible once initialized/animated without overriding CSS animations */
+.has-animation.animated-in,
+.col.has-animation.animated-in,
+.wpb_column.has-animation.animated-in,
+.img-with-animation.animated-in {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   SALIENT TETHER ENTRANCE / PAGE LOAD FADE-IN ANIMATIONS
+   (Smooth, natural entrance matching Salient Tether on initial load/reload)
+   ========================================================================== */
+
+/* Overall Page Soft Fade-In on Load / Reload */
+@keyframes tether_page_fade_in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.tether-page-entrance {
+  animation: tether_page_fade_in 0.9s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* Header Entrance Navigation Fade (Salient header_nav_entrance_animation) */
+@keyframes header_nav_entrance_animation {
+  0% {
+    opacity: 0.01;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Layout Stability Locks: Prevents any header space or container-wrap jump on load/reload */
+#header-space {
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.container-wrap,
+#ajax-content-wrap .container-wrap {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+#header-outer.entrance-animation {
+  opacity: 0.01;
+  animation: header_nav_entrance_animation 1.25s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Split Heading Word Reveal (Tether line-reveal-by-space / fade-bottom style) */
+.tether-word-wrap {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+@keyframes tether_word_reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(0.5em);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tether-word-inner {
+  display: inline-block;
+  will-change: transform, opacity;
+  animation: tether_word_reveal 1.2s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* Hero Elements Staggered Upward Fade-In (Tether slight-fade-in-from-bottom) */
+@keyframes tether_hero_fade_up {
+  0% {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tether-hero-fade {
+  will-change: transform, opacity;
+  animation: tether_hero_fade_up 1.15s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* Editorial Serif Heading Class */
+.hero-split-heading h1,
+.hero-split-heading h1 span {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+/* Respect user accessibility preferences for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .tether-page-entrance,
+  #header-outer.entrance-animation,
+  .tether-word-inner,
+  .tether-hero-fade {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* WORDPRESS PREMIUM EDITORIAL TYPOGRAPHY & HIERARCHY */
+h1 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+}
+
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-heading {
+  font-family: 'Inter', var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+h2, h3, h4 {
+  font-weight: 500 !important;
+  letter-spacing: -0.015em;
+}
+
+p {
+  line-height: 1.7;
+  color: #475569;
+}
+
+/* ACCESSIBLE FOCUS INDICATORS (WCAG AA) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+}
+
+/* WORDPRESS PREMIUM BUTTON & CARD UTILITIES */
+.btn-primary {
+  background-color: var(--brand-primary);
+  color: #FFFFFF;
+  font-weight: 500 !important;
+  border-radius: 0.625rem;
+  padding: 0.625rem 1.25rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-primary:hover {
+  background-color: #c92121;
+  box-shadow: 0 4px 12px rgba(224, 43, 43, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background-color: #FFFFFF;
+  color: #1E293B;
+  border: 1px solid #CBD5E1;
+  font-weight: 500 !important;
+  border-radius: 0.625rem;
+  padding: 0.625rem 1.25rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-secondary:hover {
+  background-color: #F8FAFC;
+  border-color: #94A3B8;
+  color: #0F172A;
+  transform: translateY(-1px);
+}
+
+.card-wp {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 0.875rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card-wp:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  transform: translateY(-2px);
+}
+
+/* Micro-transition helpers */
+.transition-lift {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.2s ease;
+}
+
+.transition-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px -6px rgba(15, 23, 42, 0.06);
+}
+
+/* FINAL ENFORCEMENT: Universal Inter Font and No-Bold Typography Across All Pages */
+body, h1, h2, h3, h4, h5, h6, p, span, a, button, input, select, textarea, label, div {
+  font-family: 'Inter', var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+b, strong, th,
+button, button *,
+.font-bold,
+.font-extrabold,
+.font-black,
+.font-semibold,
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 500 !important;
+}
+
+/* ==========================================================================
+   UNIVERSAL RED BUTTON HOVER ENFORCEMENT (MATCHING TETHERNAVBAR)
+   Ensures only actual red buttons transition to #c92424 on hover,
+   identically matching the TetherNavbar red button.
+   ========================================================================== */
+button[type="submit"]:hover,
+button[type="button"]:hover,
+button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover {
+  background-color: initial;
+}
+
+/* Red button, link, or CTA hover state (matching TetherNavbar #c92424) */
+button[class*="bg-[#E02B2B]"]:hover,
+button[class*="!bg-[#E02B2B]"]:hover,
+a[class*="bg-[#E02B2B]"]:hover,
+a[class*="!bg-[#E02B2B]"]:hover,
+button[class*="hover:!bg-[#c92424]"]:hover,
+a[class*="hover:!bg-[#c92424]"]:hover,
+.btn-primary:hover,
+.nectar-cta .link_wrap[style*="#E02B2B"]:hover {
+  background-color: #c92424 !important;
+  color: #ffffff !important;
+}
+
+.nectar-cta .link_wrap[style*="#E02B2B"] {
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.nectar-cta .link_wrap[style*="#E02B2B"]:hover {
+  background-color: #c92424 !important;
+  box-shadow: 0 6px 20px rgba(201, 36, 36, 0.3) !important;
+}
+
+/* Dark CTA buttons (e.g. Lacak Progres via PIN, Hotline SAPA 129, Pelajari Kode Etik) */
+.nectar-cta[data-color="black"] .link_wrap,
+.nectar-cta .link_wrap[style*="#0F172A"],
+.nectar-cta .link_wrap[style*="#161514"] {
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.nectar-cta[data-color="black"] .link_wrap:hover,
+.nectar-cta[data-color="black"] .link_wrap:active,
+.nectar-cta .link_wrap[style*="#0F172A"]:hover,
+.nectar-cta .link_wrap[style*="#0F172A"]:active,
+.nectar-cta .link_wrap[style*="#161514"]:hover,
+.nectar-cta .link_wrap[style*="#161514"]:active {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15) !important;
+}
+
