@@ -161,7 +161,7 @@ export default function RelasiHomePage() {
                     data-midnight="dark"
                     data-top-percent="6%"
                     id="fws_6ab47266cfb7e"
-                    style={{ paddingTop: 'calc(6vw)', paddingBottom: 'calc(6vw)', zIndex: 110 }}
+                    style={{ paddingTop: 'calc(5vw + 20px)', paddingBottom: 'calc(5.5vw + 10px)', zIndex: 110 }}
                   >
                     <div className="row-bg-wrap">
                       <div className="inner-wrap row-bg-layer">
@@ -187,7 +187,7 @@ export default function RelasiHomePage() {
 
                                 {/* Subtitle Description */}
                                 <p 
-                                  className="text-slate-600 text-lg sm:text-xl font-normal mt-5 mb-8 sm:mb-10 leading-relaxed tether-hero-fade text-left max-w-[620px]" 
+                                  className="text-slate-600 text-sm sm:text-base font-normal mt-5 mb-8 sm:mb-9 leading-relaxed tether-hero-fade text-left max-w-xl" 
                                   style={{ animationDelay: '340ms' }}
                                 >
                                   Saluran pelaporan mandiri bagi korban dan saksi perundungan dengan perlindungan identitas, enkripsi PIN, dan tindak lanjut yang terukur.
@@ -195,13 +195,13 @@ export default function RelasiHomePage() {
 
                                 {/* Action Buttons */}
                                 <div 
-                                  className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-5 w-full sm:w-auto tether-hero-fade"
+                                  className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-3.5 w-full sm:w-auto tether-hero-fade"
                                   style={{ animationDelay: '460ms' }}
                                 >
                                   {/* Primary Button: “Buat Laporan — Terenkripsi” (solid red, rounded) */}
                                   <Link
                                     href="/report"
-                                    className="inline-flex items-center justify-center px-8 py-4 sm:px-9 sm:py-4.5 rounded-full bg-[#E02B2B] hover:bg-[#c92424] text-white text-base sm:text-lg font-semibold tracking-tight shadow-[0_8px_25px_rgba(224,43,43,0.28)] hover:shadow-[0_12px_32px_rgba(224,43,43,0.38)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200"
+                                    className="inline-flex items-center justify-center px-6.5 py-3 sm:px-7 sm:py-3.5 rounded-full bg-[#E02B2B] hover:bg-[#c92424] text-white text-xs sm:text-sm font-semibold tracking-tight shadow-[0_4px_16px_rgba(224,43,43,0.22)] hover:shadow-[0_8px_24px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200"
                                   >
                                     Buat Laporan — Terenkripsi
                                   </Link>
@@ -209,7 +209,7 @@ export default function RelasiHomePage() {
                                   {/* Secondary Button: “Lacak Status PIN” (outline style) */}
                                   <Link
                                     href="/track"
-                                    className="inline-flex items-center justify-center px-8 py-4 sm:px-9 sm:py-4.5 rounded-full border-2 border-slate-300 hover:border-slate-800 text-slate-800 hover:text-slate-900 bg-white/70 hover:bg-white text-base sm:text-lg font-semibold tracking-tight shadow-xs hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200"
+                                    className="inline-flex items-center justify-center px-6.5 py-3 sm:px-7 sm:py-3.5 rounded-full border border-slate-300 hover:border-slate-800 text-slate-800 hover:text-slate-900 bg-white/80 hover:bg-white text-xs sm:text-sm font-semibold tracking-tight shadow-2xs hover:shadow-xs hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200"
                                   >
                                     Lacak Status PIN
                                   </Link>
@@ -621,79 +621,84 @@ export default function RelasiHomePage() {
                         </div>
                       </div>
 
-                      {/* Right: Accordion Items */}
+                      {/* Right: Accordion Items with Smooth Transition & Rotating Icon */}
                       <div className="vc_col-sm-3/5 wpb_column column_container vc_column_container col left_padding_desktop_10px top_padding_desktop_10px right_padding_desktop_10px bottom_padding_desktop_10px">
                         <div className="vc_column-inner">
-                          <div className="wpb_wrapper">
+                          <div className="wpb_wrapper space-y-3">
+                            {[
+                              {
+                                question: 'Apakah identitas saya benar-benar dirahasiakan?',
+                                answer: 'Ya. Sistem RELASI mematuhi prinsip zero-metadata logging. Jika Anda memilih opsi "Samarkan Identitas", nama dan kelas Anda dienkripsi dan digantikan oleh Report ID dan PIN rahasia unik.'
+                              },
+                              {
+                                question: 'Bagaimana cara memantau status laporan tanpa membuat akun?',
+                                answer: 'Setelah laporan berhasil dikirim, sistem menerbitkan nomor tiket dan PIN 4-digit. Anda cukup membuka menu "Lacak Status PIN" dan memasukkan kode tersebut untuk melihat tahapan penanganan secara langsung.'
+                              },
+                              {
+                                question: 'Siapa saja yang memiliki wewenang membaca isi laporan?',
+                                answer: 'Hanya Guru Bimbingan Konseling (BK) berlisensi yang terikat kode etik ABKIN dan Tim Satgas Pencegahan dan Penanganan Kekerasan (TPPK) sekolah yang memiliki kunci akses ke dossier kasus.'
+                              },
+                              {
+                                question: 'Bagaimana perlindungan bagi saksi yang melapor?',
+                                answer: 'Berdasarkan Permendikbudristek No. 46 Tahun 2023, saksi berhak mendapatkan perlindungan hukum dan fisik dari pihak sekolah. Segala tindakan intimidasi terhadap saksi dikategorikan sebagai pelanggaran berat.'
+                              }
+                            ].map((item, index) => {
+                              const isOpen = activeFaq === index;
+                              return (
+                                <div 
+                                  key={index}
+                                  className={`border rounded-2xl overflow-hidden bg-white transition-all duration-350 ease-in-out ${
+                                    isOpen 
+                                      ? 'border-slate-300 shadow-[0_4px_20px_rgba(0,0,0,0.06)]' 
+                                      : 'border-slate-200/90 shadow-2xs hover:border-slate-300'
+                                  }`}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleFaq(index)}
+                                    aria-expanded={isOpen}
+                                    className="w-full text-left px-5 py-4 sm:px-6 sm:py-4.5 min-h-[74px] sm:min-h-[78px] flex items-center justify-between font-bold text-slate-900 text-sm sm:text-base hover:text-[#E02B2B] transition-colors cursor-pointer group"
+                                  >
+                                    <span className="pr-4 leading-snug">{item.question}</span>
+                                    
+                                    {/* Smoothly Rotating + to − Morph Icon */}
+                                    <span 
+                                      className={`relative flex items-center justify-center w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-full text-slate-700 bg-slate-100 group-hover:bg-red-50 group-hover:text-[#E02B2B] shrink-0 transition-transform duration-350 ease-in-out ${
+                                        isOpen ? 'rotate-180 bg-red-50 text-[#E02B2B]' : 'rotate-0'
+                                      }`}
+                                      aria-hidden="true"
+                                    >
+                                      {/* Horizontal stroke (forms the minus) */}
+                                      <span className="block w-3.5 h-[2px] bg-current rounded-full transition-colors duration-350" />
+                                      
+                                      {/* Vertical stroke (collapses & rotates 90deg to smoothly form minus) */}
+                                      <span 
+                                        className={`block w-[2px] h-3.5 bg-current rounded-full absolute transition-all duration-350 ease-in-out ${
+                                          isOpen ? 'scale-0 opacity-0 rotate-90' : 'scale-100 opacity-100 rotate-0'
+                                        }`} 
+                                      />
+                                    </span>
+                                  </button>
 
-                            {/* FAQ Item 1 */}
-                            <div className="border border-slate-200 rounded-xl mb-3 overflow-hidden bg-white shadow-sm">
-                              <button
-                                type="button"
-                                onClick={() => toggleFaq(0)}
-                                className="w-full text-left p-4 sm:p-5 flex items-center justify-between font-bold text-slate-900 text-sm sm:text-base hover:text-[#E02B2B] transition"
-                              >
-                                <span>Apakah identitas saya benar-benar dirahasiakan?</span>
-                                <span className="text-lg font-bold ml-2">{activeFaq === 0 ? '−' : '+'}</span>
-                              </button>
-                              {activeFaq === 0 && (
-                                <div className="p-4 sm:p-5 pt-0 text-slate-600 text-xs sm:text-sm leading-relaxed border-t border-slate-100">
-                                  Ya. Sistem RELASI mematuhi prinsip zero-metadata logging. Jika Anda memilih opsi "Samarkan Identitas", nama dan kelas Anda dienkripsi dan digantikan oleh Report ID dan PIN rahasia unik.
+                                  {/* Smooth Expand/Collapse Container with Slide Down/Up & Fade */}
+                                  <div 
+                                    className={`grid transition-[grid-template-rows,opacity] duration-350 ease-in-out ${
+                                      isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                                    }`}
+                                    style={{
+                                      transitionDuration: '350ms',
+                                      transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
+                                    }}
+                                  >
+                                    <div className="overflow-hidden">
+                                      <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-1 text-slate-600 text-xs sm:text-sm leading-relaxed border-t border-slate-100">
+                                        {item.answer}
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
-                              )}
-                            </div>
-
-                            {/* FAQ Item 2 */}
-                            <div className="border border-slate-200 rounded-xl mb-3 overflow-hidden bg-white shadow-sm">
-                              <button
-                                type="button"
-                                onClick={() => toggleFaq(1)}
-                                className="w-full text-left p-4 sm:p-5 flex items-center justify-between font-bold text-slate-900 text-sm sm:text-base hover:text-[#E02B2B] transition"
-                              >
-                                <span>Bagaimana cara memantau status laporan tanpa membuat akun?</span>
-                                <span className="text-lg font-bold ml-2">{activeFaq === 1 ? '−' : '+'}</span>
-                              </button>
-                              {activeFaq === 1 && (
-                                <div className="p-4 sm:p-5 pt-0 text-slate-600 text-xs sm:text-sm leading-relaxed border-t border-slate-100">
-                                  Setelah laporan berhasil dikirim, sistem menerbitkan nomor tiket dan PIN 4-digit. Anda cukup membuka menu "Lacak Status PIN" dan memasukkan kode tersebut untuk melihat tahapan penanganan secara langsung.
-                                </div>
-                              )}
-                            </div>
-
-                            {/* FAQ Item 3 */}
-                            <div className="border border-slate-200 rounded-xl mb-3 overflow-hidden bg-white shadow-sm">
-                              <button
-                                type="button"
-                                onClick={() => toggleFaq(2)}
-                                className="w-full text-left p-4 sm:p-5 flex items-center justify-between font-bold text-slate-900 text-sm sm:text-base hover:text-[#E02B2B] transition"
-                              >
-                                <span>Siapa saja yang memiliki wewenang membaca isi laporan?</span>
-                                <span className="text-lg font-bold ml-2">{activeFaq === 2 ? '−' : '+'}</span>
-                              </button>
-                              {activeFaq === 2 && (
-                                <div className="p-4 sm:p-5 pt-0 text-slate-600 text-xs sm:text-sm leading-relaxed border-t border-slate-100">
-                                  Hanya Guru Bimbingan Konseling (BK) berlisensi yang terikat kode etik ABKIN dan Tim Satgas Pencegahan dan Penanganan Kekerasan (TPPK) sekolah yang memiliki kunci akses ke dossier kasus.
-                                </div>
-                              )}
-                            </div>
-
-                            {/* FAQ Item 4 */}
-                            <div className="border border-slate-200 rounded-xl mb-3 overflow-hidden bg-white shadow-sm">
-                              <button
-                                type="button"
-                                onClick={() => toggleFaq(3)}
-                                className="w-full text-left p-4 sm:p-5 flex items-center justify-between font-bold text-slate-900 text-sm sm:text-base hover:text-[#E02B2B] transition"
-                              >
-                                <span>Bagaimana perlindungan bagi saksi yang melapor?</span>
-                                <span className="text-lg font-bold ml-2">{activeFaq === 3 ? '−' : '+'}</span>
-                              </button>
-                              {activeFaq === 3 && (
-                                <div className="p-4 sm:p-5 pt-0 text-slate-600 text-xs sm:text-sm leading-relaxed border-t border-slate-100">
-                                  Berdasarkan Permendikbudristek No. 46 Tahun 2023, saksi berhak mendapatkan perlindungan hukum dan fisik dari pihak sekolah. Segala tindakan intimidasi terhadap saksi dikategorikan sebagai pelanggaran berat.
-                                </div>
-                              )}
-                            </div>
-
+                              );
+                            })}
                           </div>
                         </div>
                       </div>

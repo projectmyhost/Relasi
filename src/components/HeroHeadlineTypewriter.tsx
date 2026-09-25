@@ -76,8 +76,8 @@ export default function HeroHeadlineTypewriter() {
         aria-hidden="true"
         style={{
           fontSize: 'clamp(2.5rem, 6.2vw, 4.85rem)',
-          lineHeight: 1.12,
-          letterSpacing: '-0.03em',
+          lineHeight: 1.15,
+          letterSpacing: '-0.035em',
         }}
       >
         <span>Ruang</span>{' '}

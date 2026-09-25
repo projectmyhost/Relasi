@@ -7,27 +7,126 @@ import { useAuth } from '@/lib/authContext';
 import { 
   Menu, 
   X, 
-  ChevronDown,
-  LogOut,
-  User,
-  FileText,
+  ChevronDown, 
+  LogOut, 
+  User, 
+  FileText, 
   Settings,
-  Briefcase
+  ShieldAlert
 } from 'lucide-react';
 
 export default function TetherNavbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { currentUser, switchRole, logout } = useAuth();
+  
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [guestDropdownOpen, setGuestDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
+  const [currentHash, setCurrentHash] = useState('');
+  const [currentSearch, setCurrentSearch] = useState('');
+
   const guestDropdownRef = useRef<HTMLDivElement>(null);
   const userDropdownRef = useRef<HTMLDivElement>(null);
 
   const role = currentUser?.role || 'guest';
+
+  // Track hash and query string for exact active link pill styling
+  useEffect(() => {
+    const updateLocationState = () => {
+      if (typeof window !== 'undefined') {
+        setCurrentHash(window.location.hash || '');
+        setCurrentSearch(window.location.search || '');
+      }
+    };
+
+    updateLocationState();
+    window.addEventListener('hashchange', updateLocationState);
+    window.addEventListener('popstate', updateLocationState);
+    return () => {
+      window.removeEventListener('hashchange', updateLocationState);
+      window.removeEventListener('popstate', updateLocationState);
+    };
+  }, [pathname]);
+
+  // Smooth scroll helper with header offset
+  const scrollToSection = (targetId: string) => {
+    if (typeof window === 'undefined') return;
+    const element = document.getElementById(targetId);
+    if (!element) return;
+
+    // Offset for floating capsule header (approx 90px)
+    const navbarOffset = 90;
+    const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+    const offsetPosition = Math.max(0, elementPosition - navbarOffset);
+
+    // If Lenis smooth scroll instance is present
+    if ((window as any).lenis && typeof (window as any).lenis.scrollTo === 'function') {
+      (window as any).lenis.scrollTo(offsetPosition, { duration: 1.1 });
+    } else {
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const scrollToTop = () => {
+    if (typeof window === 'undefined') return;
+    if ((window as any).lenis && typeof (window as any).lenis.scrollTo === 'function') {
+      (window as any).lenis.scrollTo(0, { duration: 1.1 });
+    } else {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  // Auto-scroll smoothly if page loaded with a section hash
+  useEffect(() => {
+    if (pathname === '/' && window.location.hash) {
+      const hashId = window.location.hash.replace('#', '');
+      const timer = setTimeout(() => {
+        scrollToSection(hashId);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [pathname]);
+
+  // Nav link click handler for smooth scrolling
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith('/#')) {
+      const targetId = href.replace('/#', '');
+      if (pathname === '/') {
+        e.preventDefault();
+        setMobileMenuOpen(false);
+        scrollToSection(targetId);
+        setCurrentHash(`#${targetId}`);
+        window.history.pushState(null, '', `#${targetId}`);
+      } else {
+        setMobileMenuOpen(false);
+      }
+      return;
+    }
+
+    if (href === '/') {
+      if (pathname === '/') {
+        e.preventDefault();
+        setMobileMenuOpen(false);
+        scrollToTop();
+        setCurrentHash('');
+        window.history.pushState(null, '', '/');
+      } else {
+        setMobileMenuOpen(false);
+      }
+      return;
+    }
+
+    setMobileMenuOpen(false);
+  };
 
   // Close dropdowns on click outside
   useEffect(() => {
@@ -50,22 +149,25 @@ export default function TetherNavbar() {
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  const isActive = (path: string) => {
-    if (path === '/') return pathname === '/';
-    return pathname.startsWith(path);
+  // Logo destination based on role focus
+  const getLogoHref = () => {
+    if (role === 'counselor') return '/counselor';
+    if (role === 'super_admin') return '/admin/super';
+    return '/';
   };
 
   // Nav link style: soft gray rounded pill for active state
   const getLinkClass = (active: boolean) =>
-    `px-3.5 lg:px-4 py-2 rounded-full text-sm font-medium transition-all ${
+    `px-3.5 lg:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
       active
         ? 'text-slate-950 bg-black/[0.06] font-semibold'
         : 'text-slate-600 hover:text-slate-950 hover:bg-black/[0.03]'
     }`;
 
-  // Role-based navigation links
+  // Role-based navigation links specification
   const getNavLinks = () => {
     if (role === 'student') {
+      // 2. User / Siswa: Beranda, Cara Kerja, Keamanan, FAQ, Laporan Saya
       return [
         { label: 'Beranda', href: '/' },
         { label: 'Cara Kerja', href: '/#cara-kerja' },
@@ -74,16 +176,26 @@ export default function TetherNavbar() {
         { label: 'Laporan Saya', href: '/my-reports' },
       ];
     }
+
     if (role === 'counselor') {
+      // 3. Guru BK: Kasus, Dashboard, Konseling only
       return [
-        { label: 'Beranda', href: '/' },
-        { label: 'Cara Kerja', href: '/#cara-kerja' },
-        { label: 'Keamanan', href: '/#keamanan' },
-        { label: 'FAQ', href: '/#faq' },
         { label: 'Kasus', href: '/counselor/cases' },
+        { label: 'Dashboard', href: '/counselor' },
+        { label: 'Konseling', href: '/counselor/konseling' },
       ];
     }
-    // Guest default
+
+    if (role === 'super_admin') {
+      // 4. Super Admin: Dashboard, Manajemen Guru, Laporan Statistik only
+      return [
+        { label: 'Dashboard', href: '/admin/super' },
+        { label: 'Manajemen Guru', href: '/admin/super?tab=users' },
+        { label: 'Laporan Statistik', href: '/admin/super?tab=encrypted_reports' },
+      ];
+    }
+
+    // 1. Guest (Not logged in): Beranda, Cara Kerja, Keamanan, FAQ, Lacak Laporan
     return [
       { label: 'Beranda', href: '/' },
       { label: 'Cara Kerja', href: '/#cara-kerja' },
@@ -95,10 +207,78 @@ export default function TetherNavbar() {
 
   const navLinks = getNavLinks();
 
+  // Active link check
+  const isActive = (itemHref: string) => {
+    // Hash links on homepage (/#cara-kerja, /#keamanan, /#faq)
+    if (itemHref.startsWith('/#')) {
+      const targetHash = itemHref.replace('/', '');
+      return pathname === '/' && currentHash === targetHash;
+    }
+
+    // Homepage exact link
+    if (itemHref === '/') {
+      return pathname === '/' && (!currentHash || currentHash === '#');
+    }
+
+    // Parameterized links (e.g. /admin/super?tab=users)
+    if (itemHref.includes('?')) {
+      const [path, query] = itemHref.split('?');
+      if (pathname !== path) return false;
+      const targetParams = new URLSearchParams(query);
+      const activeParams = new URLSearchParams(currentSearch);
+      let match = true;
+      targetParams.forEach((val, key) => {
+        if (activeParams.get(key) !== val) match = false;
+      });
+      return match;
+    }
+
+    // Admin Super Dashboard link (active if no tab query or tab=settings)
+    if (itemHref === '/admin/super' && pathname === '/admin/super') {
+      const activeParams = new URLSearchParams(currentSearch);
+      const tab = activeParams.get('tab');
+      return !tab || tab === 'settings';
+    }
+
+    // Exact path match
+    if (pathname === itemHref) return true;
+
+    // Cases dossier subroutes
+    if (itemHref === '/counselor/cases' && pathname.startsWith('/counselor/cases')) return true;
+
+    // Counselor dashboard root only
+    if (itemHref === '/counselor') return pathname === '/counselor';
+
+    // Other nested paths
+    if (itemHref !== '/' && pathname.startsWith(itemHref + '/')) return true;
+
+    return false;
+  };
+
+  // User display name helper
+  const getDisplayName = () => {
+    if (role === 'student') {
+      return currentUser.name ? currentUser.name.split(' ').slice(0, 2).join(' ') : 'Dimas Surya';
+    }
+    if (role === 'counselor') {
+      return currentUser.name ? currentUser.name.split(',')[0] : 'Ibu Siti Rahmawati';
+    }
+    if (role === 'super_admin') {
+      return 'Administrator';
+    }
+    return currentUser.name;
+  };
+
+  // Whether current role shows "Buat Laporan" button
+  const hasReportButton = role === 'guest' || role === 'student';
+
   return (
     <>
       {/* Role Switcher Demo Pill (bottom-left) for quick role toggle */}
-      <aside aria-label="Demo Role Switcher" className="fixed bottom-4 left-4 z-50 bg-white/95 backdrop-blur-md px-3 py-2 rounded-2xl shadow-xl border border-black/[0.08] flex items-center gap-1.5 text-xs font-sans">
+      <aside 
+        aria-label="Demo Role Switcher" 
+        className="fixed bottom-4 left-4 z-50 bg-white/95 backdrop-blur-md px-3 py-2 rounded-2xl shadow-xl border border-black/[0.08] flex items-center gap-1.5 text-xs font-sans"
+      >
         <span className="text-[11px] font-bold text-slate-700 pl-0.5 pr-1">Peran:</span>
         <button
           type="button"
@@ -127,34 +307,57 @@ export default function TetherNavbar() {
         >
           Guru BK
         </button>
+        <button
+          type="button"
+          onClick={() => switchRole('super_admin')}
+          className={`px-2.5 py-1 rounded-xl font-medium transition cursor-pointer ${
+            role === 'super_admin' ? 'bg-[#E02B2B] text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          Super Admin
+        </button>
       </aside>
 
-      {/* Floating Centered Capsule Navbar (3-Group Balanced Layout) */}
+      {/* Floating Centered Capsule Navbar (Balanced 3-Group Architecture) */}
       <header 
         id="header-outer"
         style={{ opacity: 1 }}
         className="fixed top-0 left-0 right-0 z-50 w-full max-w-[1040px] mx-auto mt-4 sm:mt-5 px-3 sm:px-4 pointer-events-none font-sans"
         aria-label="Main Navigation"
       >
-        <div className="pointer-events-auto bg-white/95 backdrop-blur-xl border border-black/[0.08] rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.05)] px-3 sm:px-5 py-2 sm:py-2.5 flex items-center justify-between transition-all w-full text-slate-900">
+        <div className="pointer-events-auto bg-white/95 backdrop-blur-xl border border-black/[0.08] rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.05)] px-3.5 sm:px-4.5 py-1.5 sm:py-2 flex items-center justify-between transition-all w-full text-slate-900">
           
-          {/* GROUP 1 (LEFT): Logo with generous padding & strong optical weight */}
-          <div className="flex items-center min-w-[140px] sm:min-w-[170px] lg:min-w-[190px] justify-start pl-2 sm:pl-3">
-            <Link href="/" className="flex items-center group py-0.5" id="logo">
+          {/* GROUP 1 (LEFT): Wordmark “RELASI” only (no icon) */}
+          <div className="flex items-center min-w-[120px] sm:min-w-[160px] lg:min-w-[180px] justify-start pl-1 sm:pl-2">
+            <Link 
+              href={getLogoHref()} 
+              onClick={(e) => {
+                if ((role === 'guest' || role === 'student') && pathname === '/') {
+                  e.preventDefault();
+                  scrollToTop();
+                  setCurrentHash('');
+                  window.history.pushState(null, '', '/');
+                }
+              }}
+              className="flex items-center group py-0.5" 
+              id="logo"
+              aria-label="RELASI Beranda"
+            >
               <span className="text-xl sm:text-[22px] font-black tracking-[-0.035em] text-slate-950 group-hover:text-[#E02B2B] transition-colors select-none">
                 RELASI
               </span>
             </Link>
           </div>
 
-          {/* GROUP 2 (CENTER): Navigation links with comfortable breathing room */}
-          <nav className="hidden md:flex items-center justify-center gap-1.5 lg:gap-2 flex-1">
+          {/* GROUP 2 (CENTER): Navigation links with soft gray pill active style & smooth scroll */}
+          <nav className="hidden md:flex items-center justify-center gap-1 sm:gap-1.5 lg:gap-2 flex-1">
             {navLinks.map((item) => {
               const active = isActive(item.href);
               return (
                 <Link
                   key={item.label}
                   href={item.href}
+                  onClick={(e) => handleNavClick(e, item.href)}
                   className={getLinkClass(active)}
                 >
                   {item.label}
@@ -163,15 +366,16 @@ export default function TetherNavbar() {
             })}
           </nav>
 
-          {/* GROUP 3 (RIGHT): Auth (Light text dropdown) + Primary Action (Solid red) */}
-          <div className="flex items-center justify-end gap-2.5 sm:gap-3.5 min-w-[140px] sm:min-w-[170px] lg:min-w-[190px] pr-1 sm:pr-2">
-            {/* Guest: Light text button with Dropdown */}
-            {role === 'guest' ? (
+          {/* GROUP 3 (RIGHT): Auth & Role Profile Actions (Balanced, Work-focused, No heaviness) */}
+          <div className="flex items-center justify-end gap-2 sm:gap-3 min-w-[120px] sm:min-w-[160px] lg:min-w-[180px] pr-0.5 sm:pr-1">
+            
+            {/* 1. GUEST RIGHT SIDE: “Masuk ▾” dropdown + Red button “Buat Laporan” */}
+            {role === 'guest' && (
               <div className="relative hidden sm:block" ref={guestDropdownRef}>
                 <button
                   type="button"
                   onClick={() => setGuestDropdownOpen(!guestDropdownOpen)}
-                  className="px-3 py-2 rounded-full text-sm font-medium text-slate-600 hover:text-slate-950 hover:bg-black/[0.03] transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-950 hover:bg-black/[0.03] transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <span>Masuk</span>
                   <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${guestDropdownOpen ? 'rotate-180' : ''}`} />
@@ -182,7 +386,7 @@ export default function TetherNavbar() {
                     <Link
                       href="/login"
                       onClick={() => setGuestDropdownOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition"
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition"
                     >
                       <User className="w-4 h-4 text-slate-400" />
                       <span>Masuk</span>
@@ -190,7 +394,7 @@ export default function TetherNavbar() {
                     <Link
                       href="/register"
                       onClick={() => setGuestDropdownOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition"
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition"
                     >
                       <FileText className="w-4 h-4 text-slate-400" />
                       <span>Daftar</span>
@@ -198,13 +402,15 @@ export default function TetherNavbar() {
                   </div>
                 )}
               </div>
-            ) : (
-              /* Logged-in User & Guru BK: Avatar + Name + Dropdown */
+            )}
+
+            {/* 2, 3, 4. LOGGED-IN USERS (Siswa, Guru BK, Super Admin): Avatar + Name with dropdown */}
+            {role !== 'guest' && (
               <div className="relative hidden sm:block" ref={userDropdownRef}>
                 <button
                   type="button"
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2 hover:bg-black/[0.03] p-1 pr-2 rounded-full transition-all cursor-pointer"
+                  className="flex items-center gap-2 hover:bg-black/[0.03] p-1 pr-2.5 rounded-full transition-all cursor-pointer border border-transparent hover:border-black/[0.04]"
                 >
                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs">
                     <img
@@ -213,9 +419,23 @@ export default function TetherNavbar() {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <span className="text-xs sm:text-sm font-medium text-slate-700 truncate max-w-[100px] sm:max-w-[115px]">
-                    {role === 'student' ? 'Dimas Surya...' : currentUser.name.split(',')[0]}
+                  
+                  <span className="text-xs sm:text-sm font-medium text-slate-700 truncate max-w-[95px] sm:max-w-[130px]">
+                    {getDisplayName()}
                   </span>
+
+                  {/* Subtle role badge for work focus on counselor & admin */}
+                  {role === 'counselor' && (
+                    <span className="hidden xl:inline-flex text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200/60">
+                      Guru BK
+                    </span>
+                  )}
+                  {role === 'super_admin' && (
+                    <span className="hidden xl:inline-flex text-[10px] font-semibold text-slate-100 bg-slate-900 px-2 py-0.5 rounded-full">
+                      Admin
+                    </span>
+                  )}
+
                   <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
@@ -226,35 +446,19 @@ export default function TetherNavbar() {
                       <p className="text-[11px] text-slate-500 truncate">{currentUser.roleLabel}</p>
                     </div>
 
-                    <Link
-                      href="/profile"
-                      onClick={() => setUserDropdownOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition"
-                    >
-                      <User className="w-4 h-4 text-slate-400" />
-                      <span>Profil Saya</span>
-                    </Link>
-
-                    {role === 'student' ? (
+                    {/* Profil Saya: Included for User / Siswa & Guru BK. EXCLUDED for Super Admin */}
+                    {role !== 'super_admin' && (
                       <Link
-                        href="/my-reports"
+                        href="/profile"
                         onClick={() => setUserDropdownOpen(false)}
                         className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition"
                       >
-                        <FileText className="w-4 h-4 text-slate-400" />
-                        <span>Laporan Saya</span>
-                      </Link>
-                    ) : (
-                      <Link
-                        href="/counselor/cases"
-                        onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition"
-                      >
-                        <Briefcase className="w-4 h-4 text-slate-400" />
-                        <span>Kasus Saya</span>
+                        <User className="w-4 h-4 text-slate-400" />
+                        <span>Profil Saya</span>
                       </Link>
                     )}
 
+                    {/* Pengaturan: Available for User/Siswa, Guru BK, and Super Admin */}
                     <Link
                       href="/settings"
                       onClick={() => setUserDropdownOpen(false)}
@@ -266,6 +470,7 @@ export default function TetherNavbar() {
 
                     <div className="h-px bg-slate-100 my-1"></div>
 
+                    {/* Keluar: Triggers logout confirmation modal */}
                     <button
                       type="button"
                       onClick={() => {
@@ -282,14 +487,16 @@ export default function TetherNavbar() {
               </div>
             )}
 
-            {/* Primary Action Button: Solid red, rounded-full */}
-            <Link
-              href="/report"
-              style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
-              className="shrink-0 px-4.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold !bg-[#E02B2B] hover:!bg-[#c92424] !text-white shadow-[0_2px_10px_rgba(224,43,43,0.22)] hover:shadow-[0_4px_14px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
-            >
-              <span>Buat Laporan</span>
-            </Link>
+            {/* Red button: “Buat Laporan” (Shown ONLY for Guest and User / Siswa. NOT shown for Guru BK or Super Admin) */}
+            {hasReportButton && (
+              <Link
+                href="/report"
+                style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
+                className="shrink-0 px-4 sm:px-4.5 py-2 sm:py-2 rounded-full text-xs sm:text-sm font-semibold !bg-[#E02B2B] hover:!bg-[#c92424] !text-white shadow-[0_2px_10px_rgba(224,43,43,0.22)] hover:shadow-[0_4px_14px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>Buat Laporan</span>
+              </Link>
+            )}
 
             {/* Mobile Hamburger Menu Toggle */}
             <button
@@ -307,7 +514,7 @@ export default function TetherNavbar() {
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm md:hidden font-sans"
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-xs md:hidden font-sans"
           onClick={() => setMobileMenuOpen(false)}
         >
           <div 
@@ -330,7 +537,7 @@ export default function TetherNavbar() {
                 <Link
                   key={item.label}
                   href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={(e) => handleNavClick(e, item.href)}
                   className={`px-4 py-2.5 rounded-2xl transition ${
                     isActive(item.href) ? 'bg-black/[0.06] text-slate-900 font-semibold' : 'hover:bg-slate-50'
                   }`}
@@ -339,14 +546,17 @@ export default function TetherNavbar() {
                 </Link>
               ))}
 
-              <Link
-                href="/report"
-                onClick={() => setMobileMenuOpen(false)}
-                style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
-                className="mt-2 px-4 py-2.5 rounded-2xl font-semibold !bg-[#E02B2B] hover:!bg-[#c92424] !text-white transition text-center shadow-xs cursor-pointer"
-              >
-                Buat Laporan
-              </Link>
+              {/* Mobile "Buat Laporan" Button for Guest & Siswa only */}
+              {hasReportButton && (
+                <Link
+                  href="/report"
+                  onClick={() => setMobileMenuOpen(false)}
+                  style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
+                  className="mt-2 px-4 py-2.5 rounded-2xl font-semibold !bg-[#E02B2B] hover:!bg-[#c92424] !text-white transition text-center shadow-xs cursor-pointer"
+                >
+                  Buat Laporan
+                </Link>
+              )}
             </nav>
 
             <div className="pt-3 border-t border-slate-100">
@@ -366,20 +576,16 @@ export default function TetherNavbar() {
                     </div>
                   </div>
                   <div className="flex flex-col gap-1 pt-1">
-                    <Link
-                      href="/profile"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="px-3 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-50"
-                    >
-                      Profil Saya
-                    </Link>
-                    <Link
-                      href={role === 'student' ? '/my-reports' : '/counselor/cases'}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="px-3 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-50"
-                    >
-                      {role === 'student' ? 'Laporan Saya' : 'Kasus Saya'}
-                    </Link>
+                    {/* Profil Saya: omitted for Super Admin */}
+                    {role !== 'super_admin' && (
+                      <Link
+                        href="/profile"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="px-3 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-50"
+                      >
+                        Profil Saya
+                      </Link>
+                    )}
                     <Link
                       href="/settings"
                       onClick={() => setMobileMenuOpen(false)}
