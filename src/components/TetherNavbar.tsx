@@ -318,17 +318,17 @@ export default function TetherNavbar() {
         </button>
       </aside>
 
-      {/* Floating Centered Capsule Navbar (Balanced 3-Group Architecture) */}
+      {/* Main Grid-Aligned Navigation Bar */}
       <header 
         id="header-outer"
         style={{ opacity: 1 }}
-        className="fixed top-0 left-0 right-0 z-50 w-full max-w-[1040px] mx-auto mt-4 sm:mt-5 px-3 sm:px-4 pointer-events-none font-sans"
+        className="fixed top-0 left-0 right-0 z-50 w-full bg-white/85 backdrop-blur-xl border-b border-black/[0.06] transition-all font-sans"
         aria-label="Main Navigation"
       >
-        <div className="pointer-events-auto bg-white/95 backdrop-blur-xl border border-black/[0.08] rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.05)] px-3.5 sm:px-4.5 py-1.5 sm:py-2 flex items-center justify-between transition-all w-full text-slate-900">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 w-full h-16 sm:h-20 flex items-center justify-between text-slate-900">
           
-          {/* GROUP 1 (LEFT): Wordmark “RELASI” only (no icon) */}
-          <div className="flex items-center min-w-[120px] sm:min-w-[160px] lg:min-w-[180px] justify-start pl-1 sm:pl-2">
+          {/* GROUP 1 (LEFT): Wordmark “RELASI” aligned with Hero Content Grid */}
+          <div className="flex items-center min-w-[120px] sm:min-w-[160px] lg:min-w-[180px] justify-start">
             <Link 
               href={getLogoHref()} 
               onClick={(e) => {
@@ -339,7 +339,7 @@ export default function TetherNavbar() {
                   window.history.pushState(null, '', '/');
                 }
               }}
-              className="flex items-center group py-0.5" 
+              className="flex items-center group py-0.5 !m-0" 
               id="logo"
               aria-label="RELASI Beranda"
             >
@@ -367,7 +367,7 @@ export default function TetherNavbar() {
           </nav>
 
           {/* GROUP 3 (RIGHT): Auth & Role Profile Actions (Balanced, Work-focused, No heaviness) */}
-          <div className="flex items-center justify-end gap-2 sm:gap-3 min-w-[120px] sm:min-w-[160px] lg:min-w-[180px] pr-0.5 sm:pr-1">
+          <div className="flex items-center justify-end gap-2 sm:gap-3 min-w-[120px] sm:min-w-[160px] lg:min-w-[180px]">
             
             {/* 1. GUEST RIGHT SIDE: “Masuk ▾” dropdown + Red button “Buat Laporan” */}
             {role === 'guest' && (
