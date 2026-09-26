@@ -302,7 +302,7 @@ const INITIAL_AUDIT_LOGS: AuditLogItem[] = [
   {
     id: 'AUD-4',
     timestamp: '2026-09-19 09:40 WIB',
-    actor: 'Sistem RuangSuara',
+    actor: 'Sistem RELASI',
     role: 'System AI Engine',
     action: 'DETECT_RELATIONSHIP',
     target: 'SIG-2026-03',
@@ -365,7 +365,7 @@ export const Store = {
         {
           id: `msg-welcome-${Date.now()}`,
           sender: 'counselor',
-          senderName: 'Sistem RuangSuara',
+          senderName: 'Sistem RELASI',
           content: 'Laporanmu telah berhasil diterima dengan aman. Guru BK akan meninjau laporan ini secara rahasia. Kamu dapat menggunakan kolom pesan ini untuk memberikan info tambahan kapan saja.',
           timestamp: now,
           isRead: false,

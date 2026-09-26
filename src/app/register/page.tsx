@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, User, Mail, Lock, ShieldCheck } from 'lucide-react';
+import { ArrowRight, User, Mail, Lock, ShieldCheck, Hash, GraduationCap } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
 
 export default function RegisterPage() {
@@ -40,32 +40,25 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="w-full flex items-center justify-center px-4 font-sans text-slate-900">
-      <div className="max-w-[440px] w-full space-y-3.5 my-auto">
+    <div className="w-full flex items-center justify-center px-4 py-6 sm:py-10 font-sans text-slate-900">
+      <div className="max-w-[490px] w-full space-y-5 my-auto">
         
-        {/* Brand Header */}
-        <div className="text-center space-y-1">
-          <Link href="/" className="inline-flex items-center gap-2 group">
-            <div className="w-7 h-7 rounded-lg bg-[#E02B2B] flex items-center justify-center text-white text-xs font-medium tracking-tight transition-transform group-hover:scale-105">
-              RS
-            </div>
-            <span className="text-base font-medium tracking-tight text-slate-900 group-hover:text-[#E02B2B] transition-colors">
-              Ruang<span className="text-[#E02B2B]">Suara</span>
-            </span>
-          </Link>
-          <h1 className="text-xl sm:text-2xl font-semibold text-slate-950 tracking-tight">
+        {/* 1. Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             Pendaftaran Akun <span className="text-[#E02B2B]">Siswa</span>
           </h1>
-          <p className="text-xs text-slate-500 font-normal">
-            Daftarkan diri untuk memantau riwayat laporan &amp; konseling BK
+          <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed max-w-sm mx-auto">
+            Daftarkan diri untuk memantau riwayat laporan &amp; konseling BK secara aman
           </p>
         </div>
 
-        {/* Register Card */}
-        <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-[0_10px_30px_rgba(0,0,0,0.04)] space-y-3.5">
-          <form onSubmit={handleSubmit} className="space-y-3">
+        {/* 2. Form Card */}
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-[0_8px_30px_rgba(0,0,0,0.04)] space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-4.5">
+            {/* Nama Lengkap: full width */}
             <div>
-              <label className="text-xs font-medium text-slate-700 flex items-center gap-1.5 mb-1">
+              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5 mb-1.5 tracking-tight">
                 <User className="w-3.5 h-3.5 text-[#E02B2B]" />
                 <span>Nama Lengkap Siswa *</span>
               </label>
@@ -75,38 +68,46 @@ export default function RegisterPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Nama lengkap sesuai data sekolah"
-                className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#E02B2B]/20 focus:border-[#E02B2B] bg-white transition"
+                className="w-full px-4 py-2.5 sm:py-3 text-xs sm:text-sm rounded-xl sm:rounded-2xl border border-slate-200 bg-slate-50/40 hover:border-slate-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E02B2B]/10 focus:border-[#E02B2B] text-slate-900 placeholder:text-slate-400 transition-all"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5">
+            {/* NISN + Kelas: 2 kolom di desktop, 1 kolom di mobile */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
               <div>
-                <label className="text-xs font-medium text-slate-700 block mb-1">NISN / No. Induk *</label>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5 mb-1.5 tracking-tight">
+                  <Hash className="w-3.5 h-3.5 text-[#E02B2B]" />
+                  <span>NISN / No. Induk *</span>
+                </label>
                 <input
                   type="text"
                   required
                   value={nisn}
                   onChange={(e) => setNisn(e.target.value)}
                   placeholder="0078123456"
-                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#E02B2B]/20 focus:border-[#E02B2B] bg-white transition font-mono"
+                  className="w-full px-4 py-2.5 sm:py-3 text-xs sm:text-sm rounded-xl sm:rounded-2xl border border-slate-200 bg-slate-50/40 hover:border-slate-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E02B2B]/10 focus:border-[#E02B2B] text-slate-900 placeholder:text-slate-400 transition-all font-mono"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-medium text-slate-700 block mb-1">Kelas Saat Ini *</label>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5 mb-1.5 tracking-tight">
+                  <GraduationCap className="w-3.5 h-3.5 text-[#E02B2B]" />
+                  <span>Kelas Saat Ini *</span>
+                </label>
                 <input
                   type="text"
                   required
                   value={studentClass}
                   onChange={(e) => setStudentClass(e.target.value)}
                   placeholder="Contoh: XI MIPA 2"
-                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#E02B2B]/20 focus:border-[#E02B2B] bg-white transition"
+                  className="w-full px-4 py-2.5 sm:py-3 text-xs sm:text-sm rounded-xl sm:rounded-2xl border border-slate-200 bg-slate-50/40 hover:border-slate-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E02B2B]/10 focus:border-[#E02B2B] text-slate-900 placeholder:text-slate-400 transition-all"
                 />
               </div>
             </div>
 
+            {/* Email: full width */}
             <div>
-              <label className="text-xs font-medium text-slate-700 flex items-center gap-1.5 mb-1">
+              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5 mb-1.5 tracking-tight">
                 <Mail className="w-3.5 h-3.5 text-[#E02B2B]" />
                 <span>Alamat Email *</span>
               </label>
@@ -116,12 +117,13 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="siswa@sekolah.sch.id"
-                className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#E02B2B]/20 focus:border-[#E02B2B] bg-white transition"
+                className="w-full px-4 py-2.5 sm:py-3 text-xs sm:text-sm rounded-xl sm:rounded-2xl border border-slate-200 bg-slate-50/40 hover:border-slate-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E02B2B]/10 focus:border-[#E02B2B] text-slate-900 placeholder:text-slate-400 transition-all"
               />
             </div>
 
+            {/* Kata Sandi: full width */}
             <div>
-              <label className="text-xs font-medium text-slate-700 flex items-center gap-1.5 mb-1">
+              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5 mb-1.5 tracking-tight">
                 <Lock className="w-3.5 h-3.5 text-[#E02B2B]" />
                 <span>Kata Sandi Baru *</span>
               </label>
@@ -131,13 +133,13 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Minimal 6 karakter"
-                className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#E02B2B]/20 focus:border-[#E02B2B] bg-white transition"
+                className="w-full px-4 py-2.5 sm:py-3 text-xs sm:text-sm rounded-xl sm:rounded-2xl border border-slate-200 bg-slate-50/40 hover:border-slate-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#E02B2B]/10 focus:border-[#E02B2B] text-slate-900 placeholder:text-slate-400 transition-all"
               />
             </div>
 
-            {/* Checklist Box Syarat & Ketentuan */}
+            {/* Checkbox Syarat & Ketentuan */}
             <div className="pt-1">
-              <label className="flex items-start gap-2.5 cursor-pointer select-none text-[11px] sm:text-xs text-slate-600 bg-slate-50/80 p-2.5 rounded-xl border border-slate-200">
+              <label className="flex items-start gap-3 cursor-pointer select-none text-xs text-slate-600 bg-slate-50/70 hover:bg-slate-50 p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-200/80 transition-colors">
                 <input
                   type="checkbox"
                   required
@@ -145,26 +147,26 @@ export default function RegisterPage() {
                   onChange={(e) => setAgreedToTerms(e.target.checked)}
                   className="mt-0.5 w-4 h-4 rounded text-[#E02B2B] focus:ring-[#E02B2B] border-slate-300 cursor-pointer accent-[#E02B2B] shrink-0"
                 />
-                <span className="leading-tight">
-                  Saya menyetujui <span className="text-[#E02B2B] font-medium underline">Syarat &amp; Ketentuan</span> serta Kebijakan Privasi perlindungan data siswa RuangSuara *
+                <span className="leading-snug">
+                  Saya menyetujui <span className="text-[#E02B2B] font-semibold hover:underline">Syarat &amp; Ketentuan</span> serta Kebijakan Privasi perlindungan data siswa RELASI *
                 </span>
               </label>
             </div>
 
             {errorMessage && (
-              <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 font-medium animate-in fade-in">
+              <div className="p-3 rounded-xl sm:rounded-2xl bg-red-50 border border-red-200 text-xs sm:text-sm text-red-700 font-medium">
                 {errorMessage}
               </div>
             )}
 
-            {/* Professional Modern Button */}
+            {/* 4. Primary Button */}
             <button
               type="submit"
               disabled={isSubmitting || !agreedToTerms}
-              className={`w-full py-2.5 sm:py-3 rounded-xl font-medium text-xs sm:text-sm text-white transition-all flex items-center justify-center gap-2 ${
+              className={`w-full py-3 sm:py-3.5 px-6 rounded-full font-semibold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-2 group ${
                 agreedToTerms && !isSubmitting
-                  ? '!bg-[#E02B2B] hover:!bg-[#c92424] active:scale-[0.99] shadow-[0_2px_8px_rgba(224,43,43,0.22)] hover:shadow-[0_4px_14px_rgba(201,36,36,0.32)] cursor-pointer'
-                  : 'bg-slate-400 opacity-50 cursor-not-allowed'
+                  ? 'bg-[#E02B2B] hover:bg-[#c92424] text-white shadow-[0_4px_16px_rgba(224,43,43,0.22)] hover:shadow-[0_8px_24px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] cursor-pointer'
+                  : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-transparent shadow-none'
               }`}
             >
               {isSubmitting ? (
@@ -175,23 +177,26 @@ export default function RegisterPage() {
               ) : (
                 <>
                   <span>Daftar Akun Siswa</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                 </>
               )}
             </button>
           </form>
 
-          <div className="text-center pt-1 border-t border-slate-100">
-            <span className="text-xs text-slate-500">Sudah memiliki akun? </span>
-            <Link href="/login" className="text-xs font-medium text-[#E02B2B] hover:underline">
+          {/* 5. Footer */}
+          <div className="text-center pt-4 border-t border-slate-100 flex items-center justify-center gap-1.5">
+            <span className="text-xs sm:text-sm text-slate-500">Sudah memiliki akun?</span>
+            <Link href="/login" className="text-xs sm:text-sm font-semibold text-[#E02B2B] hover:text-[#c92424] hover:underline transition-colors">
               Masuk di sini
             </Link>
           </div>
         </div>
 
-        <p className="text-center text-[11px] text-slate-400">
-          Data identitas dilindungi enkripsi &amp; hanya diakses Guru BK berwenang
-        </p>
+        {/* Security & Privacy Note */}
+        <div className="flex items-center justify-center gap-1.5 text-center text-xs text-slate-400">
+          <ShieldCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <span>Data identitas dilindungi enkripsi &amp; hanya diakses Guru BK berwenang</span>
+        </div>
 
       </div>
     </div>

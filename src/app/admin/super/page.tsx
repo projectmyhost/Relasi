@@ -43,6 +43,19 @@ export default function SuperAdminPage() {
   useEffect(() => {
     setAuditLogs(RuangSuaraStore.getAuditLogs());
     setEncryptedReports(RuangSuaraStore.getReportsForSuperAdmin());
+
+    const readUrlTab = () => {
+      if (typeof window === 'undefined') return;
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam && ['settings', 'users', 'encrypted_reports', 'audit'].includes(tabParam)) {
+        setActiveTab(tabParam as any);
+      }
+    };
+
+    readUrlTab();
+    window.addEventListener('popstate', readUrlTab);
+    return () => window.removeEventListener('popstate', readUrlTab);
   }, []);
 
   const handleToggleAccountStatus = (id: string) => {

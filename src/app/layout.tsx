@@ -12,8 +12,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Ruang Suara: Sistem Pelaporan dan Penanganan Kasus Siswa",
-  description: "Platform pelaporan terenkripsi bagi siswa dan pendukung investigasi terstruktur guru BK berstandar Permendikbudristek No. 46 Tahun 2023.",
+  title: "RELASI: Sistem Pelaporan dan Perlindungan Siswa",
+  description: "Saluran pelaporan mandiri bagi korban dan saksi perundungan dengan perlindungan identitas, enkripsi PIN, dan tindak lanjut yang terukur berstandar Permendikbudristek No. 46 Tahun 2023.",
 };
 
 export default function RootLayout({

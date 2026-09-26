@@ -1,215 +1,520 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/authContext';
 import { 
   Menu, 
   X, 
-  LogOut,
-  AlertCircle
+  ChevronDown, 
+  LogOut, 
+  User, 
+  FileText, 
+  Settings,
+  ShieldAlert
 } from 'lucide-react';
 
 export default function TetherNavbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { currentUser, logout } = useAuth();
+  const { currentUser, switchRole, logout } = useAuth();
+  
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [guestDropdownOpen, setGuestDropdownOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
-  const isActive = (path: string) => {
-    if (path === '/') return pathname === '/';
-    return pathname.startsWith(path);
-  };
+  const [currentHash, setCurrentHash] = useState('');
+  const [currentSearch, setCurrentSearch] = useState('');
+
+  const guestDropdownRef = useRef<HTMLDivElement>(null);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
 
   const role = currentUser?.role || 'guest';
 
-  // Uniform link class: text-sm, font-medium, perfectly aligned
+  // Track hash and query string for exact active link pill styling
+  useEffect(() => {
+    const updateLocationState = () => {
+      if (typeof window !== 'undefined') {
+        setCurrentHash(window.location.hash || '');
+        setCurrentSearch(window.location.search || '');
+      }
+    };
+
+    updateLocationState();
+    window.addEventListener('hashchange', updateLocationState);
+    window.addEventListener('popstate', updateLocationState);
+    return () => {
+      window.removeEventListener('hashchange', updateLocationState);
+      window.removeEventListener('popstate', updateLocationState);
+    };
+  }, [pathname]);
+
+  // Smooth scroll helper with header offset
+  const scrollToSection = (targetId: string) => {
+    if (typeof window === 'undefined') return;
+    const element = document.getElementById(targetId);
+    if (!element) return;
+
+    // Offset for floating capsule header (approx 90px)
+    const navbarOffset = 90;
+    const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+    const offsetPosition = Math.max(0, elementPosition - navbarOffset);
+
+    // If Lenis smooth scroll instance is present
+    if ((window as any).lenis && typeof (window as any).lenis.scrollTo === 'function') {
+      (window as any).lenis.scrollTo(offsetPosition, { duration: 1.1 });
+    } else {
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const scrollToTop = () => {
+    if (typeof window === 'undefined') return;
+    if ((window as any).lenis && typeof (window as any).lenis.scrollTo === 'function') {
+      (window as any).lenis.scrollTo(0, { duration: 1.1 });
+    } else {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  // Auto-scroll smoothly if page loaded with a section hash
+  useEffect(() => {
+    if (pathname === '/' && window.location.hash) {
+      const hashId = window.location.hash.replace('#', '');
+      const timer = setTimeout(() => {
+        scrollToSection(hashId);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [pathname]);
+
+  // Nav link click handler for smooth scrolling
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith('/#')) {
+      const targetId = href.replace('/#', '');
+      if (pathname === '/') {
+        e.preventDefault();
+        setMobileMenuOpen(false);
+        scrollToSection(targetId);
+        setCurrentHash(`#${targetId}`);
+        window.history.pushState(null, '', `#${targetId}`);
+      } else {
+        setMobileMenuOpen(false);
+      }
+      return;
+    }
+
+    if (href === '/') {
+      if (pathname === '/') {
+        e.preventDefault();
+        setMobileMenuOpen(false);
+        scrollToTop();
+        setCurrentHash('');
+        window.history.pushState(null, '', '/');
+      } else {
+        setMobileMenuOpen(false);
+      }
+      return;
+    }
+
+    setMobileMenuOpen(false);
+  };
+
+  // Close dropdowns on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (guestDropdownRef.current && !guestDropdownRef.current.contains(event.target as Node)) {
+        setGuestDropdownOpen(false);
+      }
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+        setUserDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close dropdowns on route changes
+  useEffect(() => {
+    setGuestDropdownOpen(false);
+    setUserDropdownOpen(false);
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  // Logo destination based on role focus
+  const getLogoHref = () => {
+    if (role === 'counselor') return '/counselor';
+    if (role === 'super_admin') return '/admin/super';
+    return '/';
+  };
+
+  // Nav link style: soft gray rounded pill for active state
   const getLinkClass = (active: boolean) =>
-    `px-3.5 py-1.5 rounded-full text-sm font-medium transition-all ${
+    `px-3.5 lg:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
       active
-        ? 'text-slate-900 bg-black/[0.06]'
-        : 'text-slate-600 hover:text-slate-900 hover:bg-black/[0.03]'
+        ? 'text-slate-950 bg-black/[0.06] font-semibold'
+        : 'text-slate-600 hover:text-slate-950 hover:bg-black/[0.03]'
     }`;
+
+  // Role-based navigation links specification
+  const getNavLinks = () => {
+    if (role === 'student') {
+      // 2. User / Siswa: Beranda, Cara Kerja, Keamanan, FAQ, Laporan Saya
+      return [
+        { label: 'Beranda', href: '/' },
+        { label: 'Cara Kerja', href: '/#cara-kerja' },
+        { label: 'Keamanan', href: '/#keamanan' },
+        { label: 'FAQ', href: '/#faq' },
+        { label: 'Laporan Saya', href: '/my-reports' },
+      ];
+    }
+
+    if (role === 'counselor') {
+      // 3. Guru BK: Kasus, Dashboard, Konseling only
+      return [
+        { label: 'Kasus', href: '/counselor/cases' },
+        { label: 'Dashboard', href: '/counselor' },
+        { label: 'Konseling', href: '/counselor/konseling' },
+      ];
+    }
+
+    if (role === 'super_admin') {
+      // 4. Super Admin: Dashboard, Manajemen Guru, Laporan Statistik only
+      return [
+        { label: 'Dashboard', href: '/admin/super' },
+        { label: 'Manajemen Guru', href: '/admin/super?tab=users' },
+        { label: 'Laporan Statistik', href: '/admin/super?tab=encrypted_reports' },
+      ];
+    }
+
+    // 1. Guest (Not logged in): Beranda, Cara Kerja, Keamanan, FAQ, Lacak Laporan
+    return [
+      { label: 'Beranda', href: '/' },
+      { label: 'Cara Kerja', href: '/#cara-kerja' },
+      { label: 'Keamanan', href: '/#keamanan' },
+      { label: 'FAQ', href: '/#faq' },
+      { label: 'Lacak Laporan', href: '/track' },
+    ];
+  };
+
+  const navLinks = getNavLinks();
+
+  // Active link check
+  const isActive = (itemHref: string) => {
+    // Hash links on homepage (/#cara-kerja, /#keamanan, /#faq)
+    if (itemHref.startsWith('/#')) {
+      const targetHash = itemHref.replace('/', '');
+      return pathname === '/' && currentHash === targetHash;
+    }
+
+    // Homepage exact link
+    if (itemHref === '/') {
+      return pathname === '/' && (!currentHash || currentHash === '#');
+    }
+
+    // Parameterized links (e.g. /admin/super?tab=users)
+    if (itemHref.includes('?')) {
+      const [path, query] = itemHref.split('?');
+      if (pathname !== path) return false;
+      const targetParams = new URLSearchParams(query);
+      const activeParams = new URLSearchParams(currentSearch);
+      let match = true;
+      targetParams.forEach((val, key) => {
+        if (activeParams.get(key) !== val) match = false;
+      });
+      return match;
+    }
+
+    // Admin Super Dashboard link (active if no tab query or tab=settings)
+    if (itemHref === '/admin/super' && pathname === '/admin/super') {
+      const activeParams = new URLSearchParams(currentSearch);
+      const tab = activeParams.get('tab');
+      return !tab || tab === 'settings';
+    }
+
+    // Exact path match
+    if (pathname === itemHref) return true;
+
+    // Cases dossier subroutes
+    if (itemHref === '/counselor/cases' && pathname.startsWith('/counselor/cases')) return true;
+
+    // Counselor dashboard root only
+    if (itemHref === '/counselor') return pathname === '/counselor';
+
+    // Other nested paths
+    if (itemHref !== '/' && pathname.startsWith(itemHref + '/')) return true;
+
+    return false;
+  };
+
+  // User display name helper
+  const getDisplayName = () => {
+    if (role === 'student') {
+      return currentUser.name ? currentUser.name.split(' ').slice(0, 2).join(' ') : 'Dimas Surya';
+    }
+    if (role === 'counselor') {
+      return currentUser.name ? currentUser.name.split(',')[0] : 'Ibu Siti Rahmawati';
+    }
+    if (role === 'super_admin') {
+      return 'Administrator';
+    }
+    return currentUser.name;
+  };
+
+  // Whether current role shows "Buat Laporan" button
+  const hasReportButton = role === 'guest' || role === 'student';
 
   return (
     <>
-      {/* Floating Centered Capsule Navbar (Inter Typography & Role-Based Navigation) */}
+      {/* Role Switcher Demo Pill (bottom-left) for quick role toggle */}
+      <aside 
+        aria-label="Demo Role Switcher" 
+        className="fixed bottom-4 left-4 z-50 bg-white/95 backdrop-blur-md px-3 py-2 rounded-2xl shadow-xl border border-black/[0.08] flex items-center gap-1.5 text-xs font-sans"
+      >
+        <span className="text-[11px] font-bold text-slate-700 pl-0.5 pr-1">Peran:</span>
+        <button
+          type="button"
+          onClick={() => switchRole('guest')}
+          className={`px-2.5 py-1 rounded-xl font-medium transition cursor-pointer ${
+            role === 'guest' ? 'bg-[#E02B2B] text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          Guest
+        </button>
+        <button
+          type="button"
+          onClick={() => switchRole('student')}
+          className={`px-2.5 py-1 rounded-xl font-medium transition cursor-pointer ${
+            role === 'student' ? 'bg-[#E02B2B] text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          User (Siswa)
+        </button>
+        <button
+          type="button"
+          onClick={() => switchRole('counselor')}
+          className={`px-2.5 py-1 rounded-xl font-medium transition cursor-pointer ${
+            role === 'counselor' ? 'bg-[#E02B2B] text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          Guru BK
+        </button>
+        <button
+          type="button"
+          onClick={() => switchRole('super_admin')}
+          className={`px-2.5 py-1 rounded-xl font-medium transition cursor-pointer ${
+            role === 'super_admin' ? 'bg-[#E02B2B] text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          Super Admin
+        </button>
+      </aside>
+
+      {/* Floating Centered Capsule Navbar (Balanced 3-Group Architecture) */}
       <header 
         id="header-outer"
         style={{ opacity: 1 }}
-        className="force-contained-rows fixed top-0 left-0 right-0 z-50 w-fit max-w-[calc(100vw-24px)] sm:max-w-[calc(100vw-48px)] mx-auto mt-4 sm:mt-6 bg-white/95 backdrop-blur-xl border border-black/[0.08] rounded-full shadow-[0_10px_35px_rgba(0,0,0,0.06)] px-3 sm:px-5 py-2 flex items-center gap-3 sm:gap-5 transition-all font-sans text-slate-900"
+        className="fixed top-0 left-0 right-0 z-50 w-full max-w-[1040px] mx-auto mt-4 sm:mt-5 px-3 sm:px-4 pointer-events-none font-sans"
         aria-label="Main Navigation"
       >
-        {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2 group shrink-0" id="logo">
-          <div className="w-7 h-7 rounded-lg bg-[#E02B2B] flex items-center justify-center text-white text-xs font-medium tracking-tight transition-transform group-hover:scale-105">
-            RS
-          </div>
-          <span className="text-base font-medium tracking-tight text-slate-900 group-hover:text-[#E02B2B] transition-colors">
-            Ruang<span className="text-[#E02B2B]">Suara</span>
-          </span>
-        </Link>
-
-        {/* Desktop Navigation Links — All text-sm font-medium, uniform size & weight */}
-        <nav className="hidden md:flex items-center gap-1 text-sm font-medium text-slate-600">
-          {/* 1. Beranda (Universal for all roles) */}
-          <Link
-            href="/"
-            className={getLinkClass(isActive('/'))}
-          >
-            Beranda
-          </Link>
-
-          {/* 2. GUEST (Tamu / Pengunjung Umum / Belum Login) */}
-          {role === 'guest' && (
-            <Link
-              href="/track"
-              className={getLinkClass(isActive('/track'))}
+        <div className="pointer-events-auto bg-white/95 backdrop-blur-xl border border-black/[0.08] rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.05)] px-3.5 sm:px-4.5 py-1.5 sm:py-2 flex items-center justify-between transition-all w-full text-slate-900">
+          
+          {/* GROUP 1 (LEFT): Wordmark “RELASI” only (no icon) */}
+          <div className="flex items-center min-w-[120px] sm:min-w-[160px] lg:min-w-[180px] justify-start pl-1 sm:pl-2">
+            <Link 
+              href={getLogoHref()} 
+              onClick={(e) => {
+                if ((role === 'guest' || role === 'student') && pathname === '/') {
+                  e.preventDefault();
+                  scrollToTop();
+                  setCurrentHash('');
+                  window.history.pushState(null, '', '/');
+                }
+              }}
+              className="flex items-center group py-0.5" 
+              id="logo"
+              aria-label="RELASI Beranda"
             >
-              Lacak PIN
-            </Link>
-          )}
-
-          {/* 3. STUDENT (Siswa Terdaftar) - Hanya Laporan Saya, tidak cek PIN manual */}
-          {role === 'student' && (
-            <Link
-              href="/my-reports"
-              className={getLinkClass(isActive('/my-reports'))}
-            >
-              Laporan Saya
-            </Link>
-          )}
-
-          {/* 4. COUNSELOR (Guru BK) — Tersedia saat login akun Guru BK */}
-          {role === 'counselor' && (
-            <>
-              <Link
-                href="/counselor"
-                className={getLinkClass(pathname === '/counselor')}
-              >
-                Guru BK
-              </Link>
-              <Link
-                href="/counselor/cases"
-                className={getLinkClass(isActive('/counselor/cases'))}
-              >
-                Berkas Kasus
-              </Link>
-              <Link
-                href="/counselor/signals"
-                className={getLinkClass(isActive('/counselor/signals'))}
-              >
-                Pola Kejadian
-              </Link>
-              <Link
-                href="/track"
-                className={getLinkClass(isActive('/track'))}
-              >
-                Lacak PIN
-              </Link>
-            </>
-          )}
-
-          {/* 5. SUPER ADMIN (Data Super Admin untuk mengelola website & sistem) */}
-          {role === 'super_admin' && (
-            <>
-              <Link
-                href="/admin/super"
-                className={getLinkClass(isActive('/admin/super'))}
-              >
-                Panel Admin
-              </Link>
-              <Link
-                href="/counselor"
-                className={getLinkClass(pathname === '/counselor')}
-              >
-                Guru BK
-              </Link>
-              <Link
-                href="/counselor/cases"
-                className={getLinkClass(isActive('/counselor/cases'))}
-              >
-                Berkas Kasus
-              </Link>
-            </>
-          )}
-        </nav>
-
-        {/* Right Action Area: Auth & CTA — Standardized text-sm font-medium */}
-        <div className="flex items-center gap-2 sm:gap-2.5">
-          {/* User Logged In Badge & Logout */}
-          {role !== 'guest' ? (
-            <div className="hidden sm:flex items-center gap-2">
-              <span className={`text-xs font-medium px-2.5 py-1 rounded-full border truncate max-w-[140px] ${
-                role === 'super_admin' 
-                  ? 'bg-slate-900 text-white border-slate-800' 
-                  : role === 'counselor'
-                  ? 'bg-red-50 text-[#E02B2B] border-red-200/70'
-                  : 'bg-slate-100 text-slate-800 border-slate-200/80'
-              }`}>
-                {role === 'super_admin' ? 'Super Admin' : role === 'counselor' ? 'Guru BK' : currentUser.name}
+              <span className="text-xl sm:text-[22px] font-black tracking-[-0.035em] text-slate-950 group-hover:text-[#E02B2B] transition-colors select-none">
+                RELASI
               </span>
-              <button
-                type="button"
-                onClick={() => setShowLogoutConfirm(true)}
-                title="Keluar Akun"
-                className="p-1.5 text-slate-500 hover:text-[#E02B2B] hover:bg-red-50 rounded-full transition cursor-pointer"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <div className="hidden lg:flex items-center gap-1 text-sm font-medium text-slate-600">
-              <Link
-                href="/login"
-                className={`px-3 py-1.5 rounded-full transition-all ${
-                  isActive('/login') 
-                    ? 'text-[#E02B2B] bg-red-50' 
-                    : 'hover:text-slate-900 hover:bg-black/[0.03]'
-                }`}
-              >
-                Masuk
-              </Link>
-              <Link
-                href="/register"
-                className={`px-3 py-1.5 rounded-full transition-all ${
-                  isActive('/register') 
-                    ? 'text-[#E02B2B] bg-red-50' 
-                    : 'hover:text-slate-900 hover:bg-black/[0.03]'
-                }`}
-              >
-                Daftar
-              </Link>
-            </div>
-          )}
+            </Link>
+          </div>
 
-          {/* Primary Action Button: Buat Laporan (ALWAYS RED #E02B2B, never black) */}
-          <Link
-            href="/report"
-            style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
-            className="shrink-0 px-4 sm:px-5 py-2 rounded-full text-sm font-medium !bg-[#E02B2B] hover:!bg-[#c92424] !text-white shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
-          >
-            <span>Buat Laporan</span>
-          </Link>
+          {/* GROUP 2 (CENTER): Navigation links with soft gray pill active style & smooth scroll */}
+          <nav className="hidden md:flex items-center justify-center gap-1 sm:gap-1.5 lg:gap-2 flex-1">
+            {navLinks.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={(e) => handleNavClick(e, item.href)}
+                  className={getLinkClass(active)}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
 
-          {/* Mobile Hamburger Toggle */}
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-1.5 rounded-full text-slate-700 hover:bg-black/[0.05] transition cursor-pointer"
-            aria-label="Toggle Navigation Menu"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          {/* GROUP 3 (RIGHT): Auth & Role Profile Actions (Balanced, Work-focused, No heaviness) */}
+          <div className="flex items-center justify-end gap-2 sm:gap-3 min-w-[120px] sm:min-w-[160px] lg:min-w-[180px] pr-0.5 sm:pr-1">
+            
+            {/* 1. GUEST RIGHT SIDE: “Masuk ▾” dropdown + Red button “Buat Laporan” */}
+            {role === 'guest' && (
+              <div className="relative hidden sm:block" ref={guestDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setGuestDropdownOpen(!guestDropdownOpen)}
+                  className="px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-950 hover:bg-black/[0.03] transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Masuk</span>
+                  <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${guestDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {guestDropdownOpen && (
+                  <div className="absolute right-0 mt-2.5 w-44 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-black/[0.08] p-1.5 space-y-0.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <Link
+                      href="/login"
+                      onClick={() => setGuestDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition"
+                    >
+                      <User className="w-4 h-4 text-slate-400" />
+                      <span>Masuk</span>
+                    </Link>
+                    <Link
+                      href="/register"
+                      onClick={() => setGuestDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition"
+                    >
+                      <FileText className="w-4 h-4 text-slate-400" />
+                      <span>Daftar</span>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 2, 3, 4. LOGGED-IN USERS (Siswa, Guru BK, Super Admin): Avatar + Name with dropdown */}
+            {role !== 'guest' && (
+              <div className="relative hidden sm:block" ref={userDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="flex items-center gap-2 hover:bg-black/[0.03] p-1 pr-2.5 rounded-full transition-all cursor-pointer border border-transparent hover:border-black/[0.04]"
+                >
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs">
+                    <img
+                      src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(currentUser.name)}&backgroundColor=f8fafc&textColor=0f172a`}
+                      alt={currentUser.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  
+                  <span className="text-xs sm:text-sm font-medium text-slate-700 truncate max-w-[95px] sm:max-w-[130px]">
+                    {getDisplayName()}
+                  </span>
+
+                  {/* Subtle role badge for work focus on counselor & admin */}
+                  {role === 'counselor' && (
+                    <span className="hidden xl:inline-flex text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200/60">
+                      Guru BK
+                    </span>
+                  )}
+                  {role === 'super_admin' && (
+                    <span className="hidden xl:inline-flex text-[10px] font-semibold text-slate-100 bg-slate-900 px-2 py-0.5 rounded-full">
+                      Admin
+                    </span>
+                  )}
+
+                  <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {userDropdownOpen && (
+                  <div className="absolute right-0 mt-2.5 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-black/[0.08] p-2 space-y-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="px-3 py-2 border-b border-slate-100 mb-1">
+                      <p className="text-xs font-bold text-slate-900 truncate">{currentUser.name}</p>
+                      <p className="text-[11px] text-slate-500 truncate">{currentUser.roleLabel}</p>
+                    </div>
+
+                    {/* Profil Saya: Included for User / Siswa & Guru BK. EXCLUDED for Super Admin */}
+                    {role !== 'super_admin' && (
+                      <Link
+                        href="/profile"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition"
+                      >
+                        <User className="w-4 h-4 text-slate-400" />
+                        <span>Profil Saya</span>
+                      </Link>
+                    )}
+
+                    {/* Pengaturan: Available for User/Siswa, Guru BK, and Super Admin */}
+                    <Link
+                      href="/settings"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition"
+                    >
+                      <Settings className="w-4 h-4 text-slate-400" />
+                      <span>Pengaturan</span>
+                    </Link>
+
+                    <div className="h-px bg-slate-100 my-1"></div>
+
+                    {/* Keluar: Triggers logout confirmation modal */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserDropdownOpen(false);
+                        setShowLogoutConfirm(true);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium text-[#E02B2B] hover:bg-red-50/70 transition text-left cursor-pointer"
+                    >
+                      <LogOut className="w-4 h-4 text-[#E02B2B]" />
+                      <span>Keluar</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Red button: “Buat Laporan” (Shown ONLY for Guest and User / Siswa. NOT shown for Guru BK or Super Admin) */}
+            {hasReportButton && (
+              <Link
+                href="/report"
+                style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
+                className="shrink-0 px-4 sm:px-4.5 py-2 sm:py-2 rounded-full text-xs sm:text-sm font-semibold !bg-[#E02B2B] hover:!bg-[#c92424] !text-white shadow-[0_2px_10px_rgba(224,43,43,0.22)] hover:shadow-[0_4px_14px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>Buat Laporan</span>
+              </Link>
+            )}
+
+            {/* Mobile Hamburger Menu Toggle */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-1.5 rounded-full text-slate-700 hover:bg-black/[0.05] transition cursor-pointer"
+              aria-label="Toggle Navigation Menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Mobile Menu Dropdown Card */}
+      {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm md:hidden font-sans"
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-xs md:hidden font-sans"
           onClick={() => setMobileMenuOpen(false)}
         >
           <div 
@@ -217,9 +522,7 @@ export default function TetherNavbar() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-                Navigasi ({role === 'super_admin' ? 'Super Admin' : role === 'counselor' ? 'Guru BK' : role === 'student' ? 'Siswa' : 'Publik'})
-              </span>
+              <span className="text-lg font-black tracking-tight text-slate-900">RELASI</span>
               <button 
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
@@ -230,145 +533,77 @@ export default function TetherNavbar() {
             </div>
 
             <nav className="flex flex-col gap-1 text-sm font-medium text-slate-700">
-              <Link
-                href="/"
-                onClick={() => setMobileMenuOpen(false)}
-                className={`px-4 py-2.5 rounded-2xl transition ${
-                  isActive('/') ? 'bg-red-50 text-[#E02B2B]' : 'hover:bg-slate-50'
-                }`}
-              >
-                Beranda
-              </Link>
-
-              {/* Guest links */}
-              {role === 'guest' && (
+              {navLinks.map((item) => (
                 <Link
-                  href="/track"
-                  onClick={() => setMobileMenuOpen(false)}
+                  key={item.label}
+                  href={item.href}
+                  onClick={(e) => handleNavClick(e, item.href)}
                   className={`px-4 py-2.5 rounded-2xl transition ${
-                    isActive('/track') ? 'bg-red-50 text-[#E02B2B]' : 'hover:bg-slate-50'
+                    isActive(item.href) ? 'bg-black/[0.06] text-slate-900 font-semibold' : 'hover:bg-slate-50'
                   }`}
                 >
-                  Lacak Status PIN
+                  {item.label}
                 </Link>
-              )}
+              ))}
 
-              {/* Student links - Hanya Laporan Saya */}
-              {role === 'student' && (
+              {/* Mobile "Buat Laporan" Button for Guest & Siswa only */}
+              {hasReportButton && (
                 <Link
-                  href="/my-reports"
+                  href="/report"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`px-4 py-2.5 rounded-2xl transition ${
-                    isActive('/my-reports') ? 'bg-red-50 text-[#E02B2B]' : 'hover:bg-slate-50'
-                  }`}
+                  style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
+                  className="mt-2 px-4 py-2.5 rounded-2xl font-semibold !bg-[#E02B2B] hover:!bg-[#c92424] !text-white transition text-center shadow-xs cursor-pointer"
                 >
-                  Riwayat Laporan Saya
+                  Buat Laporan
                 </Link>
               )}
-
-              {/* Counselor links */}
-              {role === 'counselor' && (
-                <>
-                  <Link
-                    href="/counselor"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`px-4 py-2.5 rounded-2xl transition ${
-                      pathname === '/counselor' ? 'bg-red-50 text-[#E02B2B]' : 'hover:bg-slate-50'
-                    }`}
-                  >
-                    Dashboard Guru BK
-                  </Link>
-                  <Link
-                    href="/counselor/cases"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`px-4 py-2.5 rounded-2xl transition ${
-                      isActive('/counselor/cases') ? 'bg-red-50 text-[#E02B2B]' : 'hover:bg-slate-50'
-                    }`}
-                  >
-                    Berkas Kasus Aktif
-                  </Link>
-                  <Link
-                    href="/counselor/signals"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`px-4 py-2.5 rounded-2xl transition ${
-                      isActive('/counselor/signals') ? 'bg-red-50 text-[#E02B2B]' : 'hover:bg-slate-50'
-                    }`}
-                  >
-                    Pola Korelasi Kejadian
-                  </Link>
-                  <Link
-                    href="/track"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`px-4 py-2.5 rounded-2xl transition ${
-                      isActive('/track') ? 'bg-red-50 text-[#E02B2B]' : 'hover:bg-slate-50'
-                    }`}
-                  >
-                    Lacak Status PIN
-                  </Link>
-                </>
-              )}
-
-              {/* Super Admin links */}
-              {role === 'super_admin' && (
-                <>
-                  <Link
-                    href="/admin/super"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`px-4 py-2.5 rounded-2xl transition ${
-                      isActive('/admin/super') ? 'bg-red-50 text-[#E02B2B]' : 'hover:bg-slate-50'
-                    }`}
-                  >
-                    Panel Tata Kelola Web &amp; Sistem
-                  </Link>
-                  <Link
-                    href="/counselor"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`px-4 py-2.5 rounded-2xl transition ${
-                      pathname === '/counselor' ? 'bg-red-50 text-[#E02B2B]' : 'hover:bg-slate-50'
-                    }`}
-                  >
-                    Portal Guru BK
-                  </Link>
-                  <Link
-                    href="/counselor/cases"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`px-4 py-2.5 rounded-2xl transition ${
-                      isActive('/counselor/cases') ? 'bg-red-50 text-[#E02B2B]' : 'hover:bg-slate-50'
-                    }`}
-                  >
-                    Manajemen Berkas Kasus
-                  </Link>
-                </>
-              )}
-
-              {/* Mobile CTA: ALWAYS RED */}
-              <Link
-                href="/report"
-                onClick={() => setMobileMenuOpen(false)}
-                style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
-                className="px-4 py-2.5 rounded-2xl font-medium !bg-[#E02B2B] hover:!bg-[#c92424] !text-white transition text-center shadow-xs cursor-pointer"
-              >
-                + Buat Laporan Baru
-              </Link>
             </nav>
 
             <div className="pt-3 border-t border-slate-100">
               {role !== 'guest' ? (
-                <div className="flex items-center justify-between px-2">
-                  <div className="flex flex-col">
-                    <span className="text-xs font-medium text-slate-800">{currentUser.name}</span>
-                    <span className="text-[11px] text-slate-500">{currentUser.roleLabel}</span>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3 px-2 py-1">
+                    <div className="w-9 h-9 rounded-full bg-slate-100 overflow-hidden shrink-0">
+                      <img
+                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(currentUser.name)}&backgroundColor=f8fafc&textColor=0f172a`}
+                        alt={currentUser.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-slate-800">{currentUser.name}</span>
+                      <span className="text-[11px] text-slate-500">{currentUser.roleLabel}</span>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      setShowLogoutConfirm(true);
-                    }}
-                    className="text-xs text-red-600 font-medium hover:underline cursor-pointer"
-                  >
-                    Keluar
-                  </button>
+                  <div className="flex flex-col gap-1 pt-1">
+                    {/* Profil Saya: omitted for Super Admin */}
+                    {role !== 'super_admin' && (
+                      <Link
+                        href="/profile"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="px-3 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-50"
+                      >
+                        Profil Saya
+                      </Link>
+                    )}
+                    <Link
+                      href="/settings"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="px-3 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-50"
+                    >
+                      Pengaturan
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        setShowLogoutConfirm(true);
+                      }}
+                      className="px-3 py-2 text-left text-xs text-[#E02B2B] font-semibold hover:bg-red-50 rounded-xl cursor-pointer"
+                    >
+                      Keluar
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2 text-center text-xs font-medium">
@@ -377,14 +612,14 @@ export default function TetherNavbar() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50"
                   >
-                    Masuk Akun
+                    Masuk
                   </Link>
                   <Link
                     href="/register"
                     onClick={() => setMobileMenuOpen(false)}
                     className="py-2.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800"
                   >
-                    Daftar Siswa
+                    Daftar
                   </Link>
                 </div>
               )}
@@ -408,11 +643,11 @@ export default function TetherNavbar() {
             </div>
 
             <div className="space-y-1.5">
-              <h3 className="text-lg font-medium text-slate-900 tracking-tight">
+              <h3 className="text-lg font-bold text-slate-900 tracking-tight">
                 Konfirmasi Keluar Akun
               </h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Apakah Anda yakin ingin keluar dari akun <strong className="text-slate-800">{currentUser.name}</strong>? Anda harus masuk kembali untuk mengakses berkas dan laporan Anda.
+                Apakah Anda yakin ingin keluar dari akun <strong className="text-slate-800">{currentUser.name}</strong>?
               </p>
             </div>
 
@@ -431,7 +666,7 @@ export default function TetherNavbar() {
                   setShowLogoutConfirm(false);
                   router.push('/');
                 }}
-                className="w-full py-2.5 rounded-xl !bg-[#E02B2B] hover:!bg-[#c92424] text-white text-xs font-medium transition cursor-pointer shadow-sm hover:shadow-md"
+                className="w-full py-2.5 rounded-xl !bg-[#E02B2B] hover:!bg-[#c92424] text-white text-xs font-semibold transition cursor-pointer shadow-sm hover:shadow-md"
               >
                 Ya, Keluar
               </button>

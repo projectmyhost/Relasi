@@ -25,7 +25,12 @@
   --radius-lg: 16px;
 }
 
-/* UNIVERSAL LAYOUT RESET */
+/* UNIVERSAL LAYOUT RESET & SMOOTH SCROLLING */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 96px;
+}
+
 *,
 *::before,
 *::after {
@@ -488,4 +493,20 @@ a[class*="hover:!bg-[#c92424]"]:hover,
   color: #ffffff !important;
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15) !important;
 }
+
+/* Relaxed Vertical Rhythm across Major Sections */
+#cara-kerja {
+  padding-top: clamp(60px, 7vw, 110px) !important;
+  padding-bottom: clamp(60px, 7vw, 110px) !important;
+}
+
+#keamanan {
+  padding-top: clamp(50px, 6vw, 90px) !important;
+}
+
+#faq {
+  padding-top: clamp(60px, 7vw, 110px) !important;
+  padding-bottom: clamp(60px, 7vw, 110px) !important;
+}
+
 
