@@ -2,95 +2,85 @@
 
 import React, { useState, useEffect } from 'react';
 
-const WORDS = ['aman', 'terenkripsi', 'terpercaya'];
+const WORDS = ['Aman,', 'Terenkripsi,', 'Terpercaya,'];
 
 export default function HeroHeadlineTypewriter() {
-  const [displayText, setDisplayText] = useState('');
+  const [currentText, setCurrentText] = useState('Aman,');
   const [wordIndex, setWordIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  // Check prefers-reduced-motion
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
-
-    const listener = (event: MediaQueryListEvent) => {
-      setPrefersReducedMotion(event.matches);
-    };
-
-    mediaQuery.addEventListener?.('change', listener);
-    return () => mediaQuery.removeEventListener?.('change', listener);
-  }, []);
 
   // Typewriter animation loop
   useEffect(() => {
-    if (prefersReducedMotion) {
-      setDisplayText('aman');
-      return;
-    }
-
-    const currentWord = WORDS[wordIndex];
+    const fullWord = WORDS[wordIndex];
     let timer: NodeJS.Timeout;
 
     if (!isDeleting) {
-      // Typing phase: character by character
-      if (displayText.length < currentWord.length) {
+      // If typing and current word not yet fully typed
+      if (currentText.length < fullWord.length) {
         timer = setTimeout(() => {
-          setDisplayText(currentWord.slice(0, displayText.length + 1));
+          setCurrentText(fullWord.slice(0, currentText.length + 1));
         }, 90);
       } else {
-        // Word completed: pause briefly
+        // Full word typed, pause before deleting
         timer = setTimeout(() => {
           setIsDeleting(true);
-        }, 2000);
+        }, 2200);
       }
     } else {
-      // Deleting phase: character by character
-      if (displayText.length > 0) {
+      // Deleting phase
+      if (currentText.length > 0) {
         timer = setTimeout(() => {
-          setDisplayText(currentWord.slice(0, displayText.length - 1));
+          setCurrentText(fullWord.slice(0, currentText.length - 1));
         }, 45);
       } else {
-        // Word cleared: pause briefly before moving to next word
-        timer = setTimeout(() => {
-          setIsDeleting(false);
-          setWordIndex((prev) => (prev + 1) % WORDS.length);
-        }, 320);
+        // Finished deleting word, switch to next word
+        setIsDeleting(false);
+        setWordIndex((prev) => (prev + 1) % WORDS.length);
       }
     }
 
     return () => clearTimeout(timer);
-  }, [displayText, isDeleting, wordIndex, prefersReducedMotion]);
+  }, [currentText, isDeleting, wordIndex]);
 
   return (
-    <div className="hero-split-heading w-full flex justify-start text-left">
+    <div className="w-full flex justify-start text-left">
       {/* Accessible screen reader announcement */}
       <span className="sr-only">
-        Ruang aman, terenkripsi, terpercaya bagi siswa
+        Ruang Aman, Terenkripsi, Terpercaya Bagi Siswa
       </span>
 
       <h1
-        className="text-slate-900 text-left font-bold sm:font-extrabold tracking-tight min-h-[1.2em] select-none"
+        className="text-slate-950 text-left font-black tracking-[-0.035em] select-none"
         aria-hidden="true"
         style={{
-          fontSize: 'clamp(2.5rem, 6.2vw, 4.85rem)',
-          lineHeight: 1.15,
-          letterSpacing: '-0.035em',
+          fontFamily: "'Inter', var(--font-inter), sans-serif",
+          fontWeight: 900,
+          fontSize: 'clamp(2.75rem, 6.5vw, 5rem)',
+          lineHeight: 1.12,
         }}
       >
-        <span>Ruang</span>{' '}
-        <span className="text-[#E02B2B] inline-flex items-baseline whitespace-nowrap">
-          <span>{displayText}</span>
-          {!prefersReducedMotion && (
+        {/* Baris 1: "Ruang " + dynamic text + blinking cursor "|" */}
+        <span className="block whitespace-nowrap">
+          <span className="font-black text-slate-950" style={{ fontWeight: 900 }}>Ruang </span>
+          <span className="text-red-600 font-extrabold sm:font-black inline-flex items-baseline" style={{ fontWeight: 900 }}>
+            <span>{currentText}</span>
             <span
-              className="inline-block w-[3px] sm:w-[4px] h-[0.82em] bg-[#E02B2B] ml-1 sm:ml-1.5 align-baseline rounded-full animate-pulse"
+              className="text-red-500 animate-pulse ml-1 select-none font-bold"
               aria-hidden="true"
-            />
-          )}
-        </span>{' '}
-        <span className="inline">bagi siswa</span>
+              style={{ fontWeight: 700 }}
+            >
+              |
+            </span>
+          </span>
+        </span>
+
+        {/* Baris 2: Bagi Siswa */}
+        <span 
+          className="block mt-1 sm:mt-2 text-slate-950 font-black" 
+          style={{ fontWeight: 900 }}
+        >
+          Bagi Siswa
+        </span>
       </h1>
     </div>
   );

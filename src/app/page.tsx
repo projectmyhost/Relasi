@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import HeroHeadlineTypewriter from '@/components/HeroHeadlineTypewriter';
+import SopWorkflowSection from '@/components/SopWorkflowSection';
+import { Plus, Minus, PhoneCall, ArrowRight, Clock, CheckCircle2 } from 'lucide-react';
 
 export default function RelasiHomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -72,7 +74,6 @@ export default function RelasiHomePage() {
       '/assets/js/86a156b8_hoverintent.min.js',
       '/assets/js/bc36f248_jquery.fancybox.js',
       '/assets/js/5cbda29e_anime.min.js',
-      '/assets/js/4d2ee472_nectar-chat-thread.js',
       '/assets/js/5f180304_superfish.js',
       '/assets/js/cb8a1560_init.js',
       '/assets/js/a64d3a83_nectar-sticky-media-sections.js',
@@ -155,67 +156,83 @@ export default function RelasiHomePage() {
 
                   {/* 1. HERO SECTION */}
                   <section
-                    className="nectar_section wpb_row vc_row top-level full-width-section loaded first-section"
+                    className="nectar_section wpb_row vc_row top-level full-width-section loaded first-section min-h-[calc(100vh-100px)] flex flex-col justify-center pt-32 pb-20 sm:pt-36 sm:pb-24 relative overflow-hidden"
                     data-bottom-percent="6%"
                     data-column-margin="default"
                     data-midnight="dark"
                     data-top-percent="6%"
                     id="fws_6ab47266cfb7e"
-                    style={{ paddingTop: 'calc(5vw + 20px)', paddingBottom: 'calc(5.5vw + 10px)', zIndex: 110 }}
+                    style={{ zIndex: 110 }}
                   >
+                    {/* Ambient Glowing Aura Background Layer (Living, Slow-Drifting Warm Crimson & Soft Peach Gradient) */}
+                    <div 
+                      className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0" 
+                      aria-hidden="true"
+                    >
+                      {/* Aura Orb 1: Soft Coral / Crimson Red pudar behind and slightly above hero typography */}
+                      <div 
+                        className="hero-aura-1 absolute -top-[12%] -left-[6%] sm:left-[6%] lg:left-[10%] w-[420px] sm:w-[540px] lg:w-[650px] h-[420px] sm:h-[540px] lg:h-[650px] rounded-full bg-gradient-to-tr from-rose-500/18 via-red-500/16 to-amber-300/14 blur-[80px] sm:blur-[110px]"
+                      />
+
+                      {/* Aura Orb 2: Warm Peach / Amber lembut spreading gracefully to the empty space on the right */}
+                      <div 
+                        className="hero-aura-2 absolute top-[8%] -right-[10%] sm:right-[4%] lg:right-[8%] w-[440px] sm:w-[580px] lg:w-[700px] h-[440px] sm:h-[580px] lg:h-[700px] rounded-full bg-gradient-to-bl from-amber-400/20 via-orange-300/16 to-rose-400/14 blur-[90px] sm:blur-[120px]"
+                      />
+
+                      {/* Aura Orb 3: Subtle warm accent connecting lower hero toward the next section */}
+                      <div 
+                        className="hero-aura-3 absolute -bottom-[15%] left-[20%] sm:left-[30%] lg:left-[35%] w-[380px] sm:w-[480px] h-[380px] sm:h-[480px] rounded-full bg-gradient-to-r from-red-400/14 via-rose-300/14 to-amber-200/18 blur-[85px] sm:blur-[105px]"
+                      />
+                    </div>
+
                     <div className="row-bg-wrap">
                       <div className="inner-wrap row-bg-layer">
                         <div className="row-bg viewport-desktop"></div>
                       </div>
                     </div>
 
-                    <div className="row_col_wrap_12 span_12 dark">
+                    <div className="row_col_wrap_12 span_12 dark w-full relative z-10">
                       <div
-                        className="wpb_row vc_row-fluid vc_row full-width-section first-section loaded"
+                        className="wpb_row vc_row-fluid vc_row full-width-section first-section loaded w-full"
                         data-column-margin="default"
                         data-midnight="dark"
                         id="overview"
                         style={{ paddingTop: 0, paddingBottom: 0, zIndex: 110 }}
                       >
-                        <div className="row_col_wrap_12 col span_12 dark left">
-                          <div className="vc_col-sm-12 wpb_column column_container vc_column_container col no-extra-padding inherit_tablet inherit_phone flex_layout_desktop_column flex_justify_content_desktop_start flex_align_items_desktop_flex-start flex_wrap_desktop_nowrap">
-                            <div className="vc_column-inner">
-                              <div className="wpb_wrapper flex flex-col items-start text-left max-w-[640px]">
+                        <div className="row_col_wrap_12 col span_12 dark left w-full">
+                          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 w-full">
+                            <div className="flex flex-col items-start text-left max-w-2xl">
 
-                                {/* Dynamic Hero Headline with Typewriter Animation */}
-                                <HeroHeadlineTypewriter />
+                              {/* Dynamic Hero Headline with Typewriter Animation */}
+                              <HeroHeadlineTypewriter />
 
-                                {/* Subtitle Description */}
-                                <p 
-                                  className="text-slate-600 text-sm sm:text-base font-normal mt-5 mb-8 sm:mb-9 leading-relaxed tether-hero-fade text-left max-w-xl" 
-                                  style={{ animationDelay: '340ms' }}
+                              {/* Subtitle Description */}
+                              <p 
+                                className="text-slate-600 text-base sm:text-lg font-normal mt-6 mb-8 sm:mb-9 leading-relaxed tether-hero-fade text-left max-w-xl" 
+                                style={{ animationDelay: '340ms' }}
+                              >
+                                Saluran aman dan rahasia untuk menyuarakan apa yang kamu alami. Identitasmu terjaga sepenuhnya, dipantau dan ditangani langsung oleh Guru BK terpercaya.
+                              </p>
+
+                              {/* Action Buttons */}
+                              <div className="flex items-center gap-4 mt-8 tether-hero-fade" style={{ animationDelay: '460ms' }}>
+                                {/* Tombol 1: Buat Laporan */}
+                                <Link
+                                  href="/report"
+                                  className="h-12 px-6 rounded-full bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-500/25 inline-flex items-center justify-center text-sm font-semibold tracking-tight transition-all duration-200 active:scale-[0.99]"
                                 >
-                                  Saluran pelaporan mandiri bagi korban dan saksi perundungan dengan perlindungan identitas, enkripsi PIN, dan tindak lanjut yang terukur.
-                                </p>
+                                  Buat Laporan
+                                </Link>
 
-                                {/* Action Buttons */}
-                                <div 
-                                  className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-3.5 w-full sm:w-auto tether-hero-fade"
-                                  style={{ animationDelay: '460ms' }}
+                                {/* Tombol 2: Lacak Status PIN */}
+                                <Link
+                                  href="/track"
+                                  className="h-12 px-6 rounded-full bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shadow-sm inline-flex items-center justify-center text-sm font-semibold tracking-tight transition-all duration-200 active:scale-[0.99]"
                                 >
-                                  {/* Primary Button: “Buat Laporan — Terenkripsi” (solid red, rounded) */}
-                                  <Link
-                                    href="/report"
-                                    className="inline-flex items-center justify-center px-6.5 py-3 sm:px-7 sm:py-3.5 rounded-full bg-[#E02B2B] hover:bg-[#c92424] text-white text-xs sm:text-sm font-semibold tracking-tight shadow-[0_4px_16px_rgba(224,43,43,0.22)] hover:shadow-[0_8px_24px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200"
-                                  >
-                                    Buat Laporan — Terenkripsi
-                                  </Link>
-
-                                  {/* Secondary Button: “Lacak Status PIN” (outline style) */}
-                                  <Link
-                                    href="/track"
-                                    className="inline-flex items-center justify-center px-6.5 py-3 sm:px-7 sm:py-3.5 rounded-full border border-slate-300 hover:border-slate-800 text-slate-800 hover:text-slate-900 bg-white/80 hover:bg-white text-xs sm:text-sm font-semibold tracking-tight shadow-2xs hover:shadow-xs hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200"
-                                  >
-                                    Lacak Status PIN
-                                  </Link>
-                                </div>
-
+                                  Lacak Status PIN
+                                </Link>
                               </div>
+
                             </div>
                           </div>
                         </div>
@@ -223,311 +240,77 @@ export default function RelasiHomePage() {
                     </div>
                   </section>
 
-                  {/* 4. THE SIGNATURE SALIENT STICKY MEDIA SCROLL SECTIONS (ALUR 4 LANGKAH PENANGANAN) */}
-                  <div
-                    className="wpb_row vc_row-fluid vc_row has-global-section full-width-section"
-                    id="cara-kerja"
-                    style={{ paddingTop: 'calc(100vw * 0.05)', paddingBottom: 'calc(100vw * 0.05)' }}
-                  >
-                    <div className="row_col_wrap_12 col span_12 dark left">
-                      <div className="vc_col-sm-12 wpb_column column_container vc_column_container col">
-                        <div className="vc_column-inner">
-                          <div className="wpb_wrapper">
-
-                            {/* Section Header */}
-                            <div className="text-center max-w-2xl mx-auto mb-10">
-                              <span className="text-xs font-bold text-[#E02B2B] uppercase tracking-wider">SOP &amp; ALUR KERJA BK</span>
-                              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2 tracking-tight">
-                                4 Langkah Alur Penanganan Kasus
-                              </h2>
-                              <p className="text-slate-600 text-sm mt-2">
-                                Setiap kesaksian dan aduan ditangani secara berjenjang dengan prinsip objektivitas, kerahasiaan, dan pemulihan murid.
-                              </p>
-                            </div>
-
-                            {/* STICKY STACKING ENGINE */}
-                            <div
-                              className="nectar-sticky-media-sections media-border-radius-15px type--scroll-pinned-sections content-alignment-stretch section-height-75vh subtract-nav-height effect-overlapping overlapping-overlap-amount-desktop-20px overlapping-overlap-amount-tablet-40px stacking-effect"
-                              style={{ '--section-count': 3 } as any}
-                            >
-                              <div className="nectar-sticky-media-section__content__wrap">
-
-                                {/* STACKING CARD 1: Pengaduan Terenkripsi */}
-                                <div className="nectar-sticky-media-section__content-section" style={{ top: '186px', '--progress': 1 } as any}>
-                                  <div className="nectar-sticky-media-section__content-section__wrap">
-                                    <div className="nectar-sticky-media-content__media-wrap">
-                                      <div className="nectar-sticky-media-section__media" data-type="color" style={{ backgroundColor: '#FFFFFF' }}></div>
-                                    </div>
-                                    <div className="nectar-sticky-media-section__content-section-inner">
-                                      <div className="wpb_row vc_row-fluid vc_row inner_row vc_row-o-equal-height vc_row-flex right_padding_30px left_padding_30px column-margin-40px" style={{ paddingTop: '30px', paddingBottom: '30px' }}>
-                                        <div className="row_col_wrap_12_inner col span_12 left">
-
-                                          {/* Left Info Column */}
-                                          <div className="vc_col-sm-6 wpb_column column_container vc_column_container col child_column flex_layout_desktop_column flex_justify_content_desktop_center flex_align_items_desktop_flex-start flex_gap_desktop_15px">
-                                            <div className="vc_column-inner p-4">
-                                              <div className="wpb_wrapper">
-                                                <span className="text-xs font-bold uppercase tracking-wider text-red-600">Langkah 01</span>
-                                                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1 mb-2">
-                                                  Pengaduan Terenkripsi &amp; Anonim
-                                                </h2>
-                                                <p className="text-slate-600 text-sm leading-relaxed mb-4">
-                                                  Murid atau saksi mengirimkan kronologi kejadian secara tertutup. Tersedia tombol samarkan identitas agar terlindungi penuh dari tekanan sosial atau retaliasi.
-                                                </p>
-                                                <div className="nectar-cta border_radius_100px" data-color="accent-color" data-style="text-reveal" data-using-bg="true" style={{ '--nectar-text-color': '#FFFFFF', '--nectar-button-color': '#E02B2B' } as any}>
-                                                  <span className="nectar-button-type" style={{ color: '#FFFFFF' }}>
-                                                    <span className="link_wrap shadow-sm" style={{ paddingTop: '0.5em', paddingRight: '1.4em', paddingBottom: '0.5em', paddingLeft: '1.4em', backgroundColor: '#E02B2B' }}>
-                                                      <Link className="link_text" href="/report">
-                                                        <span className="text nectar-text-reveal-button__text font-bold" data-text="Isi Pengaduan">
-                                                          Isi Pengaduan
-                                                        </span>
-                                                      </Link>
-                                                    </span>
-                                                  </span>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-
-                                          {/* Right Media Column */}
-                                          <div className="vc_col-sm-6 wpb_column column_container vc_column_container col child_column flex_layout_desktop_column flex_justify_content_desktop_center flex_align_items_desktop_stretch" style={{ borderRadius: '15px' }}>
-                                            <div className="vc_column-inner overflow-hidden rounded-2xl relative min-h-[320px] shadow-sm border border-slate-200">
-                                              <div className="column-image-bg-wrap column-bg-layer absolute inset-0">
-                                                <div className="column-image-bg loaded w-full h-full" style={{ backgroundImage: "url('/images/hero_sanctuary.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
-                                              </div>
-                                              {/* Overlay Card Widget */}
-                                              <div className="relative z-10 m-6 p-5 bg-white/95 backdrop-blur-md rounded-xl border border-slate-200/80 shadow-lg">
-                                                <div className="flex items-center justify-between mb-2">
-                                                  <span className="px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 text-xs font-bold">Laporan Baru Masuk</span>
-                                                  <span className="text-xs font-semibold text-slate-500">08:30 WIB</span>
-                                                </div>
-                                                <h5 className="font-bold text-slate-900 text-sm">Kesaksian Dugaan Perundungan Verbal</h5>
-                                                <p className="text-xs text-slate-600 mt-1">Identitas pelapor: <span className="font-mono text-emerald-700 font-semibold">[DISAMARKAN - ENCRYPTED]</span></p>
-                                                <div className="mt-3 pt-3 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
-                                                  <span>Kategori: Sikap Merendahkan</span>
-                                                  <span className="text-emerald-600 font-bold">Status: Enkripsi Aktif</span>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* STACKING CARD 2: Penerbitan PIN & Telaah Objektif */}
-                                <div className="nectar-sticky-media-section__content-section" style={{ top: '186px', '--progress': 0.5 } as any}>
-                                  <div className="nectar-sticky-media-section__content-section__wrap">
-                                    <div className="nectar-sticky-media-content__media-wrap">
-                                      <div className="nectar-sticky-media-section__media" data-type="color" style={{ backgroundColor: '#DBD7D1' }}></div>
-                                    </div>
-                                    <div className="nectar-sticky-media-section__content-section-inner">
-                                      <div className="wpb_row vc_row-fluid vc_row inner_row vc_row-o-equal-height vc_row-flex right_padding_30px left_padding_30px column-margin-40px" style={{ paddingTop: '30px', paddingBottom: '30px' }}>
-                                        <div className="row_col_wrap_12_inner col span_12 left">
-
-                                          {/* Left Info Column */}
-                                          <div className="vc_col-sm-6 wpb_column column_container vc_column_container col child_column flex_layout_desktop_column flex_justify_content_desktop_center flex_align_items_desktop_flex-start flex_gap_desktop_15px">
-                                            <div className="vc_column-inner p-4">
-                                              <div className="wpb_wrapper">
-                                                <span className="text-xs font-bold uppercase tracking-wider text-blue-700">Langkah 02 &amp; 03</span>
-                                                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1 mb-2">
-                                                  Penerbitan PIN &amp; Telaah Objektif BK
-                                                </h2>
-                                                <p className="text-slate-600 text-sm leading-relaxed mb-4">
-                                                  Sistem otomatis menerbitkan Report ID &amp; PIN unik. Pelapor dapat memantau status secara rahasia tanpa login publik. Konselor BK memvalidasi bukti tanpa praduga sepihak.
-                                                </p>
-                                                <div className="nectar-cta border_radius_100px" data-color="black" data-style="text-reveal" data-using-bg="true" style={{ '--nectar-text-color': '#FFFFFF', '--nectar-button-color': '#0F172A' } as any}>
-                                                  <span className="nectar-button-type" style={{ color: '#FFFFFF' }}>
-                                                    <span className="link_wrap shadow-sm" style={{ paddingTop: '0.5em', paddingRight: '1.4em', paddingBottom: '0.5em', paddingLeft: '1.4em', backgroundColor: '#0F172A' }}>
-                                                      <Link className="link_text" href="/track">
-                                                        <span className="text nectar-text-reveal-button__text font-bold" data-text="Lacak Progres via PIN">
-                                                          Lacak Progres via PIN
-                                                        </span>
-                                                      </Link>
-                                                    </span>
-                                                  </span>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-
-                                          {/* Right Media Column */}
-                                          <div className="vc_col-sm-6 wpb_column column_container vc_column_container col child_column flex_layout_desktop_column flex_justify_content_desktop_center flex_align_items_desktop_stretch" style={{ borderRadius: '15px' }}>
-                                            <div className="vc_column-inner overflow-hidden rounded-2xl relative min-h-[320px] shadow-sm border border-slate-300">
-                                              <div className="column-image-bg-wrap column-bg-layer absolute inset-0">
-                                                <div className="column-image-bg loaded w-full h-full" style={{ backgroundImage: "url('/images/neural_pattern.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
-                                              </div>
-                                              {/* Floating Dossier Insight Box */}
-                                              <div className="relative z-10 m-6 p-5 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-700 text-white shadow-xl">
-                                                <div className="flex items-center justify-between mb-3">
-                                                  <span className="text-xs font-bold text-slate-300">Dossier Penanganan Kasus</span>
-                                                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold">SOP Terverifikasi BK</span>
-                                                </div>
-                                                <div className="text-xl sm:text-2xl font-bold tracking-tight">Investigasi Terstruktur</div>
-                                                <div className="flex flex-col gap-1.5 mt-3 text-xs text-slate-300">
-                                                  <span className="flex items-center gap-2 font-medium">✓ Telaah Kronologi &amp; Bukti Faktual</span>
-                                                  <span className="flex items-center gap-2 font-medium">✓ Klasifikasi Derajat Risiko Siswa</span>
-                                                  <span className="flex items-center gap-2 font-medium">✓ Mediasi &amp; Konseling Tertutup</span>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* STACKING CARD 3: Pendampingan, Mediasi & Pemulihan */}
-                                <div className="nectar-sticky-media-section__content-section" style={{ top: '186px' } as any}>
-                                  <div className="nectar-sticky-media-section__content-section__wrap">
-                                    <div className="nectar-sticky-media-content__media-wrap">
-                                      <div className="nectar-sticky-media-section__media" data-type="color" style={{ backgroundColor: '#FFFF00' }}></div>
-                                    </div>
-                                    <div className="nectar-sticky-media-section__content-section-inner">
-                                      <div className="wpb_row vc_row-fluid vc_row inner_row vc_row-o-equal-height vc_row-flex right_padding_30px left_padding_30px column-margin-40px" style={{ paddingTop: '30px', paddingBottom: '30px' }}>
-                                        <div className="row_col_wrap_12_inner col span_12 left">
-
-                                          {/* Left Info Column */}
-                                          <div className="vc_col-sm-6 wpb_column column_container vc_column_container col child_column flex_layout_desktop_column flex_justify_content_desktop_center flex_align_items_desktop_flex-start flex_gap_desktop_15px">
-                                            <div className="vc_column-inner p-4">
-                                              <div className="wpb_wrapper">
-                                                <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">Langkah 04</span>
-                                                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1 mb-2">
-                                                  Pendampingan, Mediasi &amp; Pemulihan
-                                                </h2>
-                                                <p className="text-slate-800 text-sm leading-relaxed mb-4">
-                                                  Pelaksanaan konseling aman, mediasi tertutup, serta perlindungan penuh murid dari tindakan retaliasi, pembalasan, maupun intimidasi sosial lanjutan.
-                                                </p>
-                                                <div className="nectar-cta border_radius_100px" data-color="black" data-style="text-reveal" data-using-bg="true" style={{ '--nectar-text-color': '#FFFFFF', '--nectar-button-color': '#161514' } as any}>
-                                                  <span className="nectar-button-type" style={{ color: '#FFFFFF' }}>
-                                                    <span className="link_wrap shadow-sm" style={{ paddingTop: '0.5em', paddingRight: '1.4em', paddingBottom: '0.5em', paddingLeft: '1.4em', backgroundColor: '#161514' }}>
-                                                      <a className="link_text" href="#faq">
-                                                        <span className="text nectar-text-reveal-button__text font-bold" data-text="Pelajari Kode Etik">
-                                                          Pelajari Kode Etik
-                                                        </span>
-                                                      </a>
-                                                    </span>
-                                                  </span>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-
-                                          {/* Right Media Column */}
-                                          <div className="vc_col-sm-6 wpb_column column_container vc_column_container col child_column flex_layout_desktop_column flex_justify_content_desktop_space-between flex_align_items_desktop_stretch flex_gap_desktop_30px" style={{ borderRadius: '15px' }}>
-                                            <div className="vc_column-inner overflow-hidden rounded-2xl relative min-h-[320px] shadow-sm border border-slate-300">
-                                              <div className="column-image-bg-wrap column-bg-layer absolute inset-0">
-                                                <div className="column-image-bg loaded w-full h-full" style={{ backgroundImage: "url('/images/sanctuary_portal.jpg')", backgroundSize: 'cover', backgroundPosition: 'center top' }}></div>
-                                              </div>
-                                              {/* Floating Badges */}
-                                              <div className="relative z-10 m-6 flex flex-col gap-2.5">
-                                                <div className="nectar-badge nectar-inherit-body text-color-F4F2EF padding-amount-small badge-style-default border-radius-20px backdrop_filter_blur_16 shadow-md" data-bg-color-custom="#161514D9">
-                                                  <div className="nectar-badge__inner font-semibold text-xs sm:text-sm text-white">✓ Pendampingan Psikologis Korban</div>
-                                                </div>
-                                                <div className="nectar-badge nectar-inherit-body text-color-F4F2EF padding-amount-small badge-style-default border-radius-20px backdrop_filter_blur_16 shadow-md ml-auto" data-bg-color-custom="#161514D9">
-                                                  <div className="nectar-badge__inner font-semibold text-xs sm:text-sm text-white">✓ Mediasi Berimbang Bebas Vonis Sepihak</div>
-                                                </div>
-                                                <div className="nectar-badge nectar-inherit-body text-color-F4F2EF padding-amount-small badge-style-default border-radius-20px backdrop_filter_blur_16 shadow-md mx-auto" data-bg-color-custom="#161514D9">
-                                                  <div className="nectar-badge__inner font-semibold text-xs sm:text-sm text-white">✓ Pemantauan Pasca-Kasus Berkelanjutan</div>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-
-                              </div>
-                            </div>
-
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  {/* 4. SOP & ALUR KERJA BK SECTION (INTERACTIVE STICKY 2-COLUMN) */}
+                  <SopWorkflowSection />
 
                   {/* 5. INTERACTIVE CHAT THREAD & SECURITY ASSURANCE */}
-                  <div className="wpb_row vc_row-fluid vc_row full-width-section" id="keamanan" style={{ paddingTop: 'calc(100vw * 0.04)', paddingBottom: 0 }}>
-                    <div className="row_col_wrap_12 col span_12 dark left">
-                      <div className="vc_col-sm-12 wpb_column column_container vc_column_container col no-extra-padding force-desktop-text-align-center">
-                        <div className="vc_column-inner">
-                          <div className="wpb_wrapper flex flex-col items-center">
-                            <span className="text-xs font-bold text-[#E02B2B] uppercase tracking-wider">KEAMANAN &amp; PRIVASI</span>
-                            <div className="nectar-responsive-text" style={{ maxWidth: '700px' }}>
-                              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1 tracking-tight">
-                                Konseling &amp; Pelaporan Cepat Interaktif
-                              </h2>
-                            </div>
-                            <p className="text-slate-600 text-sm max-w-xl text-center mt-2">
-                              Siswa dapat mencurahkan isi hati dan kesaksian dengan rasa aman. Sistem menjamin privasi penuh di setiap tahap komunikasi.
-                            </p>
-                          </div>
-                        </div>
+                  <section className="w-full pt-16 sm:pt-20 pb-4" id="keamanan">
+                    <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 w-full">
+                      <div className="flex flex-col items-center text-center">
+                        <span className="text-xs font-bold text-[#E02B2B] uppercase tracking-wider">KEAMANAN &amp; PRIVASI</span>
+                        <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2 tracking-tight">
+                          Konseling &amp; Pelaporan Cepat Interaktif
+                        </h2>
+                        <p className="text-slate-600 text-sm sm:text-base max-w-xl text-center mt-2">
+                          Siswa dapat mencurahkan isi hati dan kesaksian dengan rasa aman. Sistem menjamin privasi penuh di setiap tahap komunikasi.
+                        </p>
                       </div>
                     </div>
-                  </div>
+                  </section>
 
-                  <div
-                    className="wpb_row vc_row-fluid vc_row full-width-section vc_row-o-equal-height vc_row-flex"
+                  <section
+                    className="w-full pt-8 pb-16 sm:pb-24"
                     id="fws_6ab47266ddc0c"
-                    style={{ paddingTop: 'calc(100vw * 0.04)', paddingBottom: 'calc(100vw * 0.06)' }}
                   >
-                    <div className="row_col_wrap_12 col span_12 dark left">
+                    <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 w-full">
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
 
-                      {/* Left: Chat Thread Typing Demo */}
-                      <div className="vc_col-sm-6 wpb_column column_container vc_column_container col left_padding_desktop_30px top_padding_desktop_30px right_padding_desktop_30px bottom_padding_desktop_30px flex_layout_desktop_column flex_justify_content_desktop_space-between" style={{ borderRadius: '15px' }}>
-                        <div className="vc_column-inner p-4 bg-slate-900 rounded-2xl border border-slate-800 shadow-xl">
-                          <div className="wpb_wrapper">
-                            <div
-                              className="nectar-chat-thread"
-                              data-animation="typing"
-                              data-animation-speed="1"
-                              data-auto-height-animation="true"
-                              data-bubble-delay="1100"
-                              data-loop-animation="true"
-                              style={{
-                                '--outgoing-bubble-color': '#E02B2B',
-                                '--outgoing-text-color': '#FFFFFF',
-                                '--incoming-bubble-color': '#FFFFFF',
-                                '--incoming-text-color': '#161514',
-                                '--image-size': '32px',
-                                '--border-radius': '20px'
-                              } as any}
-                            >
-                              {/* Bubble 1: Incoming from Bot/BK */}
-                              <div className="nectar-chat-thread__bubble img-loaded" data-direction="incoming" style={{ opacity: 1 }}>
-                                <div className="w-8 h-8 rounded-full bg-[#E02B2B] text-white flex items-center justify-center font-medium text-xs shrink-0 select-none">BK</div>
-                                <div className="nectar-chat-thread__bubble-content" style={{ clipPath: 'inset(0% round 20px 20px 20px 0px)' }}>
-                                  <div className="nectar-chat-thread__bubble-name"><strong>Konselor RELASI</strong></div>
-                                  <div className="nectar-chat-thread__bubble-content__inner text-xs sm:text-sm">
+                        {/* Left: Chat Thread Message Exchange */}
+                        <div className="lg:col-span-6 flex flex-col justify-center">
+                          <div className="p-5 sm:p-6 lg:p-7 bg-slate-900 rounded-3xl border border-slate-800 shadow-xl h-full flex flex-col justify-center overflow-hidden">
+                            <div className="flex flex-col gap-4 sm:gap-5 w-full">
+                              
+                              {/* Bubble 1: Incoming from BK */}
+                              <div className="flex items-start gap-3 w-full">
+                                <div className="w-8 h-8 rounded-full bg-[#E02B2B] text-white flex items-center justify-center font-bold text-xs shrink-0 select-none shadow-sm mt-0.5">
+                                  BK
+                                </div>
+                                <div className="bg-white text-slate-900 rounded-2xl rounded-tl-xs p-3.5 sm:p-4 max-w-[85%] sm:max-w-[82%] shadow-sm">
+                                  <div className="text-xs font-bold text-slate-900 mb-1">Konselor RELASI</div>
+                                  <div className="text-xs sm:text-sm text-slate-700 leading-relaxed">
                                     Halo, ceritakan apa yang kamu lihat atau alami. Ruang ini terenkripsi dan privasimu terjaga.
                                   </div>
                                 </div>
                               </div>
 
                               {/* Bubble 2: Outgoing from Student */}
-                              <div className="nectar-chat-thread__bubble img-loaded" data-direction="outgoing" style={{ opacity: 1 }}>
-                                <div className="nectar-chat-thread__bubble-content" style={{ clipPath: 'inset(0% round 20px 20px 0px 20px)', backgroundColor: '#E02B2B', color: '#fff' }}>
-                                  <div className="nectar-chat-thread__bubble-name"><strong className="text-white">Saksi Murid (Anonim)</strong></div>
-                                  <div className="nectar-chat-thread__bubble-content__inner text-xs sm:text-sm text-white">
+                              <div className="flex items-start justify-end w-full">
+                                <div className="bg-[#E02B2B] text-white rounded-2xl rounded-tr-xs p-3.5 sm:p-4 max-w-[88%] sm:max-w-[84%] shadow-md shadow-red-950/20">
+                                  <div className="text-xs font-bold text-white/90 mb-1 text-right">Saksi Murid (Anonim)</div>
+                                  <div className="text-xs sm:text-sm text-white leading-relaxed">
                                     Saya melihat pemerasan dan perundungan di lorong lantai 2 saat jam istirahat. Tolong samarkan nama saya.
                                   </div>
                                 </div>
                               </div>
 
-                              {/* Bubble 3: Confirmation */}
-                              <div className="nectar-chat-thread__bubble img-loaded" data-direction="incoming" style={{ opacity: 1 }}>
-                                <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-medium text-xs shrink-0 select-none">✓</div>
-                                <div className="nectar-chat-thread__bubble-content" style={{ clipPath: 'inset(0% round 20px 20px 20px 0px)' }}>
-                                  <div className="nectar-chat-thread__bubble-name"><strong>Sistem Keamanan</strong></div>
-                                  <div className="nectar-chat-thread__bubble-content__inner text-xs sm:text-sm">
-                                    Identitas Anda disamarkan. PIN pelacakan rahasia Anda telah diterbitkan: <strong>RL-7821</strong>. Guru BK akan menindaklanjuti secara tertutup.
+                              {/* Bubble 3: Confirmation from System */}
+                              <div className="flex items-start gap-3 w-full">
+                                <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 select-none shadow-sm mt-0.5">
+                                  ✓
+                                </div>
+                                <div className="bg-white text-slate-900 rounded-2xl rounded-tl-xs p-3.5 sm:p-4 max-w-[88%] sm:max-w-[84%] shadow-sm">
+                                  <div className="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1.5 flex-wrap">
+                                    <span>Sistem Keamanan</span>
+                                    <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                                      Terenkripsi
+                                    </span>
+                                  </div>
+                                  <div className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                                    Identitas Anda disamarkan. PIN pelacakan rahasia Anda telah diterbitkan:{' '}
+                                    <strong className="font-mono text-slate-950 font-bold bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                      RL-7821
+                                    </strong>
+                                    . Guru BK akan menindaklanjuti secara tertutup.
                                   </div>
                                 </div>
                               </div>
@@ -535,219 +318,266 @@ export default function RelasiHomePage() {
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Right: Security & Ethics Principles */}
-                      <div className="vc_col-sm-6 wpb_column column_container vc_column_container col flex_layout_desktop_column flex_gap_desktop_10px">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
+                        {/* Right: Security & Ethics Principles */}
+                        <div className="lg:col-span-6 flex flex-col justify-center">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
 
-                          <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between shadow-2xs">
-                            <div>
-                              <span className="text-xs font-bold text-[#E02B2B] uppercase tracking-wider block mb-2">ZERO-METADATA</span>
-                              <h3 className="font-bold text-slate-900 text-base">Anonimitas Mutlak</h3>
-                              <p className="text-xs text-slate-600 mt-1 leading-relaxed">Siswa dapat melapor tanpa menyertakan nama, tanpa pelacakan alamat IP maupun identitas perangkat.</p>
+                            <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between shadow-2xs">
+                              <div>
+                                <span className="text-xs font-bold text-[#E02B2B] uppercase tracking-wider block mb-2">ZERO-METADATA</span>
+                                <h3 className="font-bold text-slate-900 text-base">Anonimitas Mutlak</h3>
+                                <p className="text-xs text-slate-600 mt-1 leading-relaxed">Siswa dapat melapor tanpa menyertakan nama, tanpa pelacakan alamat IP maupun identitas perangkat.</p>
+                              </div>
+                              <span className="text-[11px] font-semibold text-slate-400 mt-4">Privasi Penuh Pelapor</span>
                             </div>
-                            <span className="text-[11px] font-semibold text-slate-400 mt-4">Privasi Penuh Pelapor</span>
-                          </div>
 
-                          <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between shadow-2xs">
-                            <div>
-                              <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-2">ENKRIPSI KUAT</span>
-                              <h3 className="font-bold text-slate-900 text-base">PIN Akses Mandiri</h3>
-                              <p className="text-xs text-slate-600 mt-1 leading-relaxed">Pantau perkembangan langsung tanpa perlu registrasi akun publik bagi yang menginginkan kerahasiaan penuh.</p>
+                            <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between shadow-2xs">
+                              <div>
+                                <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-2">ENKRIPSI KUAT</span>
+                                <h3 className="font-bold text-slate-900 text-base">PIN Akses Mandiri</h3>
+                                <p className="text-xs text-slate-600 mt-1 leading-relaxed">Pantau perkembangan langsung tanpa perlu registrasi akun publik bagi yang menginginkan kerahasiaan penuh.</p>
+                              </div>
+                              <span className="text-[11px] font-semibold text-slate-400 mt-4">Kunci 256-Bit Unik</span>
                             </div>
-                            <span className="text-[11px] font-semibold text-slate-400 mt-4">Kunci 256-Bit Unik</span>
-                          </div>
 
-                          <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between shadow-2xs">
-                            <div>
-                              <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-2">KODE ETIK ABKIN</span>
-                              <h3 className="font-bold text-slate-900 text-base">Objektivitas Penuh</h3>
-                              <p className="text-xs text-slate-600 mt-1 leading-relaxed">Tim konselor menangani setiap aduan secara berimbang, empatik, dan bebas intimidasi sosial.</p>
+                            <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between shadow-2xs">
+                              <div>
+                                <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-2">KODE ETIK ABKIN</span>
+                                <h3 className="font-bold text-slate-900 text-base">Objektivitas Penuh</h3>
+                                <p className="text-xs text-slate-600 mt-1 leading-relaxed">Tim konselor menangani setiap aduan secara berimbang, empatik, dan bebas intimidasi sosial.</p>
+                              </div>
+                              <span className="text-[11px] font-semibold text-slate-400 mt-4">Standar Profesi Konseling</span>
                             </div>
-                            <span className="text-[11px] font-semibold text-slate-400 mt-4">Standar Profesi Konseling</span>
-                          </div>
 
-                          <div className="p-6 bg-[#0F172A] text-white rounded-2xl flex flex-col justify-between border border-slate-800 shadow-2xs">
-                            <div>
-                              <span className="text-xs font-bold text-red-400 uppercase tracking-wider">AKSES CEPAT</span>
-                              <h3 className="font-bold text-white text-base mt-1">Punya Info Kejadian?</h3>
-                              <p className="text-xs text-slate-300 mt-1 leading-relaxed">Jangan biarkan temanmu berjuang sendirian. Suaramu dilindungi penuh.</p>
+                            <div className="p-6 bg-[#0F172A] text-white rounded-2xl flex flex-col justify-between border border-slate-800 shadow-2xs">
+                              <div>
+                                <span className="text-xs font-bold text-red-400 uppercase tracking-wider">AKSES CEPAT</span>
+                                <h3 className="font-bold text-white text-base mt-1">Punya Info Kejadian?</h3>
+                                <p className="text-xs text-slate-300 mt-1 leading-relaxed">Jangan biarkan temanmu berjuang sendirian. Suaramu dilindungi penuh.</p>
+                              </div>
+                              <Link href="/report" className="mt-4 px-4 py-2 !bg-[#E02B2B] hover:!bg-[#c92424] !text-white font-medium text-xs rounded-xl text-center transition shadow-sm hover:shadow-md cursor-pointer">
+                                Buat Laporan Sekarang →
+                              </Link>
                             </div>
-                            <Link href="/report" className="mt-4 px-4 py-2 !bg-[#E02B2B] hover:!bg-[#c92424] !text-white font-medium text-xs rounded-xl text-center transition shadow-sm hover:shadow-md cursor-pointer">
-                              Buat Laporan Sekarang →
-                            </Link>
-                          </div>
 
+                          </div>
                         </div>
-                      </div>
 
+                      </div>
                     </div>
-                  </div>
+                  </section>
 
                   {/* 8. FAQ ACCORDION SECTION */}
-                  <div
-                    className="wpb_row vc_row-fluid vc_row full-width-section column-margin-70px"
+                  <section
+                    className="w-full py-16 sm:py-24"
                     id="faq"
-                    style={{ paddingTop: 'calc(100vw * 0.05)', paddingBottom: 'calc(100vw * 0.05)' }}
                   >
-                    <div className="row_col_wrap_12 col span_12 dark left">
+                    <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 w-full">
+                      <div className="flex flex-col lg:flex-row items-start justify-between gap-12 lg:gap-16">
 
-                      {/* Left: Heading & Callout */}
-                      <div className="vc_col-sm-2/5 wpb_column column_container vc_column_container col right_padding_desktop_42pct right_padding_tablet_0px flex_layout_desktop_column flex_gap_desktop_10px">
-                        <div className="vc_column-inner">
-                          <div className="wpb_wrapper">
-                            <span className="text-xs font-bold text-[#E02B2B] uppercase tracking-wider">TANYA JAWAB RESMI</span>
-                            <div className="nectar-responsive-text mt-1">
-                              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                                Segala Hal yang Perlu Kamu Ketahui
-                              </h2>
-                            </div>
-                            <p className="text-slate-600 text-sm mt-2 mb-4 leading-relaxed">
-                              Pelajari bagaimana sistem menjamin keamanan data pelapor dan hak perlindungan siswa dari tindakan retaliasi.
-                            </p>
-                            <div className="nectar-cta border_radius_100px" data-color="black" data-style="text-reveal" data-using-bg="true" style={{ '--nectar-text-color': '#FFFFFF', '--nectar-button-color': '#0F172A' } as any}>
-                              <span className="nectar-button-type" style={{ color: '#FFFFFF' }}>
-                                <span className="link_wrap shadow-sm" style={{ paddingTop: '0.5em', paddingRight: '1.4em', paddingBottom: '0.5em', paddingLeft: '1.4em', backgroundColor: '#0F172A' }}>
-                                  <a className="link_text" href="tel:129">
-                                    <span className="text nectar-text-reveal-button__text font-bold" data-text="Hotline SAPA 129">
-                                      Hotline SAPA 129
-                                    </span>
-                                  </a>
-                                </span>
-                              </span>
-                            </div>
+                        {/* Left: Heading & Callout */}
+                        <div className="w-full lg:w-[42%] flex flex-col items-start">
+                          <h2 className="text-4xl lg:text-5xl font-black text-slate-900 leading-[1.15] tracking-tight">
+                            Punya Kekhawatiran? Mari Bicara Terbuka.
+                          </h2>
+                          <p className="text-base text-slate-600 leading-relaxed max-w-sm mt-4 mb-8">
+                            Wajar jika kamu merasa ragu atau takut. Di sini, kami jelaskan bagaimana suaramu dijaga rapat-rapat tanpa risiko apa pun bagimu.
+                          </p>
+                          <div>
+                            <a
+                              href="tel:129"
+                              className="px-6 py-3 rounded-full text-sm font-semibold bg-slate-900 text-white hover:bg-slate-800 shadow-md inline-flex items-center gap-2 transition-all duration-200 active:scale-[0.99]"
+                            >
+                              <PhoneCall className="w-4 h-4 text-white" />
+                              <span>Hotline SAPA 129</span>
+                            </a>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Right: Accordion Items with Smooth Transition & Rotating Icon */}
-                      <div className="vc_col-sm-3/5 wpb_column column_container vc_column_container col left_padding_desktop_10px top_padding_desktop_10px right_padding_desktop_10px bottom_padding_desktop_10px">
-                        <div className="vc_column-inner">
-                          <div className="wpb_wrapper space-y-3">
-                            {[
-                              {
-                                question: 'Apakah identitas saya benar-benar dirahasiakan?',
-                                answer: 'Ya. Sistem RELASI mematuhi prinsip zero-metadata logging. Jika Anda memilih opsi "Samarkan Identitas", nama dan kelas Anda dienkripsi dan digantikan oleh Report ID dan PIN rahasia unik.'
-                              },
-                              {
-                                question: 'Bagaimana cara memantau status laporan tanpa membuat akun?',
-                                answer: 'Setelah laporan berhasil dikirim, sistem menerbitkan nomor tiket dan PIN 4-digit. Anda cukup membuka menu "Lacak Status PIN" dan memasukkan kode tersebut untuk melihat tahapan penanganan secara langsung.'
-                              },
-                              {
-                                question: 'Siapa saja yang memiliki wewenang membaca isi laporan?',
-                                answer: 'Hanya Guru Bimbingan Konseling (BK) berlisensi yang terikat kode etik ABKIN dan Tim Satgas Pencegahan dan Penanganan Kekerasan (TPPK) sekolah yang memiliki kunci akses ke dossier kasus.'
-                              },
-                              {
-                                question: 'Bagaimana perlindungan bagi saksi yang melapor?',
-                                answer: 'Berdasarkan Permendikbudristek No. 46 Tahun 2023, saksi berhak mendapatkan perlindungan hukum dan fisik dari pihak sekolah. Segala tindakan intimidasi terhadap saksi dikategorikan sebagai pelanggaran berat.'
-                              }
-                            ].map((item, index) => {
-                              const isOpen = activeFaq === index;
-                              return (
+                        {/* Right: Accordion Items with Smooth Transition & Trigger Button */}
+                        <div className="w-full lg:w-[54%] space-y-3">
+                          {[
+                            {
+                              question: 'Apakah identitas saya benar-benar dirahasiakan?',
+                              answer: 'Ya. Sistem RELASI mematuhi prinsip zero-metadata logging. Jika Anda memilih opsi "Samarkan Identitas", nama dan kelas Anda dienkripsi dan digantikan oleh Report ID dan PIN rahasia unik.'
+                            },
+                            {
+                              question: 'Bagaimana cara memantau status laporan tanpa membuat akun?',
+                              answer: 'Setelah laporan berhasil dikirim, sistem menerbitkan nomor tiket dan PIN 4-digit. Anda cukup membuka menu "Lacak Status PIN" dan memasukkan kode tersebut untuk melihat tahapan penanganan secara langsung.'
+                            },
+                            {
+                              question: 'Siapa saja yang memiliki wewenang membaca isi laporan?',
+                              answer: 'Hanya Guru Bimbingan Konseling (BK) berlisensi yang terikat kode etik ABKIN dan Tim Satgas Pencegahan dan Penanganan Kekerasan (TPPK) sekolah yang memiliki kunci akses ke dossier kasus.'
+                            },
+                            {
+                              question: 'Bagaimana perlindungan bagi saksi yang melapor?',
+                              answer: 'Berdasarkan Permendikbudristek No. 46 Tahun 2023, saksi berhak mendapatkan perlindungan hukum dan fisik dari pihak sekolah. Segala tindakan intimidasi terhadap saksi dikategorikan sebagai pelanggaran berat.'
+                            }
+                          ].map((item, index) => {
+                            const isOpen = activeFaq === index;
+                            return (
+                              <div 
+                                key={index}
+                                className={`bg-white border rounded-xl sm:rounded-2xl transition-[border-color,box-shadow] duration-200 overflow-hidden ${
+                                  isOpen 
+                                    ? 'border-slate-200 shadow-sm ring-1 ring-slate-900/5' 
+                                    : 'border-slate-200/70 shadow-2xs hover:border-slate-300'
+                                }`}
+                              >
+                                {/* 1. Independent Header / Trigger Row */}
+                                <button
+                                  type="button"
+                                  onClick={() => toggleFaq(index)}
+                                  aria-expanded={isOpen}
+                                  className="w-full px-5 py-4 flex items-center justify-between text-left group cursor-pointer focus:outline-none transition-colors"
+                                >
+                                  <span className="font-semibold text-slate-900 text-sm sm:text-base group-hover:text-red-600 transition-colors leading-snug flex-1 pr-4">
+                                    {item.question}
+                                  </span>
+                                  
+                                  {/* Clean Trigger Icon */}
+                                  <span 
+                                    className="shrink-0 flex items-center justify-center w-6 h-6 text-slate-400 group-hover:text-slate-700 transition-colors"
+                                    aria-hidden="true"
+                                  >
+                                    {isOpen ? (
+                                      <Minus className="w-5 h-5 text-red-600 transition-colors duration-200" />
+                                    ) : (
+                                      <Plus className="w-5 h-5 transition-colors duration-200" />
+                                    )}
+                                  </span>
+                                </button>
+
+                                {/* 2. Isolated Content / Answer Block */}
                                 <div 
-                                  key={index}
-                                  className={`border rounded-2xl overflow-hidden bg-white transition-all duration-350 ease-in-out ${
-                                    isOpen 
-                                      ? 'border-slate-300 shadow-[0_4px_20px_rgba(0,0,0,0.06)]' 
-                                      : 'border-slate-200/90 shadow-2xs hover:border-slate-300'
+                                  className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
+                                    isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
                                   }`}
                                 >
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleFaq(index)}
-                                    aria-expanded={isOpen}
-                                    className="w-full text-left px-5 py-4 sm:px-6 sm:py-4.5 min-h-[74px] sm:min-h-[78px] flex items-center justify-between font-bold text-slate-900 text-sm sm:text-base hover:text-[#E02B2B] transition-colors cursor-pointer group"
-                                  >
-                                    <span className="pr-4 leading-snug">{item.question}</span>
-                                    
-                                    {/* Smoothly Rotating + to − Morph Icon */}
-                                    <span 
-                                      className={`relative flex items-center justify-center w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-full text-slate-700 bg-slate-100 group-hover:bg-red-50 group-hover:text-[#E02B2B] shrink-0 transition-transform duration-350 ease-in-out ${
-                                        isOpen ? 'rotate-180 bg-red-50 text-[#E02B2B]' : 'rotate-0'
-                                      }`}
-                                      aria-hidden="true"
-                                    >
-                                      {/* Horizontal stroke (forms the minus) */}
-                                      <span className="block w-3.5 h-[2px] bg-current rounded-full transition-colors duration-350" />
-                                      
-                                      {/* Vertical stroke (collapses & rotates 90deg to smoothly form minus) */}
-                                      <span 
-                                        className={`block w-[2px] h-3.5 bg-current rounded-full absolute transition-all duration-350 ease-in-out ${
-                                          isOpen ? 'scale-0 opacity-0 rotate-90' : 'scale-100 opacity-100 rotate-0'
-                                        }`} 
-                                      />
-                                    </span>
-                                  </button>
-
-                                  {/* Smooth Expand/Collapse Container with Slide Down/Up & Fade */}
-                                  <div 
-                                    className={`grid transition-[grid-template-rows,opacity] duration-350 ease-in-out ${
-                                      isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                                    }`}
-                                    style={{
-                                      transitionDuration: '350ms',
-                                      transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
-                                    }}
-                                  >
-                                    <div className="overflow-hidden">
-                                      <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-1 text-slate-600 text-xs sm:text-sm leading-relaxed border-t border-slate-100">
-                                        {item.answer}
-                                      </div>
+                                  <div className="overflow-hidden">
+                                    <div className="mx-5 border-t border-slate-100 pt-3 pb-4 text-slate-600 text-xs sm:text-sm leading-relaxed">
+                                      {item.answer}
                                     </div>
                                   </div>
                                 </div>
-                              );
-                            })}
-                          </div>
+                              </div>
+                            );
+                          })}
                         </div>
+
                       </div>
-
                     </div>
-                  </div>
+                  </section>
 
-                  {/* 9. BOTTOM PARALLAX CTA BANNER */}
+                  {/* 9. DUAL-CARD FUNCTIONAL CTA BANNER (Opsi 3: Akses Cepat Pelaporan & Bantuan Darurat) */}
                   <section
-                    className="nectar_section wpb_row vc_row full-width-content vc_row-o-equal-height vc_row-flex right_padding_10px left_padding_10px mt-10"
-                    style={{ paddingTop: 'calc(100vw * 0.04)', paddingBottom: '0px' }}
+                    className="w-full mt-4 mb-16 sm:mb-20"
+                    aria-label="Akses Pelaporan dan Bantuan Cepat"
                   >
-                    <div className="row_col_wrap_12 span_12 dark">
-                      <div
-                        className="wpb_row vc_row-fluid vc_row full-width-section parallax_section rounded-2xl overflow-hidden relative"
-                        style={{ paddingTop: 'calc(8vw)', paddingBottom: 'calc(8vw)', minHeight: '440px' }}
-                      >
-                        <div className="row-bg-wrap absolute inset-0">
-                          <div
-                            className="column-image-bg parallax-layer translate loaded w-full h-full"
-                            style={{
-                              backgroundImage: "url('/images/voice_resonance.jpg')",
-                              backgroundSize: 'cover',
-                              backgroundPosition: 'center',
-                              filter: 'brightness(0.3)'
-                            }}
-                          ></div>
-                        </div>
+                    <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 w-full">
+                      <div className="bg-slate-900 rounded-3xl border border-slate-800 shadow-xl overflow-hidden p-6 sm:p-8 lg:p-10">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
 
-                        <div className="relative z-10 max-w-3xl mx-auto px-6 text-white text-center flex flex-col items-center">
-                          <div className="nectar-badge border-radius-20px mb-4" data-bg-color-custom="#EDE9DE1A">
-                            <div className="nectar-badge__inner px-4 py-1 bg-white/10 rounded-full text-xs font-semibold">
-                              Platform RELASI
+                          {/* Sisi A: Akses Laporan Anonim */}
+                          <div className="lg:col-span-7 flex flex-col justify-between">
+                            <div>
+                              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                                Jangan Simpan Bebanmu Sendirian
+                              </h3>
+                              <p className="text-slate-300 text-sm sm:text-base leading-relaxed mt-3 max-w-xl">
+                                Suaramu berharga. Laporkan insiden dengan proteksi identitas penuh dan tanpa risiko pembalasan.
+                              </p>
+
+                              {/* Jaminan Keamanan Ringkas */}
+                              <div className="flex flex-wrap items-center gap-y-3 gap-x-6 mt-6 text-xs">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-4 h-4 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                  </div>
+                                  <span className="text-slate-300 font-medium">Identitas Disamarkan</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-4 h-4 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                  </div>
+                                  <span className="text-slate-300 font-medium">Pantau Progres via PIN</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-4 h-4 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                  </div>
+                                  <span className="text-slate-300 font-medium">Didampingi Konselor BK</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Tombol Aksi Utama */}
+                            <div className="mt-8 flex flex-wrap items-center gap-3">
+                              <Link
+                                href="/report"
+                                className="px-6 sm:px-7 py-3.5 rounded-full !bg-[#E02B2B] hover:!bg-[#c92424] !text-white font-semibold text-sm shadow-lg shadow-red-600/30 hover:shadow-red-600/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all inline-flex items-center gap-2 cursor-pointer"
+                              >
+                                <span>Buat Laporan Sekarang</span>
+                                <ArrowRight className="w-4 h-4" />
+                              </Link>
+                              <Link
+                                href="/track"
+                                className="px-5 py-3.5 rounded-full bg-slate-800/90 hover:bg-slate-800 text-slate-200 border border-slate-700/80 font-semibold text-sm transition-all inline-flex items-center justify-center cursor-pointer"
+                              >
+                                <span>Lacak Status PIN</span>
+                              </Link>
                             </div>
                           </div>
-                          <h2 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight tracking-tight">
-                            Wujudkan Sekolah yang Aman, Setara, dan Ramah Bagi Setiap Anak
-                          </h2>
-                          <p className="text-slate-300 text-sm mt-3 max-w-xl">
-                            Kekerasan dan perundungan berhenti ketika kita berani bersuara. Mulai pengaduan mandiri sekarang dengan proteksi penuh.
-                          </p>
-                          <div className="mt-6">
-                            <Link
-                              href="/report"
-                              className="px-8 py-3.5 !bg-[#E02B2B] hover:!bg-[#c92424] !text-white font-medium text-sm sm:text-base rounded-full shadow-lg hover:shadow-xl transition inline-block cursor-pointer"
-                            >
-                              Mulai Pengaduan — Aman &amp; Terenkripsi
-                            </Link>
+
+                          {/* Sisi B: Bantuan Cepat & Kontak Darurat */}
+                          <div className="lg:col-span-5 flex flex-col justify-between">
+                            <div className="bg-slate-950/70 border border-slate-800/90 rounded-3xl p-5 sm:p-6 lg:p-7 flex flex-col justify-between h-full space-y-5">
+                              <div>
+                                <span className="text-xs font-bold text-[#E02B2B] uppercase tracking-wider block mb-2">
+                                  BUTUH BANTUAN MENDESAK?
+                                </span>
+                                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                  Jika kamu atau temanmu berada dalam situasi krisis atau butuh perlindungan segera, hubungi layanan siaga resmi ini:
+                                </p>
+                              </div>
+
+                              {/* Box Hotline SAPA 129 */}
+                              <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-3 shadow-sm">
+                                <div className="flex items-center gap-3.5">
+                                  <div className="w-10 h-10 rounded-xl bg-red-600/15 text-[#E02B2B] flex items-center justify-center shrink-0 border border-red-500/20">
+                                    <PhoneCall className="w-5 h-5" />
+                                  </div>
+                                  <div>
+                                    <div className="text-sm font-bold text-white tracking-tight">Hotline SAPA 129</div>
+                                    <div className="text-[11px] text-slate-400">KemenPPPA RI — Bebas Pulsa 24 Jam</div>
+                                  </div>
+                                </div>
+                                <a
+                                  href="tel:129"
+                                  className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition shrink-0 border border-slate-700/60"
+                                >
+                                  Panggil
+                                </a>
+                              </div>
+
+                              {/* Info Jam Pendampingan Guru BK */}
+                              <div className="flex items-start gap-2.5 text-xs text-slate-400">
+                                <Clock className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
+                                <span>Layanan Tatap Muka Ruang BK: Senin–Jumat, 07.30–15.00 WIB (Privat &amp; Tertutup)</span>
+                              </div>
+
+                              {/* Tombol Sekunder Hotline Langsung */}
+                              <a
+                                href="tel:129"
+                                className="w-full py-3.5 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs sm:text-sm text-center transition flex items-center justify-center gap-2 shadow-sm cursor-pointer active:scale-[0.99]"
+                              >
+                                <PhoneCall className="w-4 h-4 text-slate-900" />
+                                <span>Hubungi Layanan Darurat 129</span>
+                              </a>
+                            </div>
                           </div>
+
                         </div>
                       </div>
                     </div>

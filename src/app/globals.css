@@ -82,20 +82,14 @@ h5,
 h6 {
   font-family: 'Inter', var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   letter-spacing: -0.02em;
-  font-weight: 500 !important;
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
 
-/* UNIVERSAL NO-BOLD RULE: Ensure no text on any page is bold */
 b,
 strong,
-th,
-.font-bold,
-.font-extrabold,
-.font-black,
-.font-semibold {
-  font-weight: 500 !important;
+th {
+  font-weight: 700;
 }
 
 /* 
@@ -180,6 +174,10 @@ iframe {
   height: auto;
 }
 
+html {
+  overflow-x: clip !important;
+}
+
 body {
   background-color: var(--bg-canvas);
   color: var(--text-primary);
@@ -190,7 +188,20 @@ body {
   text-rendering: optimizeLegibility;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  overflow-x: clip !important;
+  overflow-y: visible !important;
+}
+
+/* Ensure no parent containers trap or cancel position: sticky */
+.ocm-effect-wrap,
+.ocm-effect-wrap-inner,
+#ajax-content-wrap,
+.container-wrap,
+.container.main-content,
+.main-content,
+.row,
+main {
+  overflow: visible !important;
 }
 
 /* Ensure animated elements become visible once initialized/animated without overriding CSS animations */
@@ -294,15 +305,6 @@ body {
   animation: tether_hero_fade_up 1.15s cubic-bezier(0.25, 1, 0.5, 1) both;
 }
 
-/* Editorial Serif Heading Class */
-.hero-split-heading h1,
-.hero-split-heading h1 span {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-weight: 400;
-  letter-spacing: -0.015em;
-  text-wrap: balance;
-}
-
 /* Respect user accessibility preferences for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .tether-page-entrance,
@@ -315,12 +317,11 @@ body {
   }
 }
 
-/* WORDPRESS PREMIUM EDITORIAL TYPOGRAPHY & HIERARCHY */
+/* TYPOGRAPHY & HIERARCHY */
 h1 {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-weight: 400;
-  letter-spacing: -0.015em;
-  line-height: 1.1;
+  font-family: 'Inter', var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
 }
 
 h2,
@@ -333,11 +334,6 @@ h6,
   color: var(--text-primary);
   letter-spacing: -0.02em;
   line-height: 1.25;
-}
-
-h2, h3, h4 {
-  font-weight: 500 !important;
-  letter-spacing: -0.015em;
 }
 
 p {
@@ -508,5 +504,80 @@ a[class*="hover:!bg-[#c92424]"]:hover,
   padding-top: clamp(60px, 7vw, 110px) !important;
   padding-bottom: clamp(60px, 7vw, 110px) !important;
 }
+
+/* ==========================================================================
+   HERO AMBIENT AURA GLOW ANIMATIONS
+   Living, slow-drifting warm crimson & soft peach mesh gradient aura.
+   Uses GPU-composited transform and opacity for smooth 60fps performance.
+   ========================================================================== */
+
+@keyframes hero_aura_drift_1 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translate3d(35px, -25px, 0) scale(1.08);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(-25px, 30px, 0) scale(0.95);
+    opacity: 0.65;
+  }
+}
+
+@keyframes hero_aura_drift_2 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate3d(-40px, 30px, 0) scale(1.1);
+    opacity: 0.82;
+  }
+  100% {
+    transform: translate3d(30px, -35px, 0) scale(0.92);
+    opacity: 0.6;
+  }
+}
+
+@keyframes hero_aura_drift_3 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translate3d(25px, 20px, 0) scale(1.06);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate3d(-20px, -20px, 0) scale(0.98);
+    opacity: 0.45;
+  }
+}
+
+.hero-aura-1 {
+  animation: hero_aura_drift_1 24s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+.hero-aura-2 {
+  animation: hero_aura_drift_2 30s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+.hero-aura-3 {
+  animation: hero_aura_drift_3 22s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-aura-1,
+  .hero-aura-2,
+  .hero-aura-3 {
+    animation: none !important;
+  }
+}
+
 
 

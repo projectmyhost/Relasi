@@ -7,7 +7,7 @@ import { Shield, Phone, Mail, MapPin, CheckCircle2 } from 'lucide-react';
 export default function TetherFooter() {
   return (
     <footer className="w-full bg-[#F6F4F0] border-t border-slate-200/80 pt-16 pb-12 text-slate-700 font-sans mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-slate-200/80">
           {/* Brand Info */}
           <div className="md:col-span-5 space-y-4">
