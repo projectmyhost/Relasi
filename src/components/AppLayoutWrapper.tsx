@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import TetherNavbar from "@/components/TetherNavbar";
 import TetherFooter from "@/components/TetherFooter";
 import ModalDialogs from "@/components/ModalDialogs";
+import LuxuryCursor from "@/components/LuxuryCursor";
+import CounselorNotificationToast from "@/components/CounselorNotificationToast";
 
 export default function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -49,6 +51,8 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
       </main>
       {!isAuthPage && <TetherFooter />}
       <ModalDialogs />
+      <CounselorNotificationToast />
+      <LuxuryCursor />
     </div>
   );
 }
