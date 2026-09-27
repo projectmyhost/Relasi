@@ -3,23 +3,71 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
-import { 
-  Menu, 
-  X, 
-  ChevronDown, 
-  LogOut, 
-  User, 
-  FileText, 
+import {
+  Menu,
+  X,
+  ChevronDown,
+  LogOut,
+  User,
+  FileText,
   Settings,
   ShieldAlert
 } from 'lucide-react';
+
+const dropdownVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    y: -8,
+    scale: 0.98,
+    transition: {
+      duration: 0.16,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.22,
+      ease: [0.16, 1, 0.3, 1],
+      staggerChildren: 0.035,
+      delayChildren: 0.04,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -6,
+    scale: 0.98,
+    transition: {
+      duration: 0.16,
+      ease: 'easeOut',
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 4,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.18,
+      ease: 'easeOut',
+    },
+  },
+};
 
 export default function TetherNavbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { currentUser, switchRole, logout } = useAuth();
-  
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [guestDropdownOpen, setGuestDropdownOpen] = useState(false);
@@ -149,6 +197,29 @@ export default function TetherNavbar() {
     setMobileMenuOpen(false);
   }, [pathname]);
 
+  // Auto-close mobile menu on desktop resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768 && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [mobileMenuOpen]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
   // Logo destination based on role focus
   const getLogoHref = () => {
     if (role === 'counselor') return '/counselor';
@@ -158,10 +229,9 @@ export default function TetherNavbar() {
 
   // Nav link style: soft gray rounded pill for active state
   const getLinkClass = (active: boolean) =>
-    `px-3.5 lg:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
-      active
-        ? 'text-slate-950 bg-black/[0.06] font-semibold'
-        : 'text-slate-600 hover:text-slate-950 hover:bg-black/[0.03]'
+    `px-3.5 lg:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${active
+      ? 'text-slate-950 bg-black/[0.06] font-semibold'
+      : 'text-slate-600 hover:text-slate-950 hover:bg-black/[0.03]'
     }`;
 
   // Role-based navigation links specification
@@ -275,18 +345,18 @@ export default function TetherNavbar() {
   return (
     <>
       {/* Main Grid-Aligned Navigation Bar */}
-      <header 
+      <header
         id="header-outer"
         style={{ opacity: 1 }}
         className="fixed top-0 left-0 right-0 z-50 w-full bg-white/85 backdrop-blur-xl border-b border-black/[0.06] transition-all font-sans"
         aria-label="Main Navigation"
       >
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 w-full h-16 sm:h-20 flex items-center justify-between text-slate-900">
-          
+
           {/* GROUP 1 (LEFT): Wordmark “RELASI” aligned with Hero Content Grid */}
           <div className="flex items-center min-w-[120px] sm:min-w-[160px] lg:min-w-[180px] justify-start">
-            <Link 
-              href={getLogoHref()} 
+            <Link
+              href={getLogoHref()}
               onClick={(e) => {
                 if ((role === 'guest' || role === 'student') && pathname === '/') {
                   e.preventDefault();
@@ -295,7 +365,7 @@ export default function TetherNavbar() {
                   window.history.pushState(null, '', '/');
                 }
               }}
-              className="flex items-center group py-0.5 !m-0" 
+              className="flex items-center group py-0.5 !m-0"
               id="logo"
               aria-label="RELASI Beranda"
             >
@@ -324,7 +394,7 @@ export default function TetherNavbar() {
 
           {/* GROUP 3 (RIGHT): Auth & Role Profile Actions (Balanced, Work-focused, No heaviness) */}
           <div className="flex items-center justify-end gap-2 sm:gap-3 min-w-[120px] sm:min-w-[160px] lg:min-w-[180px]">
-            
+
             {/* 1. GUEST RIGHT SIDE: “Masuk ▾” dropdown + Red button “Buat Laporan” */}
             {role === 'guest' && (
               <div className="relative hidden sm:block" ref={guestDropdownRef}>
@@ -375,7 +445,7 @@ export default function TetherNavbar() {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  
+
                   <span className="text-xs sm:text-sm font-medium text-slate-700 truncate max-w-[95px] sm:max-w-[130px]">
                     {getDisplayName()}
                   </span>
@@ -443,154 +513,218 @@ export default function TetherNavbar() {
               </div>
             )}
 
-            {/* Red button: “Buat Laporan” (Shown ONLY for Guest and User / Siswa. NOT shown for Guru BK or Super Admin) */}
+            {/* Desktop "Buat Laporan" Button */}
             {hasReportButton && (
               <Link
                 href="/report"
                 style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
-                className="shrink-0 px-4 sm:px-4.5 py-2 sm:py-2 rounded-full text-xs sm:text-sm font-semibold !bg-[#E02B2B] hover:!bg-[#c92424] !text-white shadow-[0_2px_10px_rgba(224,43,43,0.22)] hover:shadow-[0_4px_14px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
+                className="hidden md:inline-flex shrink-0 px-4 sm:px-4.5 py-2 sm:py-2 rounded-full text-xs sm:text-sm font-semibold !bg-[#E02B2B] hover:!bg-[#c92424] !text-white shadow-[0_2px_10px_rgba(224,43,43,0.22)] hover:shadow-[0_4px_14px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200 items-center gap-1.5 cursor-pointer"
               >
                 <span>Buat Laporan</span>
               </Link>
             )}
 
-            {/* Mobile Hamburger Menu Toggle */}
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-1.5 rounded-full text-slate-700 hover:bg-black/[0.05] transition cursor-pointer"
-              aria-label="Toggle Navigation Menu"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
-      </header>
+            {/* Mobile Actions: "Buat Laporan" button (when closed) + Toggle */}
+            <div className="flex md:hidden items-center gap-1.5 sm:gap-2">
+              <AnimatePresence>
+                {!mobileMenuOpen && hasReportButton && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <Link
+                      href="/report"
+                      style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
+                      className="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold !bg-[#E02B2B] hover:!bg-[#c92424] !text-white shadow-[0_2px_8px_rgba(224,43,43,0.2)] active:scale-[0.99] transition-all flex items-center cursor-pointer"
+                    >
+                      <span>Buat Laporan</span>
+                    </Link>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-      {/* Mobile Drawer Menu */}
-      {mobileMenuOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-xs md:hidden font-sans"
-          onClick={() => setMobileMenuOpen(false)}
-        >
-          <div 
-            className="fixed top-20 left-4 right-4 bg-white/95 backdrop-blur-2xl rounded-3xl p-5 shadow-2xl border border-black/[0.08] space-y-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <span className="text-lg font-black tracking-tight text-slate-900">RELASI</span>
-              <button 
+              <button
                 type="button"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-1 rounded-full text-slate-400 hover:text-slate-700"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="w-9 h-9 p-1.5 rounded-full text-slate-700 hover:bg-black/[0.05] transition cursor-pointer flex items-center justify-center relative overflow-hidden"
+                aria-label={mobileMenuOpen ? "Tutup Menu Navigasi" : "Buka Menu Navigasi"}
               >
-                <X className="w-4 h-4" />
+                <AnimatePresence mode="wait" initial={false}>
+                  {mobileMenuOpen ? (
+                    <motion.div
+                      key="icon-close"
+                      initial={{ rotate: -90, opacity: 0, scale: 0.8 }}
+                      animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                      exit={{ rotate: 90, opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.18, ease: 'easeOut' }}
+                      className="flex items-center justify-center"
+                    >
+                      <X className="w-5 h-5 text-slate-900" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="icon-menu"
+                      initial={{ rotate: 90, opacity: 0, scale: 0.8 }}
+                      animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                      exit={{ rotate: -90, opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.18, ease: 'easeOut' }}
+                      className="flex items-center justify-center"
+                    >
+                      <Menu className="w-5 h-5 text-slate-800" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </button>
             </div>
-
-            <nav className="flex flex-col gap-1 text-sm font-medium text-slate-700">
-              {navLinks.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  onClick={(e) => handleNavClick(e, item.href)}
-                  className={`px-4 py-2.5 rounded-2xl transition ${
-                    isActive(item.href) ? 'bg-black/[0.06] text-slate-900 font-semibold' : 'hover:bg-slate-50'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
-
-              {/* Mobile "Buat Laporan" Button for Guest & Siswa only */}
-              {hasReportButton && (
-                <Link
-                  href="/report"
-                  onClick={() => setMobileMenuOpen(false)}
-                  style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
-                  className="mt-2 px-4 py-2.5 rounded-2xl font-semibold !bg-[#E02B2B] hover:!bg-[#c92424] !text-white transition text-center shadow-xs cursor-pointer"
-                >
-                  Buat Laporan
-                </Link>
-              )}
-            </nav>
-
-            <div className="pt-3 border-t border-slate-100">
-              {role !== 'guest' ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3 px-2 py-1">
-                    <div className="w-9 h-9 rounded-full bg-slate-100 overflow-hidden shrink-0">
-                      <img
-                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(currentUser.name)}&backgroundColor=f8fafc&textColor=0f172a`}
-                        alt={currentUser.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-slate-800">{currentUser.name}</span>
-                      <span className="text-[11px] text-slate-500">{currentUser.roleLabel}</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-1 pt-1">
-                    {/* Profil Saya: omitted for Super Admin */}
-                    {role !== 'super_admin' && (
-                      <Link
-                        href="/profile"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="px-3 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-50"
-                      >
-                        Profil Saya
-                      </Link>
-                    )}
-                    <Link
-                      href="/settings"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="px-3 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-50"
-                    >
-                      Pengaturan
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        setShowLogoutConfirm(true);
-                      }}
-                      className="px-3 py-2 text-left text-xs text-[#E02B2B] font-semibold hover:bg-red-50 rounded-xl cursor-pointer"
-                    >
-                      Keluar
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-2 text-center text-xs font-medium">
-                  <Link
-                    href="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50"
-                  >
-                    Masuk
-                  </Link>
-                  <Link
-                    href="/register"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="py-2.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800"
-                  >
-                    Daftar
-                  </Link>
-                </div>
-              )}
-            </div>
           </div>
         </div>
-      )}
+
+        {/* Mobile Attached Dropdown Menu (Directly below navbar, NOT a centered modal) */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <div className="md:hidden absolute top-full left-0 right-0 px-4 pt-2 pb-4 pointer-events-auto">
+              <motion.div 
+                variants={dropdownVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="w-full bg-white rounded-3xl p-5 shadow-2xl border border-slate-200/90 max-h-[calc(100vh-6rem)] overflow-y-auto space-y-3.5 origin-top"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Menu links vertikal: Beranda (active state), Cara Kerja, Keamanan, FAQ */}
+                <nav className="flex flex-col gap-1 text-sm font-medium" aria-label="Menu Mobile">
+                  {navLinks.map((item) => {
+                    const active = isActive(item.href);
+                    return (
+                      <motion.div key={item.label} variants={itemVariants}>
+                        <Link
+                          href={item.href}
+                          onClick={(e) => handleNavClick(e, item.href)}
+                          className={`px-4 py-3 rounded-2xl transition-all block ${
+                            active 
+                              ? 'bg-[#ECE9E2] text-slate-900 font-semibold' 
+                              : 'text-slate-800 font-medium hover:bg-slate-50'
+                          }`}
+                        >
+                          {item.label}
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                </nav>
+
+                {/* Primary Action: 1 tombol merah "Buat Laporan" */}
+                {hasReportButton && (
+                  <motion.div variants={itemVariants}>
+                    <Link
+                      href="/report"
+                      onClick={() => setMobileMenuOpen(false)}
+                      style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
+                      className="w-full py-3.5 px-6 rounded-2xl font-semibold text-sm !bg-[#E02B2B] hover:!bg-[#c92424] !text-white text-center shadow-[0_2px_10px_rgba(224,43,43,0.22)] active:scale-[0.99] flex items-center justify-center cursor-pointer transition-colors"
+                    >
+                      Buat Laporan
+                    </Link>
+                  </motion.div>
+                )}
+
+                {/* Secondary Actions: Dua tombol berdampingan ("Masuk" dan "Daftar") for guest, or profile for logged in */}
+                <motion.div variants={itemVariants}>
+                  {role === 'guest' ? (
+                    <div className="grid grid-cols-2 gap-3 text-center text-sm font-semibold">
+                      <Link
+                        href="/login"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="py-3 rounded-2xl border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm text-center transition flex items-center justify-center cursor-pointer shadow-2xs"
+                      >
+                        Masuk
+                      </Link>
+                      <Link
+                        href="/register"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="py-3 rounded-2xl bg-[#0F172A] hover:bg-slate-800 text-white font-semibold text-sm text-center transition flex items-center justify-center cursor-pointer shadow-2xs"
+                      >
+                        Daftar
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="pt-3 border-t border-slate-100 space-y-3">
+                      <div className="flex items-center gap-3 px-2 py-1">
+                        <div className="w-9 h-9 rounded-full bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
+                          <img
+                            src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(currentUser.name)}&backgroundColor=f8fafc&textColor=0f172a`}
+                            alt={currentUser.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <span className="text-xs font-bold text-slate-900 truncate">{currentUser.name}</span>
+                          <span className="text-[11px] text-slate-500 truncate">{currentUser.roleLabel}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        {role !== 'super_admin' && (
+                          <Link
+                            href="/profile"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="px-3 py-2 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-50 transition flex items-center gap-2"
+                          >
+                            <User className="w-4 h-4 text-slate-400" />
+                            <span>Profil Saya</span>
+                          </Link>
+                        )}
+                        <Link
+                          href="/settings"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="px-3 py-2 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-50 transition flex items-center gap-2"
+                        >
+                          <Settings className="w-4 h-4 text-slate-400" />
+                          <span>Pengaturan</span>
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            setShowLogoutConfirm(true);
+                          }}
+                          className="w-full px-3 py-2 text-left text-xs font-semibold text-[#E02B2B] hover:bg-red-50/70 rounded-xl transition flex items-center gap-2 cursor-pointer"
+                        >
+                          <LogOut className="w-4 h-4 text-[#E02B2B]" />
+                          <span>Keluar</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </header>
+
+      {/* Backdrop overlay for mobile menu dropdown */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            className="fixed inset-0 z-40 bg-black/25 backdrop-blur-[2px] md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
 
       {/* Logout Confirmation Modal Popup */}
       {showLogoutConfirm && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-xs animate-in fade-in duration-200"
           onClick={() => setShowLogoutConfirm(false)}
         >
-          <div 
+          <div
             className="relative w-full max-w-sm bg-white rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-200 text-center space-y-4 animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >

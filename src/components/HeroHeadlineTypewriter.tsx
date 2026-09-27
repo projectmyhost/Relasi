@@ -75,8 +75,8 @@ export default function HeroHeadlineTypewriter() {
         </span>
 
         {/* Baris 2: Bagi Siswa */}
-        <span 
-          className="block mt-1 sm:mt-2 text-slate-950 font-black" 
+        <span
+          className="block mt-1 sm:mt-2 text-slate-950 font-black"
           style={{ fontWeight: 900 }}
         >
           Bagi Siswa

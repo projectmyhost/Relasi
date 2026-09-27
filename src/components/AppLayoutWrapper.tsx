@@ -28,7 +28,7 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
   return (
     <div className="w-full min-h-screen bg-[#F6F4F0] flex flex-col font-sans text-slate-900">
       <TetherNavbar />
-      <main className={`flex-1 w-full ${isHomepage ? '' : isAuthPage ? 'pt-20 sm:pt-22 pb-4 flex items-center justify-center' : 'pt-24 sm:pt-28'}`}>
+      <main className={`flex-1 w-full ${isHomepage ? '' : isAuthPage ? 'pt-20 sm:pt-22 pb-4 flex items-center justify-center' : 'pt-28 sm:pt-32'}`}>
         {children}
       </main>
       {!isAuthPage && <TetherFooter />}

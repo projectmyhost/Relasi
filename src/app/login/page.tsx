@@ -66,30 +66,13 @@ export default function LoginPage() {
 
   return (
     <div className="relative w-full min-h-[calc(100vh-5.5rem)] flex items-center justify-center px-4 py-8 sm:py-12 overflow-hidden">
-      {/* Subtle warm radial ambient glow behind login card */}
-      <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none w-[520px] h-[520px] max-w-full rounded-full bg-gradient-to-tr from-amber-200/25 via-red-100/30 to-rose-100/20 blur-3xl -z-10 opacity-80" 
-        aria-hidden="true" 
-      />
-
       <div className="w-full max-w-[440px] space-y-6 sm:space-y-7 my-auto">
         
         {/* 1. Branding & Header */}
         <div className="text-center space-y-2">
-          {/* Logo Wordmark (Clean bold modern sans-serif, without "R" icon box) */}
-          <Link 
-            href="/" 
-            className="inline-block group focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-lg py-0.5"
-            aria-label="Kembali ke Beranda RELASI"
-          >
-            <span className="text-2xl sm:text-[26px] font-black tracking-[-0.035em] text-slate-950 group-hover:text-red-600 transition-colors select-none">
-              RELASI
-            </span>
-          </Link>
-
           {/* Empathetic Headline */}
           <h1 className="text-2xl sm:text-[28px] font-bold text-slate-950 tracking-tight leading-tight">
-            Ruang <span className="text-red-600">Aman</span> Dimulai dari Sini
+            Ruang <span className="text-[#E02B2B]">Aman</span> Dimulai dari Sini
           </h1>
 
           {/* Reassuring Subtitle */}
@@ -204,7 +187,8 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group w-full h-11 sm:h-12 rounded-xl font-medium text-sm text-white bg-red-600 hover:bg-red-700 active:bg-red-800 active:scale-[0.99] transition-all shadow-[0_4px_14px_rgba(220,38,38,0.22)] hover:shadow-[0_6px_20px_rgba(220,38,38,0.32)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
+              className="group w-full py-3 sm:py-3.5 px-6 rounded-full font-semibold text-xs sm:text-sm !text-white !bg-[#E02B2B] hover:!bg-[#c92424] shadow-[0_2px_10px_rgba(224,43,43,0.22)] hover:shadow-[0_4px_14px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none"
             >
               {isLoading ? (
                 <>
@@ -231,7 +215,7 @@ export default function LoginPage() {
                 onClick={() => handleSelectDemo('student')}
                 className={`py-2 px-2 rounded-xl text-center text-xs font-medium transition cursor-pointer border flex items-center justify-center ${
                   selectedDemoRole === 'student'
-                    ? 'bg-red-50 border-red-300 text-red-600'
+                    ? 'bg-red-50 border-red-300 text-[#E02B2B]'
                     : 'bg-slate-100/80 border-slate-200/60 text-slate-600 hover:bg-slate-200/60'
                 }`}
               >
@@ -242,7 +226,7 @@ export default function LoginPage() {
                 onClick={() => handleSelectDemo('counselor')}
                 className={`py-2 px-2 rounded-xl text-center text-xs font-medium transition cursor-pointer border flex items-center justify-center ${
                   selectedDemoRole === 'counselor'
-                    ? 'bg-red-50 border-red-300 text-red-600'
+                    ? 'bg-red-50 border-red-300 text-[#E02B2B]'
                     : 'bg-slate-100/80 border-slate-200/60 text-slate-600 hover:bg-slate-200/60'
                 }`}
               >
@@ -253,7 +237,7 @@ export default function LoginPage() {
                 onClick={() => handleSelectDemo('admin')}
                 className={`py-2 px-2 rounded-xl text-center text-xs font-medium transition cursor-pointer border flex items-center justify-center ${
                   selectedDemoRole === 'admin'
-                    ? 'bg-red-50 border-red-300 text-red-600'
+                    ? 'bg-red-50 border-red-300 text-[#E02B2B]'
                     : 'bg-slate-100/80 border-slate-200/60 text-slate-600 hover:bg-slate-200/60'
                 }`}
               >
@@ -268,7 +252,7 @@ export default function LoginPage() {
               Belum punya akun?{' '}
               <Link 
                 href="/register" 
-                className="font-medium text-red-600 hover:text-red-700 hover:underline transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-red-500 rounded"
+                className="font-medium text-[#E02B2B] hover:text-[#c92424] hover:underline transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-[#E02B2B] rounded"
               >
                 Daftarkan akunmu secara mandiri &amp; aman.
               </Link>

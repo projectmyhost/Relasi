@@ -27,7 +27,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#F6F4F0] py-8 sm:py-12 px-4 sm:px-6 lg:px-8 text-slate-900 font-sans">
+    <div className="w-full min-h-screen bg-[#F6F4F0] pt-6 sm:pt-8 pb-12 px-4 sm:px-6 lg:px-8 text-slate-900 font-sans">
       <div className="max-w-3xl mx-auto space-y-6">
         
         {/* Navigation Breadcrumb */}

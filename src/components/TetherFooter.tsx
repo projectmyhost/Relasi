@@ -2,35 +2,20 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Shield, Phone, Mail, MapPin, CheckCircle2 } from 'lucide-react';
 
 export default function TetherFooter() {
   return (
-    <footer className="w-full bg-[#F6F4F0] border-t border-slate-200/80 pt-16 pb-12 text-slate-700 font-sans mt-auto">
+    <footer className="w-full bg-[#F6F4F0] border-t border-slate-200/80 pt-16 pb-12 text-slate-700 font-sans mt-auto relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-slate-200/80">
           {/* Brand Info */}
           <div className="md:col-span-5 space-y-4">
-            <Link href="/" className="inline-flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-lg bg-[#E02B2B] flex items-center justify-center text-white shadow-xs font-medium text-sm transition-transform group-hover:scale-105">
-                <svg 
-                  className="w-4.5 h-4.5 text-white" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <path 
-                    d="M6 3.5v17M6 4.5h7.5a5 5 0 0 1 0 10H6M13.5 14.5l6 6.5" 
-                    stroke="currentColor" 
-                    strokeWidth="2.75" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                  />
-                  <circle cx="15.5" cy="9.5" r="2" fill="currentColor" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold tracking-tight text-slate-900 group-hover:text-[#E02B2B] transition-colors">
+            <Link 
+              href="/" 
+              className="inline-flex items-center group py-0.5"
+              aria-label="RELASI Beranda"
+            >
+              <span className="text-xl sm:text-[22px] font-black tracking-[-0.035em] text-slate-950 group-hover:text-[#E02B2B] transition-colors select-none">
                 RELASI
               </span>
             </Link>
@@ -40,10 +25,6 @@ export default function TetherFooter() {
             <p className="text-xs text-slate-600 leading-relaxed max-w-md">
               Platform pengaduan mandiri terenkripsi bagi siswa dan pendukung investigasi terstruktur guru BK berstandar Permendikbudristek No. 46 Tahun 2023.
             </p>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 text-xs font-medium border border-emerald-200/60">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>Enkripsi PIN Mandiri Aktif</span>
-            </div>
           </div>
 
           {/* Quick Links */}

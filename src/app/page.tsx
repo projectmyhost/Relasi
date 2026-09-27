@@ -165,22 +165,22 @@ export default function RelasiHomePage() {
                     style={{ zIndex: 110 }}
                   >
                     {/* Ambient Glowing Aura Background Layer (Living, Slow-Drifting Warm Crimson & Soft Peach Gradient) */}
-                    <div 
-                      className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0" 
+                    <div
+                      className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0"
                       aria-hidden="true"
                     >
                       {/* Aura Orb 1: Soft Coral / Crimson Red pudar behind and slightly above hero typography */}
-                      <div 
+                      <div
                         className="hero-aura-1 absolute -top-[12%] -left-[6%] sm:left-[6%] lg:left-[10%] w-[420px] sm:w-[540px] lg:w-[650px] h-[420px] sm:h-[540px] lg:h-[650px] rounded-full bg-gradient-to-tr from-rose-500/18 via-red-500/16 to-amber-300/14 blur-[80px] sm:blur-[110px]"
                       />
 
                       {/* Aura Orb 2: Warm Peach / Amber lembut spreading gracefully to the empty space on the right */}
-                      <div 
+                      <div
                         className="hero-aura-2 absolute top-[8%] -right-[10%] sm:right-[4%] lg:right-[8%] w-[440px] sm:w-[580px] lg:w-[700px] h-[440px] sm:h-[580px] lg:h-[700px] rounded-full bg-gradient-to-bl from-amber-400/20 via-orange-300/16 to-rose-400/14 blur-[90px] sm:blur-[120px]"
                       />
 
                       {/* Aura Orb 3: Subtle warm accent connecting lower hero toward the next section */}
-                      <div 
+                      <div
                         className="hero-aura-3 absolute -bottom-[15%] left-[20%] sm:left-[30%] lg:left-[35%] w-[380px] sm:w-[480px] h-[380px] sm:h-[480px] rounded-full bg-gradient-to-r from-red-400/14 via-rose-300/14 to-amber-200/18 blur-[85px] sm:blur-[105px]"
                       />
                     </div>
@@ -204,19 +204,13 @@ export default function RelasiHomePage() {
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
 
                               {/* Left Column: Typographic Narrative & Actions */}
-                              <div className="lg:col-span-7 flex flex-col items-start text-left">
-                                {/* Eyebrow Pill */}
-                                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 border border-stone-200/90 shadow-2xs text-stone-800 text-xs font-semibold mb-6 tracking-wide backdrop-blur-xs">
-                                  <span className="w-2 h-2 rounded-full bg-[#E02B2B] animate-pulse" />
-                                  <span>Platform Perlindungan &amp; Konseling Siswa Terenkripsi</span>
-                                </div>
-
+                              <div className="lg:col-span-7 flex flex-col items-start text-left pt-4 sm:pt-6 lg:pt-8">
                                 {/* Dynamic Hero Headline with Typewriter Animation */}
                                 <HeroHeadlineTypewriter />
 
                                 {/* Subtitle Description */}
-                                <p 
-                                  className="text-stone-600 text-base sm:text-lg font-normal mt-5 mb-8 leading-relaxed max-w-xl text-left" 
+                                <p
+                                  className="text-stone-600 text-base sm:text-lg font-normal mt-5 mb-8 leading-relaxed max-w-xl text-left"
                                 >
                                   Saluran aman dan rahasia untuk menyuarakan apa yang kamu alami. Identitasmu terjaga sepenuhnya, dipantau dan ditangani langsung oleh Guru BK terpercaya.
                                 </p>
@@ -260,13 +254,13 @@ export default function RelasiHomePage() {
                               {/* Right Column: Dribbble-Grade Live Security & Tracking Preview Widget */}
                               <div className="lg:col-span-5 relative w-full pt-4 lg:pt-0">
                                 <div className="relative w-full max-w-md mx-auto lg:max-w-none">
-                                  
+
                                   {/* Ambient Card Glow */}
                                   <div className="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-red-500/12 via-amber-500/8 to-stone-400/10 blur-xl opacity-80 pointer-events-none" />
 
                                   {/* Main Showcase Card */}
                                   <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl border border-stone-200/90 shadow-[0_20px_50px_-12px_rgba(28,25,23,0.08)] p-6 sm:p-7 space-y-5">
-                                    
+
                                     {/* Top Bar of Card */}
                                     <div className="flex items-center justify-between pb-4 border-b border-stone-100">
                                       <div className="flex items-center gap-2.5">
@@ -287,7 +281,7 @@ export default function RelasiHomePage() {
                                     {/* Timeline Progress */}
                                     <div className="space-y-3">
                                       <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">Tahapan Penanganan</div>
-                                      
+
                                       <div className="space-y-2.5">
                                         {/* Step 1: Terkirim */}
                                         <div className="flex items-center gap-3 text-xs">
@@ -351,13 +345,6 @@ export default function RelasiHomePage() {
 
                                   </div>
 
-                                  {/* Floating Micro-Badge */}
-                                  <div className="hidden sm:flex absolute -top-4 -right-3 bg-white/95 backdrop-blur-md border border-stone-200 shadow-md rounded-2xl px-3.5 py-1.5 items-center gap-2 text-xs text-stone-800">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    <span className="font-bold text-xs">Zero-Metadata</span>
-                                    <span className="text-stone-400 text-[11px]">Bebas Jejak</span>
-                                  </div>
-
                                 </div>
                               </div>
 
@@ -408,7 +395,7 @@ export default function RelasiHomePage() {
                             </div>
 
                             <div className="flex flex-col gap-4 sm:gap-5 w-full">
-                              
+
                               {/* Bubble 1: Incoming from BK */}
                               <div className="flex items-start gap-3 w-full">
                                 <div className="w-8 h-8 rounded-full bg-stone-900 text-white flex items-center justify-center font-bold text-xs shrink-0 select-none shadow-xs mt-0.5">
@@ -556,13 +543,12 @@ export default function RelasiHomePage() {
                           ].map((item, index) => {
                             const isOpen = activeFaq === index;
                             return (
-                              <div 
+                              <div
                                 key={index}
-                                className={`bg-white border rounded-xl sm:rounded-2xl transition-[border-color,box-shadow] duration-200 overflow-hidden ${
-                                  isOpen 
-                                    ? 'border-slate-200 shadow-sm ring-1 ring-slate-900/5' 
+                                className={`bg-white border rounded-xl sm:rounded-2xl transition-[border-color,box-shadow] duration-200 overflow-hidden ${isOpen
+                                    ? 'border-slate-200 shadow-sm ring-1 ring-slate-900/5'
                                     : 'border-slate-200/70 shadow-2xs hover:border-slate-300'
-                                }`}
+                                  }`}
                               >
                                 {/* 1. Independent Header / Trigger Row */}
                                 <button
@@ -574,9 +560,9 @@ export default function RelasiHomePage() {
                                   <span className="font-semibold text-slate-900 text-sm sm:text-base group-hover:text-red-600 transition-colors leading-snug flex-1 pr-4">
                                     {item.question}
                                   </span>
-                                  
+
                                   {/* Clean Trigger Icon */}
-                                  <span 
+                                  <span
                                     className="shrink-0 flex items-center justify-center w-6 h-6 text-slate-400 group-hover:text-slate-700 transition-colors"
                                     aria-hidden="true"
                                   >
@@ -589,10 +575,9 @@ export default function RelasiHomePage() {
                                 </button>
 
                                 {/* 2. Isolated Content / Answer Block */}
-                                <div 
-                                  className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
-                                    isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                                  }`}
+                                <div
+                                  className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                                    }`}
                                 >
                                   <div className="overflow-hidden">
                                     <div className="mx-5 border-t border-slate-100 pt-3 pb-4 text-slate-600 text-xs sm:text-sm leading-relaxed">
