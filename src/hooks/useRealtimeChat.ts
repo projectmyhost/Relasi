@@ -143,11 +143,12 @@ export function useRealtimeChat({
           }),
         });
 
+        const result = await res.json().catch(() => ({}));
+
         if (!res.ok) {
-          throw new Error(`Failed to send message: ${res.statusText}`);
+          throw new Error(result.error || `Failed to send message: ${res.statusText}`);
         }
 
-        const result = await res.json();
         if (result.success && result.message) {
           // Optimistically append if SSE hasn't arrived yet
           setMessages((prev) => {

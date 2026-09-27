@@ -195,6 +195,9 @@ function CounselorDashboardContent() {
         detail: `Mengirim pesan klarifikasi tertutup kepada pelapor`,
       });
       loadData();
+    } else {
+      setCounselorReply(textToSend);
+      setCooldown(0);
     }
     setIsReplying(false);
   };

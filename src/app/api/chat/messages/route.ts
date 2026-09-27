@@ -80,21 +80,21 @@ export async function POST(req: NextRequest) {
     const existingTracker = spamMap.get(spamKey);
 
     if (existingTracker) {
-      // 1.5 seconds cooldown
-      if (now - existingTracker.lastTimestamp < 1500) {
+      // 1 second cooldown
+      if (now - existingTracker.lastTimestamp < 1000) {
         return NextResponse.json(
-          { error: 'Mohon tunggu 2 detik sebelum mengirim pesan berikutnya (Anti-Spam).' },
+          { error: 'Mohon tunggu 1 detik sebelum mengirim pesan berikutnya.' },
           { status: 429 }
         );
       }
 
-      // Duplicate message detection within 8 seconds
+      // Duplicate message detection within 2 seconds
       if (
-        now - existingTracker.lastTimestamp < 8000 &&
+        now - existingTracker.lastTimestamp < 2000 &&
         existingTracker.lastContent.toLowerCase() === trimmedContent.toLowerCase()
       ) {
         return NextResponse.json(
-          { error: 'Pesan serupa baru saja dikirim. Mohon hindari pengiriman berulang.' },
+          { error: 'Pesan serupa baru saja dikirim. Mohon hindari klik berulang.' },
           { status: 429 }
         );
       }
@@ -102,7 +102,31 @@ export async function POST(req: NextRequest) {
 
     spamMap.set(spamKey, { lastTimestamp: now, lastContent: trimmedContent });
 
-    // 1. Save to PostgreSQL
+    // 1. Ensure report exists in PostgreSQL to prevent foreign key constraint failure
+    const existingReport = await prisma.report.findUnique({
+      where: { id: reportId },
+    });
+
+    if (!existingReport) {
+      await prisma.report.create({
+        data: {
+          id: reportId,
+          pin: '000000',
+          role: 'victim',
+          isAnonymous: true,
+          incidentDate: new Date().toISOString().split('T')[0],
+          incidentTime: '10:00 WIB',
+          location: 'Sekolah',
+          partiesInvolved: 'Dalam Penyelidikan',
+          description: 'Laporan aduan siswa',
+          urgency: 'normal',
+          category: 'lainnya',
+          status: 'submitted',
+        },
+      });
+    }
+
+    // 2. Save message to PostgreSQL
     const created = await prisma.message.create({
       data: {
         reportId,

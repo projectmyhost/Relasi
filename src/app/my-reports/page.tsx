@@ -98,6 +98,9 @@ export default function MyReportsPage() {
         content: textToSend,
       });
       loadReports();
+    } else {
+      setChatMessage(textToSend);
+      setCooldown(0);
     }
   };
 
