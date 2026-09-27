@@ -65,8 +65,29 @@ export const Store = {
     );
   },
 
-  addReport(newReport: Omit<Report, 'id' | 'pin' | 'createdAt' | 'updatedAt' | 'messages' | 'status'> & { status?: Report['status'] }): { id: string; pin: string } {
+  addReport(newReport: (Omit<Report, 'id' | 'pin' | 'createdAt' | 'updatedAt' | 'messages' | 'status'> & { status?: Report['status'] }) | Report): { id: string; pin: string } {
     const reports = this.getReports();
+
+    if ('id' in newReport && newReport.id) {
+      const existingIdx = reports.findIndex(r => r.id === newReport.id);
+      if (existingIdx >= 0) {
+        reports[existingIdx] = { ...reports[existingIdx], ...newReport };
+        setToStorage(STORAGE_KEY_REPORTS, reports);
+        return { id: newReport.id, pin: (newReport as Report).pin || reports[existingIdx].pin || '' };
+      }
+      const rep = newReport as Report;
+      const fullReport: Report = {
+        ...rep,
+        pin: rep.pin || '000000',
+        createdAt: rep.createdAt || new Date().toISOString(),
+        updatedAt: rep.updatedAt || new Date().toISOString(),
+        messages: rep.messages || [],
+      };
+      const updated = [fullReport, ...reports];
+      setToStorage(STORAGE_KEY_REPORTS, updated);
+      return { id: fullReport.id, pin: fullReport.pin };
+    }
+
     const idNum = Math.floor(1000 + Math.random() * 9000);
     const id = `RS-2026-${idNum}`;
     const pin = Math.floor(100000 + Math.random() * 900000).toString();

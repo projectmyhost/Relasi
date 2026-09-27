@@ -37,6 +37,15 @@ function CounselorDashboardContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [cooldown, setCooldown] = useState(0);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [activeToasts, setActiveToasts] = useState<
+    Array<{
+      id: string;
+      type: 'new_report' | 'chat';
+      reportId: string;
+      senderName: string;
+      content: string;
+    }>
+  >([]);
   const counselorChatContainerRef = useRef<HTMLDivElement | null>(null);
 
   const {
@@ -52,19 +61,52 @@ function CounselorDashboardContent() {
     initialMessages: (selectedReport?.messages || []) as any,
   });
 
-  const loadData = () => {
-    const list = RuangSuaraStore.getReports();
-    setReports(list);
-    if (!selectedReport && list.length > 0) {
-      if (urlReportId) {
-        const match = list.find((r) => r.id === urlReportId);
-        setSelectedReport(match || list[0]);
-      } else {
-        setSelectedReport(list[0]);
+  const addToast = (toast: {
+    type: 'new_report' | 'chat';
+    reportId: string;
+    senderName: string;
+    content: string;
+  }) => {
+    const newToast = { ...toast, id: Math.random().toString(36).substring(7) };
+    setActiveToasts((prev) => [newToast, ...prev.slice(0, 1)]); // Max 2 toasts!
+    setTimeout(() => {
+      setActiveToasts((prev) => prev.filter((t) => t.id !== newToast.id));
+    }, 6000);
+  };
+
+  const loadData = async (preferredReportId?: string) => {
+    // 1. Immediately show cached reports from local store if available
+    const localList = RuangSuaraStore.getReports();
+    if (localList.length > 0) {
+      setReports(localList);
+    }
+
+    // 2. Fetch fresh reports from PostgreSQL database
+    try {
+      const res = await fetch('/api/reports');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.reports)) {
+          const dbList: Report[] = data.reports;
+          setReports(dbList);
+          dbList.forEach((r) => RuangSuaraStore.addReport(r));
+
+          const targetId = preferredReportId || urlReportId;
+          setSelectedReport((prevSelected) => {
+            if (targetId) {
+              const matched = dbList.find((r) => r.id === targetId);
+              if (matched) return matched;
+            }
+            if (prevSelected) {
+              const refreshed = dbList.find((r) => r.id === prevSelected.id);
+              if (refreshed) return refreshed;
+            }
+            return dbList.length > 0 ? dbList[0] : null;
+          });
+        }
       }
-    } else if (selectedReport) {
-      const refreshed = list.find(r => r.id === selectedReport.id);
-      if (refreshed) setSelectedReport(refreshed);
+    } catch (e) {
+      console.error('Failed to load reports from database:', e);
     }
   };
 
@@ -79,7 +121,7 @@ function CounselorDashboardContent() {
     }
   }, [urlReportId, reports]);
 
-  // WhatsApp-style real-time unread messages listener
+  // WhatsApp-style real-time unread messages listener & live new report listener
   useEffect(() => {
     if (currentUser.role !== 'counselor') return;
 
@@ -90,6 +132,29 @@ function CounselorDashboardContent() {
         try {
           if (!event.data || event.data === ':keepalive') return;
           const data = JSON.parse(event.data);
+
+          // Case A: A new report has just been submitted by a student!
+          if (data.type === 'new_report') {
+            if (data.report) {
+              setReports((prev) => {
+                const exists = prev.some((r) => r.id === data.report.id);
+                if (exists) return prev;
+                return [data.report, ...prev];
+              });
+              RuangSuaraStore.addReport(data.report);
+            }
+            loadData(data.reportId);
+
+            addToast({
+              type: 'new_report',
+              reportId: data.reportId,
+              senderName: data.senderName,
+              content: data.contentSnippet || 'Laporan baru telah masuk ke sistem',
+            });
+            return;
+          }
+
+          // Case B: Chat message notification from student
           if (data.reportId) {
             setUnreadCounts((prev) => {
               if (selectedReport?.id === data.reportId) return prev;
@@ -98,6 +163,24 @@ function CounselorDashboardContent() {
                 [data.reportId]: (prev[data.reportId] || 0) + 1,
               };
             });
+
+            // CRITICAL FIX: If this report is not yet in our reports state, reload data immediately!
+            setReports((prevReports) => {
+              const exists = prevReports.some((r) => r.id === data.reportId);
+              if (!exists) {
+                loadData(data.reportId);
+              }
+              return prevReports;
+            });
+
+            if (selectedReport?.id !== data.reportId) {
+              addToast({
+                type: 'chat',
+                reportId: data.reportId,
+                senderName: data.senderName,
+                content: data.contentSnippet || 'Pesan baru dari pelapor',
+              });
+            }
           }
         } catch (e) {
           console.error(e);
@@ -160,7 +243,7 @@ function CounselorDashboardContent() {
     return true;
   });
 
-  const handleUpdateStatus = (newStatus: ReportStatus) => {
+  const handleUpdateStatus = async (newStatus: ReportStatus) => {
     if (!selectedReport) return;
     RuangSuaraStore.updateReportStatus(selectedReport.id, newStatus);
     RuangSuaraStore.addAuditLog({
@@ -170,7 +253,18 @@ function CounselorDashboardContent() {
       target: selectedReport.id,
       detail: `Mengubah status laporan menjadi ${newStatus}`,
     });
-    loadData();
+
+    try {
+      await fetch('/api/reports', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: selectedReport.id, status: newStatus }),
+      });
+    } catch (e) {
+      console.error('Failed to sync status to database:', e);
+    }
+
+    loadData(selectedReport.id);
   };
 
   const handleSendCounselorMessage = async (e: React.FormEvent) => {
@@ -676,6 +770,42 @@ function CounselorDashboardContent() {
             )}
           </div>
         </div>
+
+        {/* Floating Real-Time Notifications (Max 2 Toasts Sesuai Request) */}
+        {activeToasts.length > 0 && (
+          <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
+            {activeToasts.map((toast) => (
+              <div
+                key={toast.id}
+                onClick={() => {
+                  const target = reports.find((r) => r.id === toast.reportId);
+                  if (target) handleSelectReport(target);
+                  else loadData(toast.reportId);
+                  setActiveToasts((prev) => prev.filter((t) => t.id !== toast.id));
+                }}
+                className="pointer-events-auto p-4 rounded-2xl bg-slate-950/95 text-white shadow-2xl border border-white/10 backdrop-blur-md cursor-pointer hover:bg-slate-900 transition flex items-start gap-3 transform animate-fade-in"
+              >
+                <div className={`p-2 rounded-xl mt-0.5 shrink-0 ${toast.type === 'new_report' ? 'bg-[#E02B2B] text-white' : 'bg-blue-600 text-white'}`}>
+                  {toast.type === 'new_report' ? <AlertTriangle className="w-4 h-4" /> : <MessageSquare className="w-4 h-4 text-white" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-white truncate">
+                      {toast.type === 'new_report' ? 'Laporan Baru Masuk' : `Pesan dari ${toast.senderName}`}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">{toast.reportId}</span>
+                  </div>
+                  <p className="text-xs text-slate-300 line-clamp-2 mt-0.5 font-normal leading-relaxed">
+                    {toast.content}
+                  </p>
+                  <span className="text-[10px] text-amber-400 font-medium mt-1.5 inline-block">
+                    Klik untuk membuka &rarr;
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

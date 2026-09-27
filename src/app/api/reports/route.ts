@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { chatEmitter } from '@/lib/chatEmitter';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,9 +9,12 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const userEmail = searchParams.get('userEmail');
     const userId = searchParams.get('userId');
+    const reportId = searchParams.get('reportId');
 
-    let whereClause = {};
-    if (userEmail) {
+    let whereClause: any = {};
+    if (reportId) {
+      whereClause = { id: reportId };
+    } else if (userEmail) {
       whereClause = {
         OR: [
           { userEmail: { equals: userEmail, mode: 'insensitive' } },
@@ -31,7 +35,21 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ reports });
+    const formatted = reports.map((r) => ({
+      ...r,
+      createdAt: r.createdAt.toISOString(),
+      updatedAt: r.updatedAt.toISOString(),
+      messages: r.messages.map((m) => ({
+        id: m.id,
+        sender: m.sender as 'student' | 'counselor',
+        senderName: m.senderName,
+        content: m.content,
+        timestamp: m.timestamp.toISOString(),
+        isRead: m.isRead,
+      })),
+    }));
+
+    return NextResponse.json({ reports: formatted });
   } catch (error) {
     console.error('Failed to get reports from database:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -99,9 +117,50 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, report: created }, { status: 201 });
+    const formattedReport = {
+      ...created,
+      createdAt: created.createdAt.toISOString(),
+      updatedAt: created.updatedAt.toISOString(),
+      messages: [],
+    };
+
+    // Broadcast in real-time to Counselor dashboard via SSE stream
+    chatEmitter.emit('counselor-notification', {
+      type: 'new_report',
+      reportId: created.id,
+      senderName: created.isAnonymous ? 'Pelapor (Anonim)' : (created.reporterName || 'Siswa'),
+      contentSnippet: created.description.slice(0, 80),
+      timestamp: new Date().toISOString(),
+      report: formattedReport,
+    });
+
+    return NextResponse.json({ success: true, report: formattedReport }, { status: 201 });
   } catch (error) {
     console.error('Failed to create report in database:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, status, urgency, caseId } = body;
+    if (!id) {
+      return NextResponse.json({ error: 'Missing report id' }, { status: 400 });
+    }
+
+    const updated = await prisma.report.update({
+      where: { id },
+      data: {
+        ...(status ? { status } : {}),
+        ...(urgency ? { urgency } : {}),
+        ...(caseId !== undefined ? { caseId } : {}),
+      },
+    });
+
+    return NextResponse.json({ success: true, report: updated });
+  } catch (error) {
+    console.error('Failed to update report status:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

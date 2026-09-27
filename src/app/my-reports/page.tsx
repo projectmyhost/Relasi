@@ -86,9 +86,24 @@ export default function MyReportsPage() {
     }
   }, [cooldown]);
 
-  const loadReports = () => {
+  const loadReports = async () => {
     const all = RuangSuaraStore.getReports();
-    setReports(all);
+    if (all.length > 0) {
+      setReports(all);
+    }
+
+    try {
+      const res = await fetch('/api/reports');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.reports)) {
+          setReports(data.reports);
+          data.reports.forEach((r: Report) => RuangSuaraStore.addReport(r));
+        }
+      }
+    } catch (e) {
+      console.error('Failed to sync reports from server:', e);
+    }
   };
 
   useEffect(() => {

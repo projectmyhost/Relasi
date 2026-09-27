@@ -11,10 +11,12 @@ export interface ChatMessagePayload {
 }
 
 export interface CounselorNotificationPayload {
+  type?: 'chat' | 'new_report';
   reportId: string;
   senderName: string;
   contentSnippet: string;
   timestamp: string;
+  report?: any;
 }
 
 export interface ChatTypingPayload {
