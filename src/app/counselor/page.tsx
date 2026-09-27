@@ -19,6 +19,8 @@ import {
   Eye,
   Check,
   Sparkles,
+  Image as ImageIcon,
+  X,
 } from 'lucide-react';
 import { RuangSuaraStore } from '@/lib/store';
 import { Report, ReportStatus } from '@/lib/types';
@@ -49,6 +51,27 @@ function CounselorDashboardContent() {
     }>
   >([]);
   const counselorChatContainerRef = useRef<HTMLDivElement | null>(null);
+  const counselorFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [counselorImage, setCounselorImage] = useState<{ file: File; previewUrl: string } | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [selectedPreviewImage, setSelectedPreviewImage] = useState<string | null>(null);
+
+  const handleCounselorImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Format berkas harus berupa gambar (JPG, PNG, WEBP, GIF).');
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      alert('Ukuran foto maksimal 8 MB.');
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setCounselorImage({ file, previewUrl });
+  };
 
   const {
     messages: realtimeMessages,
@@ -93,15 +116,21 @@ function CounselorDashboardContent() {
           setReports(dbList);
           dbList.forEach((r) => RuangSuaraStore.addReport(r));
 
-          const targetId = preferredReportId || urlReportId;
           setSelectedReport((prevSelected) => {
-            if (targetId) {
-              const matched = dbList.find((r) => r.id === targetId);
+            // 1. Explicitly preferred report (e.g. from click or message action)
+            if (preferredReportId) {
+              const matched = dbList.find((r) => r.id === preferredReportId);
               if (matched) return matched;
             }
+            // 2. Preserve currently active report being viewed by counselor
             if (prevSelected) {
               const refreshed = dbList.find((r) => r.id === prevSelected.id);
               if (refreshed) return refreshed;
+            }
+            // 3. Initial URL query param (only on first load if nothing was selected yet)
+            if (urlReportId) {
+              const matchedUrl = dbList.find((r) => r.id === urlReportId);
+              if (matchedUrl) return matchedUrl;
             }
             return dbList.length > 0 ? dbList[0] : null;
           });
@@ -115,13 +144,6 @@ function CounselorDashboardContent() {
   useEffect(() => {
     loadData();
   }, []);
-
-  useEffect(() => {
-    if (urlReportId && reports.length > 0) {
-      const target = reports.find((r) => r.id === urlReportId);
-      if (target) setSelectedReport(target);
-    }
-  }, [urlReportId, reports]);
 
   // WhatsApp-style real-time unread messages listener & live new report listener
   useEffect(() => {
@@ -213,6 +235,9 @@ function CounselorDashboardContent() {
 
   const handleSelectReport = (r: Report) => {
     setSelectedReport(r);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', `/counselor?reportId=${r.id}`);
+    }
     setUnreadCounts((prev) => {
       if (!prev[r.id]) return prev;
       const next = { ...prev };
@@ -316,32 +341,69 @@ function CounselorDashboardContent() {
 
   const handleSendCounselorMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedReport || !counselorReply.trim() || cooldown > 0) return;
-
-    const senderName = currentUser.name || 'Guru BK (Ibu Siti Rahmawati)';
+    if (!selectedReport || cooldown > 0) return;
     const textToSend = counselorReply.trim();
+    if (!textToSend && !counselorImage) return;
+
+    const currentId = selectedReport.id;
+    const senderName = currentUser.name || 'Guru BK (Ibu Siti Rahmawati)';
+    const attachedImage = counselorImage;
+
     setCounselorReply('');
+    setCounselorImage(null);
+    if (counselorFileInputRef.current) counselorFileInputRef.current.value = '';
+
     setCooldown(2);
     setIsReplying(true);
 
-    const success = await sendRealtimeMessage(textToSend, 'counselor', senderName);
+    let uploadedImageUrl: string | null = null;
+    if (attachedImage) {
+      setIsUploadingImage(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', attachedImage.file);
+        const upRes = await fetch('/api/chat/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        const upData = await upRes.json();
+        if (upRes.ok && upData.url) {
+          uploadedImageUrl = upData.url;
+        } else {
+          uploadedImageUrl = attachedImage.previewUrl;
+        }
+      } catch (err) {
+        console.error('Failed to upload image:', err);
+        uploadedImageUrl = attachedImage.previewUrl;
+      } finally {
+        setIsUploadingImage(false);
+      }
+    }
+
+    const finalImageUrl = uploadedImageUrl || null;
+
+    const success = await sendRealtimeMessage(textToSend, 'counselor', senderName, finalImageUrl);
     if (success) {
-      RuangSuaraStore.addReportMessage(selectedReport.id, {
+      RuangSuaraStore.addReportMessage(currentId, {
         sender: 'counselor',
         senderName,
         content: textToSend,
+        imageUrl: finalImageUrl,
       });
 
       RuangSuaraStore.addAuditLog({
         actor: currentUser.name || 'Guru BK',
         role: 'counselor',
         action: 'SEND_MESSAGE',
-        target: selectedReport.id,
-        detail: `Mengirim pesan klarifikasi tertutup kepada pelapor`,
+        target: currentId,
+        detail: finalImageUrl 
+          ? 'Mengirim pesan klarifikasi tertutup beserta lampiran foto kepada pelapor'
+          : 'Mengirim pesan klarifikasi tertutup kepada pelapor',
       });
-      loadData();
+      loadData(currentId);
     } else {
       setCounselorReply(textToSend);
+      if (attachedImage) setCounselorImage(attachedImage);
       setCooldown(0);
     }
     setIsReplying(false);
@@ -818,9 +880,21 @@ function CounselorDashboardContent() {
                                 ? 'bg-slate-900 !text-white rounded-tr-xs' 
                                 : 'bg-white border border-slate-200/90 !text-slate-900 rounded-tl-xs'
                             }`}>
-                              <p className={`${isCounselor ? '!text-white' : '!text-slate-900'} text-xs leading-relaxed font-normal`}>
-                                {msg.content}
-                              </p>
+                              {msg.imageUrl && (
+                                <div className="mb-2 overflow-hidden rounded-lg border border-black/10">
+                                  <img 
+                                    src={msg.imageUrl} 
+                                    alt="Lampiran foto"
+                                    onClick={() => setSelectedPreviewImage(msg.imageUrl || null)}
+                                    className="max-h-60 w-auto rounded-lg object-cover cursor-pointer hover:opacity-90 transition transform hover:scale-[1.01]" 
+                                  />
+                                </div>
+                              )}
+                              {msg.content ? (
+                                <p className={`${isCounselor ? '!text-white' : '!text-slate-900'} text-xs leading-relaxed font-normal break-words`}>
+                                  {msg.content}
+                                </p>
+                              ) : null}
                             </div>
                           </div>
                         );
@@ -842,11 +916,58 @@ function CounselorDashboardContent() {
                     )}
                   </div>
 
+                  {/* Photo attachment preview */}
+                  {counselorImage && (
+                    <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-100 border border-slate-200 animate-in fade-in">
+                      <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-300 shrink-0">
+                        <img src={counselorImage.previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0 text-xs">
+                        <span className="font-semibold text-slate-800 block truncate">{counselorImage.file.name}</span>
+                        <span className="text-[10px] text-slate-500 font-normal">
+                          {(counselorImage.file.size / 1024).toFixed(0)} KB • Foto siap dikirim
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCounselorImage(null);
+                          if (counselorFileInputRef.current) counselorFileInputRef.current.value = '';
+                        }}
+                        className="p-1 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                        title="Hapus lampiran foto"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+
                   {/* Send Form */}
-                  <form onSubmit={handleSendCounselorMessage} className="flex gap-2">
+                  <form onSubmit={handleSendCounselorMessage} className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      ref={counselorFileInputRef}
+                      accept="image/*"
+                      onChange={handleCounselorImageSelect}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => counselorFileInputRef.current?.click()}
+                      title="Lampirkan Foto / Bukti"
+                      disabled={isReplying || cooldown > 0}
+                      className={`p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-center shrink-0 ${
+                        counselorImage 
+                          ? 'bg-red-50 border-[#E02B2B] text-[#E02B2B]' 
+                          : 'border-slate-300 bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <ImageIcon className="w-4 h-4" />
+                    </button>
+
                     <input
                       type="text"
-                      required
+                      required={!counselorImage}
                       value={counselorReply}
                       onChange={(e) => {
                         setCounselorReply(e.target.value);
@@ -858,16 +979,22 @@ function CounselorDashboardContent() {
                       onBlur={() => {
                         sendTypingIndicator(false, currentUser.name || 'Guru BK');
                       }}
-                      placeholder={cooldown > 0 ? `Menunggu proteksi anti-spam (${cooldown}d)...` : "Tulis pesan klarifikasi atau jadwal sesi konseling terlindungi..."}
+                      placeholder={
+                        counselorImage
+                          ? "Tambahkan catatan foto (opsional)..."
+                          : cooldown > 0 
+                            ? `Menunggu proteksi anti-spam (${cooldown}d)...` 
+                            : "Tulis pesan klarifikasi atau jadwal sesi konseling terlindungi..."
+                      }
                       disabled={cooldown > 0}
                       className="flex-1 px-4 py-2.5 text-xs rounded-xl border-2 border-slate-300 focus:outline-none focus:border-[#E02B2B] bg-white font-normal shadow-2xs disabled:bg-slate-100 disabled:text-slate-400"
                     />
                     <button
                       type="submit"
-                      disabled={isReplying || cooldown > 0}
+                      disabled={isReplying || isUploadingImage || cooldown > 0 || (!counselorReply.trim() && !counselorImage)}
                       className="px-6 py-2.5 rounded-xl !bg-[#E02B2B] hover:!bg-[#c92424] !text-white font-medium text-xs shadow-2xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
                     >
-                      {isReplying ? (
+                      {isReplying || isUploadingImage ? (
                         <span>Mengirim...</span>
                       ) : cooldown > 0 ? (
                         <span>{cooldown}s</span>
@@ -922,6 +1049,40 @@ function CounselorDashboardContent() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Lightbox Image Preview Modal */}
+        {selectedPreviewImage && (
+          <div 
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in"
+            onClick={() => setSelectedPreviewImage(null)}
+          >
+            <div 
+              className="relative max-w-4xl max-h-[90vh] bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between p-3.5 bg-slate-950/90 border-b border-white/10 text-white text-xs">
+                <span className="font-semibold flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4 text-[#E02B2B]" />
+                  <span>Pratinjau Foto Lampiran Chat</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPreviewImage(null)}
+                  className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-2 flex items-center justify-center overflow-auto max-h-[80vh]">
+                <img
+                  src={selectedPreviewImage}
+                  alt="Full size preview"
+                  className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-md"
+                />
+              </div>
+            </div>
           </div>
         )}
       </div>

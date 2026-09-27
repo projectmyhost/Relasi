@@ -30,19 +30,79 @@ export default function SuperAdminPage() {
   });
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Akun pengguna untuk manajemen tata kelola
-  const [accounts, setAccounts] = useState([
-    { id: 'usr-bk-1', name: 'Ibu Siti Rahmawati, S.Psi., M.Pd.', role: 'Guru Bimbingan Konseling (BK)', email: 'siti.rahmawati@sekolah.sch.id', status: 'active' },
-    { id: 'usr-bk-2', name: 'Bpk. Ahmad Fauzi, S.Pd.', role: 'Anggota Satgas PPKSP / Guru BK', email: 'ahmad.fauzi@sekolah.sch.id', status: 'active' },
-    { id: 'usr-stu-1', name: 'Dimas Surya Pratama', role: 'Siswa (XI MIPA 2)', email: 'dimas.surya@sekolah.sch.id', status: 'active' },
-    { id: 'usr-stu-2', name: 'Larasati Putri Ayu', role: 'Siswa (X-E3)', email: 'larasati.putri@sekolah.sch.id', status: 'active' },
-  ]);
+  // Akun pengguna untuk manajemen tata kelola (Dimuat langsung dari Database)
+  const [accounts, setAccounts] = useState<
+    Array<{ id: string; name: string; role: string; email: string; status: string; departmentOrClass?: string }>
+  >([]);
+  const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
 
   const [encryptedReports, setEncryptedReports] = useState<any[]>([]);
+  const [isLoadingReports, setIsLoadingReports] = useState(true);
+
+  // Fungsi muat akun langsung dari database PostgreSQL
+  const loadDatabaseUsers = async () => {
+    try {
+      setIsLoadingAccounts(true);
+      const res = await fetch('/api/users');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.users)) {
+          setAccounts(
+            data.users.map((u: any) => ({
+              id: u.id,
+              name: u.name,
+              role: u.roleLabel || (u.role === 'counselor' ? 'Guru Bimbingan Konseling (BK)' : u.role === 'super_admin' ? 'Super Admin' : 'Siswa'),
+              email: u.email,
+              status: u.status || 'active',
+              departmentOrClass: u.departmentOrClass,
+            }))
+          );
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load users from database:', err);
+    } finally {
+      setIsLoadingAccounts(false);
+    }
+  };
+
+  // Fungsi muat laporan langsung dari database PostgreSQL
+  const loadDatabaseReports = async () => {
+    try {
+      setIsLoadingReports(true);
+      const res = await fetch('/api/reports');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.reports)) {
+          setEncryptedReports(
+            data.reports.map((r: any) => ({
+              id: r.id,
+              category: r.category,
+              urgency: r.urgency,
+              status: r.status,
+              createdAt: r.createdAt,
+              isAnonymous: r.isAnonymous,
+              maskedReporter: r.isAnonymous
+                ? 'Siswa Anonim (Tersamar)'
+                : r.reporterName
+                  ? `${r.reporterName} (${r.reporterClass || 'Murid Terdaftar'})`
+                  : 'Murid Terdaftar (Identitas Terbuka ke BK)',
+              description: '🔒 [KONTEN TERENKRIPSI END-TO-END — HAK AKSES KHUSUS GURU BK & TIM PPKSP]',
+            }))
+          );
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load reports from database:', err);
+    } finally {
+      setIsLoadingReports(false);
+    }
+  };
 
   useEffect(() => {
     setAuditLogs(RuangSuaraStore.getAuditLogs());
-    setEncryptedReports(RuangSuaraStore.getReportsForSuperAdmin());
+    loadDatabaseUsers();
+    loadDatabaseReports();
 
     const readUrlTab = () => {
       if (typeof window === 'undefined') return;
@@ -58,21 +118,43 @@ export default function SuperAdminPage() {
     return () => window.removeEventListener('popstate', readUrlTab);
   }, []);
 
-  const handleToggleAccountStatus = (id: string) => {
-    setAccounts(prev => prev.map(acc => {
-      if (acc.id === id) {
-        const nextStatus = acc.status === 'active' ? 'inactive' : 'active';
-        RuangSuaraStore.addAuditLog({
-          actor: currentUser.name || 'Super Admin',
-          role: 'super_admin',
-          action: 'TOGGLE_USER_STATUS',
-          target: id,
-          detail: `Mengubah status akun ${acc.name} menjadi ${nextStatus}`,
-        });
-        return { ...acc, status: nextStatus };
-      }
-      return acc;
-    }));
+  const handleToggleAccountStatus = async (id: string) => {
+    const targetAccount = accounts.find((a) => a.id === id);
+    if (!targetAccount) return;
+    const nextStatus = targetAccount.status === 'active' ? 'inactive' : 'active';
+
+    // 1. Update UI optimis langsung di layar Admin
+    setAccounts((prev) =>
+      prev.map((acc) => {
+        if (acc.id === id) {
+          return { ...acc, status: nextStatus };
+        }
+        return acc;
+      })
+    );
+
+    RuangSuaraStore.addAuditLog({
+      actor: currentUser.name || 'Super Admin',
+      role: 'super_admin',
+      action: 'TOGGLE_USER_STATUS',
+      target: id,
+      detail: `Mengubah status akun ${targetAccount.name} (${targetAccount.email}) menjadi ${nextStatus}`,
+    });
+
+    // 2. Simpan ke Database & pancarkan sinyal Real-Time SSE ke browser user yang sedang login
+    try {
+      await fetch('/api/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          email: targetAccount.email,
+          status: nextStatus,
+        }),
+      });
+    } catch (err) {
+      console.error('Failed to update user status in database:', err);
+    }
   };
 
   const handleSaveSettings = (e: React.FormEvent) => {
@@ -276,32 +358,46 @@ export default function SuperAdminPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {accounts.map((acc) => (
-                    <tr key={acc.id} className="hover:bg-slate-50/50 transition">
-                      <td className="py-3.5 px-4 font-medium text-slate-900">{acc.name}</td>
-                      <td className="py-3.5 px-4 text-slate-600 font-normal">{acc.role}</td>
-                      <td className="py-3.5 px-4 font-mono text-slate-500 font-normal">{acc.email}</td>
-                      <td className="py-3.5 px-4">
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium ${
-                          acc.status === 'active' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/60' : 'bg-red-50 text-red-800 border border-red-200/60'
-                        }`}>
-                          {acc.status === 'active' ? 'Aktif' : 'Dinonaktifkan'}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <button
-                          onClick={() => handleToggleAccountStatus(acc.id)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
-                            acc.status === 'active' 
-                              ? 'bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-700' 
-                              : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800'
-                          }`}
-                        >
-                          {acc.status === 'active' ? 'Non-aktifkan' : 'Aktifkan'}
-                        </button>
+                  {isLoadingAccounts ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-400">
+                        Memuat data akun pengguna dari database PostgreSQL...
                       </td>
                     </tr>
-                  ))}
+                  ) : accounts.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-400">
+                        Belum ada akun pengguna terdaftar di database.
+                      </td>
+                    </tr>
+                  ) : (
+                    accounts.map((acc) => (
+                      <tr key={acc.id} className="hover:bg-slate-50/50 transition">
+                        <td className="py-3.5 px-4 font-medium text-slate-900">{acc.name}</td>
+                        <td className="py-3.5 px-4 text-slate-600 font-normal">{acc.role}</td>
+                        <td className="py-3.5 px-4 font-mono text-slate-500 font-normal">{acc.email}</td>
+                        <td className="py-3.5 px-4">
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium ${
+                            acc.status === 'active' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/60' : 'bg-red-50 text-red-800 border border-red-200/60'
+                          }`}>
+                            {acc.status === 'active' ? 'Aktif' : 'Dinonaktifkan'}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          <button
+                            onClick={() => handleToggleAccountStatus(acc.id)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                              acc.status === 'active' 
+                                ? 'bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-700' 
+                                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800'
+                            }`}
+                          >
+                            {acc.status === 'active' ? 'Non-aktifkan' : 'Aktifkan'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -336,36 +432,50 @@ export default function SuperAdminPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {encryptedReports.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50 transition">
-                      <td className="py-3.5 px-4 font-mono font-medium text-slate-900">{item.id}</td>
-                      <td className="py-3.5 px-4">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${
-                          item.urgency === 'urgent' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600'
-                        }`}>
-                          {item.urgency.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="font-mono text-[11px] text-slate-500 flex items-center gap-1 font-normal">
-                          <EyeOff className="w-3 h-3 text-slate-400" />
-                          {item.maskedReporter}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-2 py-1 rounded bg-slate-100 text-[11px] font-mono text-slate-600 border border-slate-200 flex items-center gap-1.5 w-fit font-normal">
-                          <Lock className="w-3 h-3 text-slate-400" />
-                          {item.description}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="text-[11px] font-medium text-emerald-700 flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          Terenkripsi Standar
-                        </span>
+                  {isLoadingReports ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-400">
+                        Memuat data laporan dari database PostgreSQL...
                       </td>
                     </tr>
-                  ))}
+                  ) : encryptedReports.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-400">
+                        Belum ada laporan yang tercatat di database.
+                      </td>
+                    </tr>
+                  ) : (
+                    encryptedReports.map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-50/50 transition">
+                        <td className="py-3.5 px-4 font-mono font-medium text-slate-900">{item.id}</td>
+                        <td className="py-3.5 px-4">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${
+                            item.urgency === 'urgent' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600'
+                          }`}>
+                            {item.urgency.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="font-mono text-[11px] text-slate-500 flex items-center gap-1 font-normal">
+                            <EyeOff className="w-3 h-3 text-slate-400" />
+                            {item.maskedReporter}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="px-2 py-1 rounded bg-slate-100 text-[11px] font-mono text-slate-600 border border-slate-200 flex items-center gap-1.5 w-fit font-normal">
+                            <Lock className="w-3 h-3 text-slate-400" />
+                            {item.description}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="text-[11px] font-medium text-emerald-700 flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                            Terenkripsi Standar
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

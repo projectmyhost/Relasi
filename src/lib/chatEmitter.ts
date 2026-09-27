@@ -6,6 +6,7 @@ export interface ChatMessagePayload {
   sender: 'student' | 'counselor';
   senderName: string;
   content: string;
+  imageUrl?: string | null;
   timestamp: string;
   isRead: boolean;
 }
@@ -17,6 +18,15 @@ export interface CounselorNotificationPayload {
   contentSnippet: string;
   timestamp: string;
   report?: any;
+}
+
+export interface StudentNotificationPayload {
+  reportId: string;
+  userId?: string | null;
+  userEmail?: string | null;
+  senderName: string;
+  contentSnippet: string;
+  timestamp: string;
 }
 
 export interface ChatTypingPayload {
@@ -31,6 +41,13 @@ export interface ChatReadPayload {
   type: 'read';
   reportId: string;
   readerRole: 'student' | 'counselor';
+  timestamp: string;
+}
+
+export interface UserStatusPayload {
+  userId?: string;
+  email: string;
+  status: 'active' | 'inactive';
   timestamp: string;
 }
 

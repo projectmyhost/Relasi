@@ -38,3 +38,8 @@ yarn-error.log*
 .claude/
 skills/
 skills-lock.json
+
+# user uploads
+/public/uploads/chat/*
+!/public/uploads/chat/.gitkeep
+

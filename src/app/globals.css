@@ -111,7 +111,7 @@ th {
 
 /* 
  * CRITICAL BORDER FIX: 
- * Salient theme CSS reset in 1ccb5ee1_style.css applies 'border: 0' to all HTML tags (div, form, p, span, etc.), 
+ * Base design CSS reset in 1ccb5ee1_style.css applies 'border: 0' to all HTML tags (div, form, p, span, etc.), 
  * which resets border-style to 'none'. Tailwind's border width utilities (.border, .border-2, .border-[1.5px], etc.) 
  * only declare border-width without border-style, expecting border-style: solid.
  * This rule guarantees that all elements with Tailwind border utilities properly render their borders.
@@ -230,8 +230,8 @@ main {
 }
 
 /* ==========================================================================
-   SALIENT TETHER ENTRANCE / PAGE LOAD FADE-IN ANIMATIONS
-   (Smooth, natural entrance matching Salient Tether on initial load/reload)
+   RELASI PLATFORM ENTRANCE / PAGE LOAD FADE-IN ANIMATIONS
+   (Smooth, natural entrance on initial load/reload)
    ========================================================================== */
 
 /* Overall Page Soft Fade-In on Load / Reload */
@@ -248,7 +248,7 @@ main {
   animation: tether_page_fade_in 0.9s cubic-bezier(0.25, 1, 0.5, 1) both;
 }
 
-/* Header Entrance Navigation Fade (Salient header_nav_entrance_animation) */
+/* Header Entrance Navigation Fade */
 @keyframes header_nav_entrance_animation {
   0% {
     opacity: 0.01;

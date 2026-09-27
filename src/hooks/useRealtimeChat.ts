@@ -31,6 +31,15 @@ export function useRealtimeChat({
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastTypingPingRef = useRef<number>(0);
+  const currentReportIdRef = useRef<string | null | undefined>(reportId);
+
+  // Keep currentReportIdRef strictly synchronized and reset message history immediately on report switch
+  useEffect(() => {
+    currentReportIdRef.current = reportId;
+    setMessages([]);
+    setTypingStatus(null);
+    setError(null);
+  }, [reportId]);
 
   // 1. Mark as read handler
   const markAsRead = useCallback(async () => {
@@ -50,9 +59,10 @@ export function useRealtimeChat({
     }
   }, [reportId, currentRole]);
 
-  // 2. Initial message history loader from PostgreSQL
+  // 2. Initial message history loader from PostgreSQL with race condition protection
   const loadMessages = useCallback(async () => {
-    if (!reportId) {
+    const targetId = reportId;
+    if (!targetId) {
       setMessages([]);
       return;
     }
@@ -60,19 +70,24 @@ export function useRealtimeChat({
     try {
       setIsLoading(true);
       setError(null);
-      const res = await fetch(`/api/chat/messages?reportId=${encodeURIComponent(reportId)}`);
+      const res = await fetch(`/api/chat/messages?reportId=${encodeURIComponent(targetId)}`);
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
       const data = await res.json();
-      if (Array.isArray(data.messages)) {
+      
+      // Ensure we only update state if user is still viewing this exact report
+      if (currentReportIdRef.current === targetId && Array.isArray(data.messages)) {
         setMessages(data.messages);
-        // Automatically mark incoming messages as read when opening
         markAsRead();
       }
     } catch (err: unknown) {
       console.error('Error fetching chat history:', err);
-      setError(err instanceof Error ? err.message : 'Gagal memuat riwayat obrolan');
+      if (currentReportIdRef.current === targetId) {
+        setError(err instanceof Error ? err.message : 'Gagal memuat riwayat obrolan');
+      }
     } finally {
-      setIsLoading(false);
+      if (currentReportIdRef.current === targetId) {
+        setIsLoading(false);
+      }
     }
   }, [reportId, markAsRead]);
 
@@ -81,6 +96,7 @@ export function useRealtimeChat({
     if (!reportId) {
       setIsConnected(false);
       setTypingStatus(null);
+      setMessages([]);
       return;
     }
 
@@ -141,8 +157,13 @@ export function useRealtimeChat({
             return;
           }
 
-          // Handle incoming chat message
+          // Handle incoming chat message with strict reportId match
           const msg: ChatMessagePayload = incoming;
+          if (msg.reportId && msg.reportId !== reportId) {
+            // Discard message meant for another report
+            return;
+          }
+
           setMessages((prev) => {
             const exists = prev.some((m) => m.id === msg.id);
             if (exists) {
@@ -152,7 +173,6 @@ export function useRealtimeChat({
             // Play gentle chime if message is from the other party
             if (currentRole && msg.sender !== currentRole) {
               playNotificationChime();
-              // If user is currently looking at this active report, immediately mark as read
               markAsRead();
             }
 
@@ -222,10 +242,16 @@ export function useRealtimeChat({
     [reportId, currentRole]
   );
 
-  // 5. Send Message function
+  // 5. Send Message function (supports text and/or attached photo)
   const sendMessage = useCallback(
-    async (content: string, sender: 'student' | 'counselor', senderName: string): Promise<boolean> => {
-      if (!reportId || !content.trim()) return false;
+    async (
+      content: string,
+      sender: 'student' | 'counselor',
+      senderName: string,
+      imageUrl?: string | null
+    ): Promise<boolean> => {
+      const text = content.trim();
+      if (!reportId || (!text && !imageUrl)) return false;
 
       setIsSending(true);
       // Clear typing indicator immediately on message send
@@ -239,7 +265,8 @@ export function useRealtimeChat({
             reportId,
             sender,
             senderName,
-            content: content.trim(),
+            content: text,
+            imageUrl: imageUrl || null,
           }),
         });
 
@@ -250,11 +277,13 @@ export function useRealtimeChat({
         }
 
         if (result.success && result.message) {
-          // Optimistically append if SSE hasn't arrived yet
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === result.message.id)) return prev;
-            return [...prev, result.message];
-          });
+          // Optimistically append only if user is still on this exact report
+          if (result.message.reportId === currentReportIdRef.current) {
+            setMessages((prev) => {
+              if (prev.some((m) => m.id === result.message.id)) return prev;
+              return [...prev, result.message];
+            });
+          }
         }
 
         return true;

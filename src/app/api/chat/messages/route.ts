@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { chatEmitter, ChatMessagePayload, CounselorNotificationPayload } from '@/lib/chatEmitter';
+import { chatEmitter, ChatMessagePayload, CounselorNotificationPayload, StudentNotificationPayload } from '@/lib/chatEmitter';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,15 +29,31 @@ export async function GET(req: NextRequest) {
       orderBy: { timestamp: 'asc' },
     });
 
-    const formattedMessages: ChatMessagePayload[] = messages.map((m) => ({
-      id: m.id,
-      reportId: m.reportId,
-      sender: m.sender as 'student' | 'counselor',
-      senderName: m.senderName,
-      content: m.content,
-      timestamp: m.timestamp.toISOString(),
-      isRead: m.isRead,
-    }));
+    const formattedMessages: ChatMessagePayload[] = messages.map((m) => {
+      let text = m.content;
+      let imageUrl: string | null = null;
+      if (m.content.startsWith('{') && m.content.includes('__isImage')) {
+        try {
+          const parsed = JSON.parse(m.content);
+          if (parsed && typeof parsed === 'object' && parsed.__isImage) {
+            text = parsed.text || '';
+            imageUrl = parsed.imageUrl || null;
+          }
+        } catch {
+          // Keep raw content if parse fails
+        }
+      }
+      return {
+        id: m.id,
+        reportId: m.reportId,
+        sender: m.sender as 'student' | 'counselor',
+        senderName: m.senderName,
+        content: text,
+        imageUrl,
+        timestamp: m.timestamp.toISOString(),
+        isRead: m.isRead,
+      };
+    });
 
     return NextResponse.json({ messages: formattedMessages });
   } catch (error) {
@@ -52,16 +68,17 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { reportId, sender, senderName, content } = body;
+    const { reportId, sender, senderName, content, imageUrl } = body;
 
-    if (!reportId || !content || !content.trim()) {
+    const trimmedContent = typeof content === 'string' ? content.trim() : '';
+    const cleanImageUrl = typeof imageUrl === 'string' && imageUrl.trim() ? imageUrl.trim() : null;
+
+    if (!reportId || (!trimmedContent && !cleanImageUrl)) {
       return NextResponse.json(
-        { error: 'reportId and valid content are required' },
+        { error: 'ID laporan dan pesan teks atau lampiran foto harus disertakan' },
         { status: 400 }
       );
     }
-
-    const trimmedContent = content.trim();
 
     // 1. Max character length limit
     if (trimmedContent.length > 1000) {
@@ -143,12 +160,16 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Save message to PostgreSQL
+    const dbContent = cleanImageUrl
+      ? JSON.stringify({ __isImage: true, text: trimmedContent, imageUrl: cleanImageUrl })
+      : trimmedContent;
+
     const created = await prisma.message.create({
       data: {
         reportId,
         sender: validSender,
         senderName: validSenderName,
-        content: trimmedContent,
+        content: dbContent,
         isRead: false,
       },
     });
@@ -161,7 +182,9 @@ export async function POST(req: NextRequest) {
           role: 'counselor',
           action: 'SEND_MESSAGE',
           target: reportId,
-          detail: 'Mengirim pesan klarifikasi tertutup kepada pelapor',
+          detail: cleanImageUrl 
+            ? 'Mengirim pesan klarifikasi tertutup beserta lampiran foto kepada pelapor'
+            : 'Mengirim pesan klarifikasi tertutup kepada pelapor',
         },
       });
     }
@@ -171,7 +194,8 @@ export async function POST(req: NextRequest) {
       reportId: created.reportId,
       sender: created.sender as 'student' | 'counselor',
       senderName: created.senderName,
-      content: created.content,
+      content: trimmedContent,
+      imageUrl: cleanImageUrl,
       timestamp: created.timestamp.toISOString(),
       isRead: created.isRead,
     };
@@ -179,15 +203,33 @@ export async function POST(req: NextRequest) {
     // 3. Emit real-time message event to specific room
     chatEmitter.emit(`chat:${reportId}`, payload);
 
+    // Formatted snippet for notifications (includes 📷 [Foto] indicator if image is attached)
+    const notifSnippet = cleanImageUrl
+      ? `📷 [Foto] ${trimmedContent ? (trimmedContent.length > 50 ? trimmedContent.substring(0, 50) + '...' : trimmedContent) : 'Lampiran foto baru'}`
+      : (trimmedContent.length > 80 ? trimmedContent.substring(0, 80) + '...' : trimmedContent);
+
     // 4. If student is sending, emit global notification to counselor
     if (validSender === 'student') {
       const notifPayload: CounselorNotificationPayload = {
         reportId,
         senderName: validSenderName,
-        contentSnippet: payload.content.length > 80 ? payload.content.substring(0, 80) + '...' : payload.content,
+        contentSnippet: notifSnippet,
         timestamp: payload.timestamp,
       };
       chatEmitter.emit('counselor-notification', notifPayload);
+    }
+
+    // 5. If counselor is sending, emit notification to student
+    if (validSender === 'counselor') {
+      const studentNotifPayload: StudentNotificationPayload = {
+        reportId,
+        userId: existingReport?.userId || null,
+        userEmail: existingReport?.userEmail || (existingReport?.reporterContact?.includes('@') ? existingReport.reporterContact : null),
+        senderName: validSenderName,
+        contentSnippet: notifSnippet,
+        timestamp: payload.timestamp,
+      };
+      chatEmitter.emit('student-notification', studentNotifPayload);
     }
 
     return NextResponse.json({ success: true, message: payload }, { status: 201 });

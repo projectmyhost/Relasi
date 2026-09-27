@@ -18,7 +18,7 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -33,10 +33,24 @@ export default function RegisterPage() {
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      loginWithEmail(email, password);
-      router.push('/my-reports');
-    }, 550);
+    try {
+      await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          role: 'student',
+          roleLabel: `Siswa (${studentClass.trim()})`,
+          departmentOrClass: studentClass.trim(),
+        }),
+      });
+    } catch (err) {
+      console.error('Failed to sync registered user to database:', err);
+    }
+
+    loginWithEmail(email, password);
+    router.push('/my-reports');
   };
 
   return (

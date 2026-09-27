@@ -135,6 +135,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Ignore
     }
 
+    if (trimmed && trimmed.includes('@')) {
+      fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          roleLabel: user.roleLabel,
+          departmentOrClass: user.departmentOrClass,
+        }),
+      }).catch(() => {});
+    }
+
     return targetRole;
   };
 

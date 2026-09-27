@@ -15,6 +15,7 @@ export interface ReportMessage {
   sender: 'student' | 'counselor';
   senderName: string;
   content: string;
+  imageUrl?: string | null;
   timestamp: string;
   isRead: boolean;
 }

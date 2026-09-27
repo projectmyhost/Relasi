@@ -23,6 +23,8 @@ import {
   Check,
   ShieldCheck,
   ShieldAlert,
+  Bell,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
 import { RuangSuaraStore } from '@/lib/store';
@@ -37,7 +39,78 @@ export default function MyReportsPage() {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [chatMessage, setChatMessage] = useState('');
   const [cooldown, setCooldown] = useState(0);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [activeToasts, setActiveToasts] = useState<
+    Array<{
+      id: string;
+      reportId: string;
+      senderName: string;
+      content: string;
+    }>
+  >([]);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const studentFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [studentImage, setStudentImage] = useState<{ file: File; previewUrl: string } | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [selectedPreviewImage, setSelectedPreviewImage] = useState<string | null>(null);
+
+  const handleStudentImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Format berkas harus berupa gambar (JPG, PNG, WEBP, GIF).');
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      alert('Ukuran foto maksimal 8 MB.');
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setStudentImage({ file, previewUrl });
+  };
+
+  // Gentle audio chime for incoming messages from Counselor
+  const playNotificationSound = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.22);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.22);
+    } catch {
+      // Audio playback might be silenced by browser policy before first interaction
+    }
+  };
+
+  const addToast = (toast: { reportId: string; senderName: string; content: string }) => {
+    const newToast = { ...toast, id: Math.random().toString(36).substring(7) };
+    setActiveToasts((prev) => [newToast, ...prev.slice(0, 1)]); // Max 2 toasts
+    playNotificationSound();
+    setTimeout(() => {
+      setActiveToasts((prev) => prev.filter((t) => t.id !== newToast.id));
+    }, 7000);
+  };
+
+  const handleOpenReport = (r: Report) => {
+    setSelectedReport(r);
+    setUnreadCounts((prev) => {
+      if (!prev[r.id]) return prev;
+      const next = { ...prev };
+      delete next[r.id];
+      return next;
+    });
+  };
 
   // Ownership verification: Does this report belong to the currently logged in student?
   const isReportOwner = (r: Report | null | undefined): boolean => {
@@ -110,6 +183,62 @@ export default function MyReportsPage() {
     loadReports();
   }, [currentUser]);
 
+  // Real-time Student Notifications Stream Listener (incoming chat from Counselor)
+  useEffect(() => {
+    let es: EventSource | null = null;
+    try {
+      const params = new URLSearchParams();
+      if (currentUser.email) params.set('userEmail', currentUser.email);
+      if (currentUser.id) params.set('userId', currentUser.id);
+
+      es = new EventSource(`/api/student/notifications/stream?${params.toString()}`);
+      es.onmessage = (event) => {
+        try {
+          if (!event.data || event.data === ':keepalive') return;
+          const data = JSON.parse(event.data);
+          if (!data.reportId) return;
+
+          // Double check: Does this report belong to the student?
+          const myReportList = reports.filter((r) => isReportOwner(r));
+          const isTargetMine =
+            myReportList.some((r) => r.id === data.reportId) ||
+            (data.userEmail && currentUser.email && data.userEmail.toLowerCase() === currentUser.email.toLowerCase()) ||
+            (data.userId && currentUser.id && data.userId === currentUser.id);
+
+          if (!isTargetMine) return;
+
+          // If student is currently viewing this exact report, simply refresh list
+          if (selectedReport?.id === data.reportId) {
+            loadReports();
+            return;
+          }
+
+          // Otherwise, increment unread count & show toast notification
+          setUnreadCounts((prev) => ({
+            ...prev,
+            [data.reportId]: (prev[data.reportId] || 0) + 1,
+          }));
+
+          loadReports();
+
+          addToast({
+            reportId: data.reportId,
+            senderName: data.senderName || 'Guru BK (Ibu Siti Rahmawati)',
+            content: data.contentSnippet || 'Pesan tanggapan baru dari Guru BK',
+          });
+        } catch (e) {
+          console.error('Error handling student notification:', e);
+        }
+      };
+    } catch (err) {
+      console.error('Failed to connect to student notification stream:', err);
+    }
+
+    return () => {
+      if (es) es.close();
+    };
+  }, [currentUser.email, currentUser.id, reports, selectedReport?.id]);
+
   // Keep selected report updated with fresh store data
   useEffect(() => {
     if (selectedReport) {
@@ -120,23 +249,58 @@ export default function MyReportsPage() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedReport || !chatMessage.trim() || cooldown > 0 || !canChat) return;
-
-    const senderName = selectedReport.isAnonymous ? 'Pelapor (Anonim)' : (selectedReport.reporterName || currentUser.name || 'Siswa');
+    if (!selectedReport || cooldown > 0 || !canChat) return;
     const textToSend = chatMessage.trim();
+    if (!textToSend && !studentImage) return;
+
+    const currentId = selectedReport.id;
+    const senderName = selectedReport.isAnonymous ? 'Pelapor (Anonim)' : (selectedReport.reporterName || currentUser.name || 'Siswa');
+    const attachedImage = studentImage;
+
     setChatMessage('');
+    setStudentImage(null);
+    if (studentFileInputRef.current) studentFileInputRef.current.value = '';
+
     setCooldown(2);
 
-    const success = await sendRealtimeMessage(textToSend, 'student', senderName);
+    let uploadedImageUrl: string | null = null;
+    if (attachedImage) {
+      setIsUploadingImage(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', attachedImage.file);
+        const upRes = await fetch('/api/chat/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        const upData = await upRes.json();
+        if (upRes.ok && upData.url) {
+          uploadedImageUrl = upData.url;
+        } else {
+          uploadedImageUrl = attachedImage.previewUrl;
+        }
+      } catch (err) {
+        console.error('Failed to upload student image:', err);
+        uploadedImageUrl = attachedImage.previewUrl;
+      } finally {
+        setIsUploadingImage(false);
+      }
+    }
+
+    const finalImageUrl = uploadedImageUrl || null;
+
+    const success = await sendRealtimeMessage(textToSend, 'student', senderName, finalImageUrl);
     if (success) {
-      RuangSuaraStore.addReportMessage(selectedReport.id, {
+      RuangSuaraStore.addReportMessage(currentId, {
         sender: 'student',
         senderName,
         content: textToSend,
+        imageUrl: finalImageUrl,
       });
       loadReports();
     } else {
       setChatMessage(textToSend);
+      if (attachedImage) setStudentImage(attachedImage);
       setCooldown(0);
     }
   };
@@ -145,6 +309,7 @@ export default function MyReportsPage() {
   const myReports = reports.filter((r) => isReportOwner(r));
   const myReportsCount = myReports.length;
   const allReportsCount = reports.length;
+  const totalUnreadMyReports = myReports.reduce((sum, r) => sum + (unreadCounts[r.id] || 0), 0);
 
   const activeScopeReports = scopeTab === 'my_reports' ? myReports : reports;
 
@@ -264,6 +429,12 @@ export default function MyReportsPage() {
               }`}>
                 {myReportsCount}
               </span>
+              {totalUnreadMyReports > 0 && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E02B2B] text-white animate-pulse shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                  <span>{totalUnreadMyReports} Pesan Baru!</span>
+                </span>
+              )}
             </button>
 
             <button
@@ -404,13 +575,17 @@ export default function MyReportsPage() {
             <div className="grid grid-cols-1 gap-4">
               {filteredReports.map((r) => {
                 const isOwner = isReportOwner(r);
+                const unreadCount = unreadCounts[r.id] || 0;
+                const hasUnread = unreadCount > 0;
                 return (
                   <div 
                     key={r.id}
                     className={`bg-white/95 backdrop-blur-xl rounded-[24px] p-5 sm:p-6 border transition-all space-y-4 ${
-                      isOwner 
-                        ? 'border-emerald-200/90 shadow-[0_6px_25px_rgba(16,185,129,0.05)]' 
-                        : 'border-black/[0.08] shadow-[0_6px_25px_rgba(0,0,0,0.02)]'
+                      hasUnread
+                        ? 'border-[#E02B2B] ring-2 ring-red-500/25 shadow-[0_8px_30px_rgba(224,43,43,0.12)]'
+                        : isOwner 
+                          ? 'border-emerald-200/90 shadow-[0_6px_25px_rgba(16,185,129,0.05)]' 
+                          : 'border-black/[0.08] shadow-[0_6px_25px_rgba(0,0,0,0.02)]'
                     }`}
                   >
                     {/* Card Header Row */}
@@ -419,6 +594,15 @@ export default function MyReportsPage() {
                         <span className="font-mono text-sm sm:text-base font-semibold text-slate-900 bg-slate-100/90 px-3 py-1 rounded-lg border border-slate-200/80">
                           {r.id}
                         </span>
+
+                        {/* Unread Counselor Message Notification Badge */}
+                        {hasUnread && (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#E02B2B] text-white shadow-md animate-pulse">
+                            <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                            <Bell className="w-3.5 h-3.5" />
+                            <span>{unreadCount} Pesan Baru dari Guru BK!</span>
+                          </span>
+                        )}
 
                         {/* Ownership Badge */}
                         {isOwner ? (
@@ -496,17 +680,29 @@ export default function MyReportsPage() {
 
                       <button
                         type="button"
-                        onClick={() => setSelectedReport(r)}
+                        onClick={() => handleOpenReport(r)}
                         className={`px-5 py-2.5 rounded-full text-xs font-semibold transition flex items-center gap-1.5 shadow-sm hover:shadow-md cursor-pointer ${
-                          isOwner 
-                            ? '!bg-[#E02B2B] hover:!bg-[#c92424] !text-white' 
-                            : 'bg-slate-900 hover:bg-slate-800 text-white'
+                          hasUnread
+                            ? '!bg-[#E02B2B] hover:!bg-[#c92424] !text-white animate-pulse'
+                            : isOwner 
+                              ? '!bg-[#E02B2B] hover:!bg-[#c92424] !text-white' 
+                              : 'bg-slate-900 hover:bg-slate-800 text-white'
                         }`}
                       >
                         {isOwner ? (
                           <>
-                            <span>Buka Chat &amp; Rincian Saya</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
+                            {hasUnread ? (
+                              <>
+                                <Bell className="w-3.5 h-3.5 animate-bounce" />
+                                <span>Buka Chat ({unreadCount} Pesan Baru dari Guru BK!)</span>
+                                <ArrowRight className="w-3.5 h-3.5" />
+                              </>
+                            ) : (
+                              <>
+                                <span>Buka Chat &amp; Rincian Saya</span>
+                                <ArrowRight className="w-3.5 h-3.5" />
+                              </>
+                            )}
                           </>
                         ) : (
                           <>
@@ -671,9 +867,21 @@ export default function MyReportsPage() {
                                     )}
                                   </div>
                                 </div>
-                                <p className={`${isMe ? '!text-white' : '!text-slate-900'} text-xs leading-relaxed font-normal`}>
-                                  {m.content}
-                                </p>
+                                {m.imageUrl && (
+                                  <div className="mb-2 overflow-hidden rounded-xl border border-black/10">
+                                    <img 
+                                      src={m.imageUrl} 
+                                      alt="Lampiran foto"
+                                      onClick={() => setSelectedPreviewImage(m.imageUrl || null)}
+                                      className="max-h-60 w-auto rounded-lg object-cover cursor-pointer hover:opacity-90 transition transform hover:scale-[1.01]" 
+                                    />
+                                  </div>
+                                )}
+                                {m.content ? (
+                                  <p className={`${isMe ? '!text-white' : '!text-slate-900'} text-xs leading-relaxed font-normal break-words`}>
+                                    {m.content}
+                                  </p>
+                                ) : null}
                               </div>
                             </div>
                           );
@@ -699,43 +907,6 @@ export default function MyReportsPage() {
                         </div>
                       )}
                     </div>
-
-                    {/* Input to send response to Counselor */}
-                    <form onSubmit={handleSendMessage} className="flex gap-2">
-                      <input
-                        type="text"
-                        required
-                        value={chatMessage}
-                        onChange={(e) => {
-                          setChatMessage(e.target.value);
-                          const sName = selectedReport?.isAnonymous ? 'Pelapor (Anonim)' : (selectedReport?.reporterName || currentUser.name || 'Siswa');
-                          sendTypingIndicator(e.target.value.length > 0, sName);
-                        }}
-                        onBlur={() => {
-                          const sName = selectedReport?.isAnonymous ? 'Pelapor (Anonim)' : (selectedReport?.reporterName || currentUser.name || 'Siswa');
-                          sendTypingIndicator(false, sName);
-                        }}
-                        placeholder={cooldown > 0 ? `Menunggu proteksi anti-spam (${cooldown}d)...` : "Tulis pesan atau keterangan tambahan ke Guru BK..."}
-                        disabled={cooldown > 0}
-                        className="flex-1 px-4 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#E02B2B]/20 focus:border-[#E02B2B] bg-white transition disabled:bg-slate-100 disabled:text-slate-400"
-                      />
-                      <button
-                        type="submit"
-                        disabled={isSending || !chatMessage.trim() || cooldown > 0}
-                        className="px-4 py-2.5 rounded-xl !bg-[#E02B2B] hover:!bg-[#c92424] !text-white text-xs font-medium transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                      >
-                        {isSending ? (
-                          <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                        ) : cooldown > 0 ? (
-                          <span>{cooldown}s</span>
-                        ) : (
-                          <>
-                            <Send className="w-3.5 h-3.5" />
-                            <span>Kirim</span>
-                          </>
-                        )}
-                      </button>
-                    </form>
                   </>
                 ) : (
                   /* Locked Chat State for Other Students' Reports */
@@ -766,6 +937,172 @@ export default function MyReportsPage() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Pinned Bottom Input Footer (Always Visible, Never Cut Off) */}
+            {canChat && (
+              <div className="p-3 sm:p-4 bg-white border-t border-slate-200/90 shrink-0 space-y-2.5 shadow-[0_-4px_16px_rgba(0,0,0,0.04)]">
+                {/* Photo attachment preview */}
+                {studentImage && (
+                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-100 border border-slate-200 animate-in fade-in">
+                    <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-300 shrink-0 bg-white">
+                      <img src={studentImage.previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0 text-xs">
+                      <span className="font-semibold text-slate-800 block truncate">{studentImage.file.name}</span>
+                      <span className="text-[10px] text-slate-500 font-normal">
+                        {(studentImage.file.size / 1024).toFixed(0)} KB • Foto siap dikirim
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStudentImage(null);
+                        if (studentFileInputRef.current) studentFileInputRef.current.value = '';
+                      }}
+                      className="p-1 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                      title="Hapus lampiran foto"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Input to send response to Counselor */}
+                <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+                  <input
+                    type="file"
+                    ref={studentFileInputRef}
+                    accept="image/*"
+                    onChange={handleStudentImageSelect}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => studentFileInputRef.current?.click()}
+                    title="Lampirkan Foto / Bukti"
+                    disabled={isSending || cooldown > 0}
+                    className={`p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-center shrink-0 ${
+                      studentImage 
+                        ? 'bg-red-50 border-[#E02B2B] text-[#E02B2B]' 
+                        : 'border-slate-300 bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <ImageIcon className="w-4 h-4" />
+                  </button>
+
+                  <input
+                    type="text"
+                    value={chatMessage}
+                    onChange={(e) => {
+                      setChatMessage(e.target.value);
+                      const sName = selectedReport?.isAnonymous ? 'Pelapor (Anonim)' : (selectedReport?.reporterName || currentUser.name || 'Siswa');
+                      sendTypingIndicator(e.target.value.length > 0, sName);
+                    }}
+                    onBlur={() => {
+                      const sName = selectedReport?.isAnonymous ? 'Pelapor (Anonim)' : (selectedReport?.reporterName || currentUser.name || 'Siswa');
+                      sendTypingIndicator(false, sName);
+                    }}
+                    placeholder={
+                      studentImage
+                        ? "Tambahkan catatan foto (opsional)..."
+                        : cooldown > 0 
+                          ? `Menunggu proteksi anti-spam (${cooldown}d)...` 
+                          : "Tulis pesan atau keterangan tambahan ke Guru BK..."
+                    }
+                    disabled={cooldown > 0}
+                    className="flex-1 px-4 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#E02B2B]/20 focus:border-[#E02B2B] bg-white transition disabled:bg-slate-100 disabled:text-slate-400"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSending || isUploadingImage || cooldown > 0 || (!chatMessage.trim() && !studentImage)}
+                    className="px-5 py-2.5 rounded-xl !bg-[#E02B2B] hover:!bg-[#c92424] !text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSending || isUploadingImage ? (
+                      <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    ) : cooldown > 0 ? (
+                      <span>{cooldown}s</span>
+                    ) : (
+                      <>
+                        <Send className="w-3.5 h-3.5" />
+                        <span>Kirim</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Real-time Student Chat Toast Notifications from Counselor */}
+      {activeToasts.length > 0 && (
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
+          {activeToasts.map((toast) => (
+            <div
+              key={toast.id}
+              onClick={() => {
+                const target = reports.find((r) => r.id === toast.reportId);
+                if (target) {
+                  handleOpenReport(target);
+                }
+                setActiveToasts((prev) => prev.filter((t) => t.id !== toast.id));
+              }}
+              className="pointer-events-auto p-4 rounded-2xl bg-slate-950/95 text-white shadow-2xl border border-red-500/40 backdrop-blur-md cursor-pointer hover:bg-slate-900 transition flex items-start gap-3 transform animate-fade-in"
+            >
+              <div className="p-2 rounded-xl mt-0.5 shrink-0 bg-[#E02B2B] text-white shadow-xs">
+                <MessageSquare className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-semibold text-white truncate">
+                    Pesan dari {toast.senderName}
+                  </span>
+                  <span className="text-[10px] font-mono text-red-300 font-semibold">{toast.reportId}</span>
+                </div>
+                <p className="text-xs text-slate-300 line-clamp-2 mt-0.5 font-normal leading-relaxed">
+                  {toast.content}
+                </p>
+                <span className="text-[10px] text-red-400 font-semibold mt-1.5 inline-flex items-center gap-1">
+                  <span>Klik untuk membalas pesan Guru BK</span>
+                  <ArrowRight className="w-3 h-3" />
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Lightbox / Zoom Image Modal */}
+      {selectedPreviewImage && (
+        <div
+          onClick={() => setSelectedPreviewImage(null)}
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-4xl w-full bg-slate-900 rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
+          >
+            <div className="flex items-center justify-between p-3.5 bg-slate-950/90 border-b border-white/10 text-white text-xs">
+              <span className="font-semibold flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-[#E02B2B]" />
+                <span>Pratinjau Foto Lampiran Chat</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedPreviewImage(null)}
+                className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-2 flex items-center justify-center overflow-auto max-h-[80vh]">
+              <img
+                src={selectedPreviewImage}
+                alt="Full size preview"
+                className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-md"
+              />
             </div>
           </div>
         </div>

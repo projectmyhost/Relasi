@@ -10,14 +10,14 @@ export default function RelasiHomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
 
-  // Initialize and load all Salient Tether scripts in strict sequential order
+  // Initialize and load UI animations and smooth-scrolling scripts in strict sequential order
   useEffect(() => {
     // Prevent browser scroll-restore jump on reload
     if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
     }
 
-    // Set Salient global configuration options
+    // Set UI runtime configuration options
     (window as any).wpbCustomElement = 1;
     (window as any).nectarLove = {
       ajaxurl: '',
@@ -112,7 +112,7 @@ export default function RelasiHomePage() {
         });
       }
 
-      // Re-trigger Salient layout calculation and events
+      // Re-trigger dynamic layout calculations and scroll events
       if (typeof (window as any).jQuery !== 'undefined') {
         const $ = (window as any).jQuery;
         setTimeout(() => {
