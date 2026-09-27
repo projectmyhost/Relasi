@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { 
   Shield, 
@@ -23,6 +23,7 @@ import {
 import { useAuth } from '@/lib/authContext';
 import { RuangSuaraStore } from '@/lib/store';
 import { Report } from '@/lib/types';
+import { useRealtimeChat } from '@/hooks/useRealtimeChat';
 
 export default function MyReportsPage() {
   const { currentUser } = useAuth();
@@ -30,7 +31,24 @@ export default function MyReportsPage() {
   const [filterTab, setFilterTab] = useState<'all' | 'active' | 'resolved'>('all');
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [chatMessage, setChatMessage] = useState('');
-  const [isSending, setIsSending] = useState(false);
+  const chatBottomRef = useRef<HTMLDivElement | null>(null);
+
+  const {
+    messages: realtimeMessages,
+    isConnected,
+    isSending,
+    sendMessage: sendRealtimeMessage,
+  } = useRealtimeChat({
+    reportId: selectedReport?.id,
+    currentRole: 'student',
+    initialMessages: (selectedReport?.messages || []) as any,
+  });
+
+  useEffect(() => {
+    if (selectedReport && chatBottomRef.current) {
+      chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [realtimeMessages, selectedReport]);
 
   const loadReports = () => {
     const all = RuangSuaraStore.getReports();
@@ -55,25 +73,23 @@ export default function MyReportsPage() {
     }
   }, [reports]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedReport || !chatMessage.trim()) return;
 
-    setIsSending(true);
-    setTimeout(() => {
-      const updated = RuangSuaraStore.addReportMessage(selectedReport.id, {
-        sender: 'student',
-        senderName: selectedReport.isAnonymous ? 'Pelapor (Anonim)' : (selectedReport.reporterName || 'Siswa'),
-        content: chatMessage.trim(),
-      });
+    const senderName = selectedReport.isAnonymous ? 'Pelapor (Anonim)' : (selectedReport.reporterName || 'Siswa');
+    const textToSend = chatMessage.trim();
+    setChatMessage('');
 
-      if (updated) {
-        setSelectedReport(updated);
-        setChatMessage('');
-        loadReports();
-      }
-      setIsSending(false);
-    }, 350);
+    const success = await sendRealtimeMessage(textToSend, 'student', senderName);
+    if (success) {
+      RuangSuaraStore.addReportMessage(selectedReport.id, {
+        sender: 'student',
+        senderName,
+        content: textToSend,
+      });
+      loadReports();
+    }
   };
 
   // Filter reports
@@ -415,12 +431,21 @@ export default function MyReportsPage() {
                     <MessageSquare className="w-4 h-4 text-[#E02B2B]" />
                     <span>Ruang Komunikasi Privat Guru BK &amp; Siswa</span>
                   </span>
-                  <span className="text-[11px] text-slate-400">Terenkripsi Privat</span>
+                  <div className="flex items-center gap-2">
+                    {isConnected ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[10px] font-semibold text-emerald-700">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>Live Terhubung</span>
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-slate-400">Terenkripsi Privat</span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="bg-slate-50/70 p-4 rounded-2xl border border-slate-200/70 min-h-[160px] max-h-[220px] overflow-y-auto space-y-2.5">
-                  {selectedReport.messages && selectedReport.messages.length > 0 ? (
-                    selectedReport.messages.map((m) => (
+                <div className="bg-slate-50/70 p-4 rounded-2xl border border-slate-200/70 min-h-[160px] max-h-[240px] overflow-y-auto space-y-2.5">
+                  {realtimeMessages && realtimeMessages.length > 0 ? (
+                    realtimeMessages.map((m) => (
                       <div 
                         key={m.id}
                         className={`flex flex-col ${m.sender === 'student' ? 'items-end' : 'items-start'}`}
@@ -446,6 +471,7 @@ export default function MyReportsPage() {
                       <p className="text-[11px]">Anda dapat mengirim pesan keterangan tambahan kepada Guru BK di bawah ini.</p>
                     </div>
                   )}
+                  <div ref={chatBottomRef} />
                 </div>
 
                 {/* Input to send response to Counselor */}

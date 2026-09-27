@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { 
   Shield, 
   Inbox, 
@@ -19,21 +20,42 @@ import {
 import { RuangSuaraStore } from '@/lib/store';
 import { Report, ReportStatus } from '@/lib/types';
 import { useAuth } from '@/lib/authContext';
+import { useRealtimeChat } from '@/hooks/useRealtimeChat';
 
-export default function CounselorDashboardPage() {
+function CounselorDashboardContent() {
   const { currentUser } = useAuth();
+  const searchParams = useSearchParams();
+  const urlReportId = searchParams.get('reportId');
+
   const [reports, setReports] = useState<Report[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'needs_review' | 'urgent' | 'anonymous'>('all');
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [counselorReply, setCounselorReply] = useState('');
   const [isReplying, setIsReplying] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const counselorChatBottomRef = useRef<HTMLDivElement | null>(null);
+
+  const {
+    messages: realtimeMessages,
+    isConnected,
+    isSending: isRealtimeSending,
+    sendMessage: sendRealtimeMessage,
+  } = useRealtimeChat({
+    reportId: selectedReport?.id,
+    currentRole: 'counselor',
+    initialMessages: (selectedReport?.messages || []) as any,
+  });
 
   const loadData = () => {
     const list = RuangSuaraStore.getReports();
     setReports(list);
     if (!selectedReport && list.length > 0) {
-      setSelectedReport(list[0]);
+      if (urlReportId) {
+        const match = list.find((r) => r.id === urlReportId);
+        setSelectedReport(match || list[0]);
+      } else {
+        setSelectedReport(list[0]);
+      }
     } else if (selectedReport) {
       const refreshed = list.find(r => r.id === selectedReport.id);
       if (refreshed) setSelectedReport(refreshed);
@@ -43,6 +65,19 @@ export default function CounselorDashboardPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (urlReportId && reports.length > 0) {
+      const target = reports.find((r) => r.id === urlReportId);
+      if (target) setSelectedReport(target);
+    }
+  }, [urlReportId, reports]);
+
+  useEffect(() => {
+    if (selectedReport && counselorChatBottomRef.current) {
+      counselorChatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [realtimeMessages, selectedReport]);
 
   // Metrik Utama Sesuai Dokumen PPKSP Permendikbudristek No. 46/2023
   const countNeedsReview = reports.filter(r => r.status === 'submitted').length;
@@ -81,16 +116,21 @@ export default function CounselorDashboardPage() {
     loadData();
   };
 
-  const handleSendCounselorMessage = (e: React.FormEvent) => {
+  const handleSendCounselorMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedReport || !counselorReply.trim()) return;
 
+    const senderName = currentUser.name || 'Guru BK (Ibu Siti Rahmawati)';
+    const textToSend = counselorReply.trim();
+    setCounselorReply('');
     setIsReplying(true);
-    setTimeout(() => {
+
+    const success = await sendRealtimeMessage(textToSend, 'counselor', senderName);
+    if (success) {
       RuangSuaraStore.addReportMessage(selectedReport.id, {
         sender: 'counselor',
-        senderName: currentUser.name || 'Guru BK (Ibu Siti Rahmawati)',
-        content: counselorReply.trim(),
+        senderName,
+        content: textToSend,
       });
 
       RuangSuaraStore.addAuditLog({
@@ -100,11 +140,9 @@ export default function CounselorDashboardPage() {
         target: selectedReport.id,
         detail: `Mengirim pesan klarifikasi tertutup kepada pelapor`,
       });
-
-      setCounselorReply('');
-      setIsReplying(false);
       loadData();
-    }, 400);
+    }
+    setIsReplying(false);
   };
 
   return (
@@ -436,21 +474,29 @@ export default function CounselorDashboardPage() {
                       <MessageSquare className="w-4 h-4 text-[#E02B2B]" />
                       <span>Komunikasi Tertutup dengan Siswa</span>
                     </h4>
-                    <span className="text-[11px] text-slate-400 font-normal">
-                      Pesan dapat dibaca oleh siswa via kode PIN pelacakan
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {isConnected ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[10px] font-semibold text-emerald-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span>Live Terhubung</span>
+                        </span>
+                      ) : null}
+                      <span className="text-[11px] text-slate-400 font-normal">
+                        Kanal Terenkripsi Dua Arah
+                      </span>
+                    </div>
                   </div>
 
                   {/* Chat Messages */}
-                  <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 max-h-60 overflow-y-auto space-y-3">
-                    {selectedReport.messages.length === 0 ? (
+                  <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 max-h-64 overflow-y-auto space-y-3">
+                    {realtimeMessages.length === 0 ? (
                       <p className="text-center text-xs text-slate-400 font-normal py-6">
                         Belum ada riwayat percakapan. Kirimkan pesan klarifikasi atau jadwalkan sesi tatap muka tertutup.
                       </p>
                     ) : (
-                      selectedReport.messages.map((msg) => (
+                      realtimeMessages.map((msg) => (
                         <div 
-                           key={msg.id}
+                          key={msg.id}
                           className={`flex flex-col ${msg.sender === 'counselor' ? 'items-end' : 'items-start'}`}
                         >
                           <div className="flex items-center gap-2 text-[10px] text-slate-400 mb-1 px-1">
@@ -458,7 +504,7 @@ export default function CounselorDashboardPage() {
                             <span>•</span>
                             <span>{new Date(msg.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB</span>
                           </div>
-                          <div className={`p-3.5 rounded-xl max-w-md text-xs leading-relaxed font-normal ${
+                          <div className={`p-3.5 rounded-xl max-w-md text-xs leading-relaxed font-normal shadow-2xs ${
                             msg.sender === 'counselor' 
                               ? 'bg-slate-900 text-white rounded-tr-xs' 
                               : 'bg-white border border-slate-200 text-slate-800 rounded-tl-xs'
@@ -468,6 +514,7 @@ export default function CounselorDashboardPage() {
                         </div>
                       ))
                     )}
+                    <div ref={counselorChatBottomRef} />
                   </div>
 
                   {/* Send Form */}
@@ -506,5 +553,19 @@ export default function CounselorDashboardPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CounselorDashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="w-full min-h-screen bg-[#F6F4F0] flex items-center justify-center text-xs text-slate-500 font-medium">
+          Memuat portal bimbingan konseling...
+        </div>
+      }
+    >
+      <CounselorDashboardContent />
+    </Suspense>
   );
 }
