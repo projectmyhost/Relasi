@@ -187,8 +187,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
-              className="group w-full py-3 sm:py-3.5 px-6 rounded-full font-semibold text-xs sm:text-sm !text-white !bg-[#E02B2B] hover:!bg-[#c92424] shadow-[0_2px_10px_rgba(224,43,43,0.22)] hover:shadow-[0_4px_14px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none"
+              className="group w-full py-3.5 px-6 rounded-xl font-semibold text-xs sm:text-sm text-white bg-[#E02B2B] hover:bg-[#c92424] active:bg-[#b01e1e] shadow-[0_2px_10px_rgba(224,43,43,0.22)] hover:shadow-[0_4px_14px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none"
             >
               {isLoading ? (
                 <>

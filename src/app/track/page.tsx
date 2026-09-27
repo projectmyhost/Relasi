@@ -105,14 +105,20 @@ function TrackReportContent() {
     const content = newMessage.trim();
     setIsSending(true);
 
+    const isCounselor = currentUser.role === 'counselor' || currentUser.role === 'super_admin';
+    const senderRole = isCounselor ? 'counselor' : 'student';
+    const senderName = isCounselor
+      ? (currentUser.name ? `${currentUser.name} (Guru BK)` : 'Guru BK (Konselor)')
+      : (report.isAnonymous ? 'Pelapor (Anonim)' : (report.reporterName || 'Siswa'));
+
     try {
       const res = await fetch('/api/chat/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           reportId: report.id,
-          sender: 'student',
-          senderName: report.isAnonymous ? 'Pelapor (Anonim)' : (report.reporterName || 'Siswa'),
+          sender: senderRole,
+          senderName: senderName,
           content,
         }),
       });
@@ -239,8 +245,7 @@ function TrackReportContent() {
                 <div className="sm:col-span-2">
                   <button
                     type="submit"
-                    style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
-                    className="h-12 w-full px-5 rounded-full !bg-[#E02B2B] hover:!bg-[#c92424] !text-white font-semibold text-sm shadow-[0_2px_10px_rgba(224,43,43,0.22)] hover:shadow-[0_4px_14px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="h-12 w-full px-5 rounded-xl bg-[#E02B2B] hover:bg-[#c92424] active:bg-[#b01e1e] text-white font-semibold text-sm shadow-[0_2px_10px_rgba(224,43,43,0.22)] hover:shadow-[0_4px_14px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Search className="w-4 h-4" />
                     <span>Buka</span>
@@ -374,30 +379,48 @@ function TrackReportContent() {
               {/* Message List */}
               <div className="space-y-4 max-h-96 overflow-y-auto p-2">
                 {report.messages && report.messages.length > 0 ? (
-                  report.messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`flex flex-col ${msg.sender === 'student' ? 'items-end' : 'items-start'}`}
-                    >
-                      <div className="flex items-center gap-2 mb-1 text-[11px] text-slate-500">
-                        <span className="font-medium text-slate-800">{msg.senderName}</span>
-                        <span>•</span>
-                        <span>{formatTimeWIB(msg.timestamp)}</span>
-                      </div>
+                  report.messages.map((msg) => {
+                    const isCounselorViewer = currentUser.role === 'counselor' || currentUser.role === 'super_admin';
+                    const isMyMessage = isCounselorViewer
+                      ? msg.sender === 'counselor'
+                      : msg.sender === 'student';
+
+                    return (
                       <div
-                        className={`p-4 rounded-2xl max-w-lg text-xs sm:text-sm leading-relaxed ${
-                          msg.sender === 'student'
-                            ? 'bg-[#E02B2B] text-white rounded-br-none shadow-sm'
-                            : 'bg-slate-100 text-slate-800 rounded-bl-none border border-slate-200/80'
-                        }`}
+                        key={msg.id}
+                        className={`flex flex-col ${isMyMessage ? 'items-end' : 'items-start'}`}
                       >
-                        {msg.content}
+                        <div className="flex items-center gap-2 mb-1 text-[11px] text-slate-500">
+                          <span className={`font-semibold ${isMyMessage ? 'text-[#E02B2B]' : 'text-slate-800'}`}>
+                            {msg.senderName} {isMyMessage ? '(Anda)' : ''}
+                          </span>
+                          <span>•</span>
+                          <span>{formatTimeWIB(msg.timestamp)}</span>
+                        </div>
+                        <div
+                          className={`p-4 rounded-2xl max-w-lg text-xs sm:text-sm leading-relaxed ${
+                            isMyMessage
+                              ? 'bg-[#E02B2B] text-white rounded-br-none shadow-sm'
+                              : 'bg-slate-100 text-slate-800 rounded-bl-none border border-slate-200/80'
+                          }`}
+                        >
+                          {msg.imageUrl && (
+                            <div className="mb-2.5 rounded-xl overflow-hidden border border-black/10 bg-black/5">
+                              <img
+                                src={msg.imageUrl}
+                                alt="Lampiran foto bukti"
+                                className="max-h-64 w-full object-contain rounded-lg"
+                              />
+                            </div>
+                          )}
+                          {msg.content}
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="py-8 text-center text-xs text-slate-400">
-                    Belum ada pesan. Anda dapat memulai mengirim pesan klarifikasi atau menambahkan keterangan kepada Guru BK di bawah.
+                    Belum ada pesan. Anda dapat memulai mengirim pesan arahan, respon klarifikasi, atau panduan kepada Siswa/Pelapor di bawah.
                   </div>
                 )}
               </div>
@@ -408,14 +431,17 @@ function TrackReportContent() {
                   type="text"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Ketik pesan klarifikasi atau keterangan tambahan..."
-                  className="flex-1 h-12 px-5 text-xs sm:text-sm rounded-full border border-slate-200/90 bg-slate-50/50 hover:bg-white focus:bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#E02B2B] focus:ring-2 focus:ring-red-500/15 transition-all shadow-xs"
+                  placeholder={
+                    currentUser.role === 'counselor' || currentUser.role === 'super_admin'
+                      ? "Ketik pesan arahan, respon klarifikasi, atau panduan kepada Siswa..."
+                      : "Ketik pesan klarifikasi atau keterangan tambahan..."
+                  }
+                  className="flex-1 h-12 px-4 text-xs sm:text-sm rounded-xl border border-slate-200/90 bg-slate-50/50 hover:bg-white focus:bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#E02B2B] focus:ring-2 focus:ring-red-500/15 transition-all shadow-xs"
                 />
                 <button
                   type="submit"
                   disabled={isSending || !newMessage.trim()}
-                  style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
-                  className="h-12 px-6 rounded-full !bg-[#E02B2B] hover:!bg-[#c92424] !text-white text-xs sm:text-sm font-semibold shadow-[0_2px_10px_rgba(224,43,43,0.22)] hover:shadow-[0_4px_14px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0"
+                  className="h-12 px-6 rounded-xl bg-[#E02B2B] hover:bg-[#c92424] active:bg-[#b01e1e] text-white text-xs sm:text-sm font-semibold shadow-[0_2px_10px_rgba(224,43,43,0.22)] hover:shadow-[0_4px_14px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0"
                 >
                   <Send className="w-4 h-4" />
                   <span>Kirim</span>

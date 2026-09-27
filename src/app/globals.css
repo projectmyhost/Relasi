@@ -456,27 +456,34 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ==========================================================================
    UNIVERSAL RED BUTTON HOVER ENFORCEMENT (MATCHING TETHERNAVBAR)
-   Ensures only actual red buttons transition to #c92424 on hover,
-   identically matching the TetherNavbar red button.
+   Ensures all primary red buttons transition smoothly to #c92424 on hover,
+   identically matching the TetherNavbar red button, and NEVER turn black.
    ========================================================================== */
-button[type="submit"]:hover,
-button[type="button"]:hover,
-button:hover,
-input[type="submit"]:hover,
-input[type="button"]:hover {
-  background-color: initial;
-}
-
-/* Red button, link, or CTA hover state (matching TetherNavbar #c92424) */
 button[class*="bg-[#E02B2B]"]:hover,
 button[class*="!bg-[#E02B2B]"]:hover,
+button[class*="hover:bg-[#c92424]"]:hover,
+button[class*="hover:!bg-[#c92424]"]:hover,
 a[class*="bg-[#E02B2B]"]:hover,
 a[class*="!bg-[#E02B2B]"]:hover,
-button[class*="hover:!bg-[#c92424]"]:hover,
+a[class*="hover:bg-[#c92424]"]:hover,
 a[class*="hover:!bg-[#c92424]"]:hover,
+button.bg-\[\#E02B2B\]:hover,
+button.\!bg-\[\#E02B2B\]:hover,
+a.bg-\[\#E02B2B\]:hover,
+a.\!bg-\[\#E02B2B\]:hover,
 .btn-primary:hover,
 .nectar-cta .link_wrap[style*="#E02B2B"]:hover {
   background-color: #c92424 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(201, 36, 36, 0.3) !important;
+}
+
+button[class*="bg-[#E02B2B]"]:active,
+button[class*="!bg-[#E02B2B]"]:active,
+a[class*="bg-[#E02B2B]"]:active,
+a[class*="!bg-[#E02B2B]"]:active,
+.btn-primary:active {
+  background-color: #b01e1e !important;
   color: #ffffff !important;
 }
 

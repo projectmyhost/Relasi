@@ -177,9 +177,9 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isSubmitting || !agreedToTerms}
-              className={`w-full py-3 sm:py-3.5 px-6 rounded-full font-semibold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-2 group ${
+              className={`w-full py-3.5 px-6 rounded-xl font-semibold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-2 group ${
                 agreedToTerms && !isSubmitting
-                  ? 'bg-[#E02B2B] hover:bg-[#c92424] text-white shadow-[0_4px_16px_rgba(224,43,43,0.22)] hover:shadow-[0_8px_24px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] cursor-pointer'
+                  ? 'bg-[#E02B2B] hover:bg-[#c92424] active:bg-[#b01e1e] text-white shadow-[0_4px_16px_rgba(224,43,43,0.22)] hover:shadow-[0_8px_24px_rgba(224,43,43,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] cursor-pointer'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-transparent shadow-none'
               }`}
             >
