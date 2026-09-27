@@ -1,0 +1,114 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  guest
+  student
+  counselor
+  super_admin
+}
+
+enum ReporterRole {
+  victim
+  witness
+}
+
+enum UrgencyLevel {
+  normal
+  urgent
+}
+
+enum ReportCategory {
+  fisik
+  verbal
+  relasional
+  cyber
+  pemalakan
+  lainnya
+}
+
+enum ReportStatus {
+  submitted
+  reviewed
+  investigating
+  followup
+  resolved
+  unsubstantiated
+}
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String
+  role              UserRole  @default(student)
+  roleLabel         String
+  departmentOrClass String?
+  avatar            String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Report {
+  id              String         @id
+  pin             String
+  role            ReporterRole
+  isAnonymous     Boolean        @default(true)
+  reporterName    String?
+  reporterClass   String?
+  reporterContact String?
+  incidentDate    String
+  incidentTime    String
+  location        String
+  partiesInvolved String
+  description     String         @db.Text
+  urgency         UrgencyLevel   @default(normal)
+  category        ReportCategory @default(fisik)
+  status          ReportStatus   @default(submitted)
+  caseId          String?
+  caseDossier     CaseDossier?   @relation(fields: [caseId], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  messages        Message[]
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  reportId   String
+  report     Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  sender     String   // "student" | "counselor"
+  senderName String
+  content    String   @db.Text
+  timestamp  DateTime @default(now())
+  isRead     Boolean  @default(false)
+
+  @@index([reportId])
+}
+
+model CaseDossier {
+  id              String      @id
+  title           String
+  summary         String      @db.Text
+  status          String
+  location        String
+  partiesInvolved String[]
+  leadCounselor   String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  reports         Report[]
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actor     String
+  role      String
+  action    String
+  target    String
+  detail    String   @db.Text
+  timestamp DateTime @default(now())
+}
