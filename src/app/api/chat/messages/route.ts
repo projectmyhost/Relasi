@@ -132,6 +132,14 @@ export async function POST(req: NextRequest) {
           status: 'submitted',
         },
       });
+    } else if (validSender === 'student' && existingReport.userEmail) {
+      const incomingEmail = body.userEmail?.trim().toLowerCase();
+      if (incomingEmail && existingReport.userEmail.toLowerCase() !== incomingEmail) {
+        return NextResponse.json(
+          { error: 'Akses ditolak: Anda tidak memiliki hak mengirim pesan pada laporan milik siswa lain.' },
+          { status: 403 }
+        );
+      }
     }
 
     // 2. Save message to PostgreSQL

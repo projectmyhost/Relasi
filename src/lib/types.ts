@@ -22,6 +22,8 @@ export interface ReportMessage {
 export interface Report {
   id: string;              // e.g. "RS-2026-0412"
   pin: string;             // 6-digit access code for anonymous tracking
+  userId?: string;         // ID akun siswa pembuat laporan
+  userEmail?: string;      // Email akun siswa pembuat laporan
   role: ReporterRole;      // korban / saksi
   isAnonymous: boolean;    // anonim vs berikan identitas ke BK
   reporterName?: string;

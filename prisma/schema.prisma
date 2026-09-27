@@ -57,6 +57,8 @@ model User {
 model Report {
   id              String         @id
   pin             String
+  userId          String?
+  userEmail       String?
   role            ReporterRole
   isAnonymous     Boolean        @default(true)
   reporterName    String?

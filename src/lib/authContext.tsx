@@ -71,9 +71,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     try {
-      const savedRole = localStorage.getItem('ruangsuara_active_role') as UserRole | null;
-      if (savedRole && PRESET_USERS[savedRole]) {
-        setCurrentUser(PRESET_USERS[savedRole]);
+      const savedProfile = localStorage.getItem('ruangsuara_user_profile');
+      if (savedProfile) {
+        setCurrentUser(JSON.parse(savedProfile));
+      } else {
+        const savedRole = localStorage.getItem('ruangsuara_active_role') as UserRole | null;
+        if (savedRole && PRESET_USERS[savedRole]) {
+          setCurrentUser(PRESET_USERS[savedRole]);
+        }
       }
     } catch {
       // Ignore local storage error
@@ -107,8 +112,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     const baseUser = PRESET_USERS[targetRole];
+    const derivedName = trimmed && trimmed !== 'murid@gmail.com' && !trimmed.includes('guru') && !trimmed.includes('admin')
+      ? trimmed.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+      : baseUser.name;
+    const derivedId = trimmed && trimmed !== 'murid@gmail.com' && !trimmed.includes('guru') && !trimmed.includes('admin')
+      ? `usr-${trimmed.replace(/[^a-z0-9]/g, '')}`
+      : baseUser.id;
+
     const user: UserProfile = {
       ...baseUser,
+      id: derivedId,
+      name: derivedName,
       email: trimmed || baseUser.email,
     };
 
@@ -116,6 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       localStorage.setItem('ruangsuara_active_role', targetRole);
       localStorage.setItem('ruangsuara_user_email', user.email);
+      localStorage.setItem('ruangsuara_user_profile', JSON.stringify(user));
     } catch {
       // Ignore
     }

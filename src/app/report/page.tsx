@@ -55,12 +55,14 @@ export default function ReportPage() {
 
     setIsSubmitting(true);
     setTimeout(() => {
-      const created = RuangSuaraStore.submitReport({
+      const reportPayload = {
         role,
         isAnonymous,
-        reporterName: isAnonymous ? undefined : reporterName,
-        reporterClass: isAnonymous ? undefined : reporterClass,
-        reporterContact: isAnonymous ? undefined : reporterContact,
+        userId: currentUser.id || undefined,
+        userEmail: currentUser.email || undefined,
+        reporterName: isAnonymous ? undefined : (reporterName || (currentUser.role === 'student' ? currentUser.name : undefined)),
+        reporterClass: isAnonymous ? undefined : (reporterClass || (currentUser.role === 'student' ? currentUser.departmentOrClass : undefined)),
+        reporterContact: isAnonymous ? undefined : (reporterContact || (currentUser.role === 'student' ? currentUser.email : undefined)),
         incidentDate,
         incidentTime,
         location,
@@ -68,7 +70,20 @@ export default function ReportPage() {
         category,
         urgency,
         description,
-      });
+      };
+
+      const created = RuangSuaraStore.submitReport(reportPayload);
+
+      // Persist directly to PostgreSQL database
+      fetch('/api/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...reportPayload,
+          id: created.id,
+          pin: created.pin,
+        }),
+      }).catch((err) => console.error('Failed to sync report to PostgreSQL:', err));
 
       setSubmittedData({ id: created.id, pin: created.pin });
       setIsSubmitting(false);
