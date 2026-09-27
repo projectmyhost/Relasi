@@ -31,7 +31,8 @@ export default function MyReportsPage() {
   const [filterTab, setFilterTab] = useState<'all' | 'active' | 'resolved'>('all');
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [chatMessage, setChatMessage] = useState('');
-  const chatBottomRef = useRef<HTMLDivElement | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
   const {
     messages: realtimeMessages,
@@ -45,10 +46,17 @@ export default function MyReportsPage() {
   });
 
   useEffect(() => {
-    if (selectedReport && chatBottomRef.current) {
-      chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
-  }, [realtimeMessages, selectedReport]);
+  }, [realtimeMessages]);
+
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown((c) => c - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
 
   const loadReports = () => {
     const all = RuangSuaraStore.getReports();
@@ -75,11 +83,12 @@ export default function MyReportsPage() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedReport || !chatMessage.trim()) return;
+    if (!selectedReport || !chatMessage.trim() || cooldown > 0) return;
 
     const senderName = selectedReport.isAnonymous ? 'Pelapor (Anonim)' : (selectedReport.reporterName || 'Siswa');
     const textToSend = chatMessage.trim();
     setChatMessage('');
+    setCooldown(2);
 
     const success = await sendRealtimeMessage(textToSend, 'student', senderName);
     if (success) {
@@ -443,7 +452,10 @@ export default function MyReportsPage() {
                   </div>
                 </div>
 
-                <div className="bg-slate-50/70 p-4 rounded-2xl border border-slate-200/70 min-h-[160px] max-h-[240px] overflow-y-auto space-y-2.5">
+                <div 
+                  ref={chatContainerRef}
+                  className="bg-slate-50/70 p-4 rounded-2xl border border-slate-200/70 min-h-[160px] max-h-[240px] overflow-y-auto space-y-2.5"
+                >
                   {realtimeMessages && realtimeMessages.length > 0 ? (
                     realtimeMessages.map((m) => (
                       <div 
@@ -471,7 +483,6 @@ export default function MyReportsPage() {
                       <p className="text-[11px]">Anda dapat mengirim pesan keterangan tambahan kepada Guru BK di bawah ini.</p>
                     </div>
                   )}
-                  <div ref={chatBottomRef} />
                 </div>
 
                 {/* Input to send response to Counselor */}
@@ -481,20 +492,25 @@ export default function MyReportsPage() {
                     required
                     value={chatMessage}
                     onChange={(e) => setChatMessage(e.target.value)}
-                    placeholder="Tulis pesan atau keterangan tambahan ke Guru BK..."
-                    className="flex-1 px-4 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#E02B2B]/20 focus:border-[#E02B2B] bg-white transition"
+                    placeholder={cooldown > 0 ? `Menunggu proteksi anti-spam (${cooldown}d)...` : "Tulis pesan atau keterangan tambahan ke Guru BK..."}
+                    disabled={cooldown > 0}
+                    className="flex-1 px-4 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#E02B2B]/20 focus:border-[#E02B2B] bg-white transition disabled:bg-slate-100 disabled:text-slate-400"
                   />
                   <button
                     type="submit"
-                    disabled={isSending || !chatMessage.trim()}
+                    disabled={isSending || !chatMessage.trim() || cooldown > 0}
                     className="px-4 py-2.5 rounded-xl !bg-[#E02B2B] hover:!bg-[#c92424] !text-white text-xs font-medium transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                   >
                     {isSending ? (
                       <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    ) : cooldown > 0 ? (
+                      <span>{cooldown}s</span>
                     ) : (
-                      <Send className="w-3.5 h-3.5" />
+                      <>
+                        <Send className="w-3.5 h-3.5" />
+                        <span>Kirim</span>
+                      </>
                     )}
-                    <span>Kirim</span>
                   </button>
                 </form>
               </div>

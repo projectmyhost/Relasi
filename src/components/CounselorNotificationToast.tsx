@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, ArrowRight, ShieldAlert } from 'lucide-react';
@@ -19,6 +19,7 @@ export default function CounselorNotificationToast() {
   const router = useRouter();
   const { currentUser } = useAuth();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const lastChimeTimeRef = useRef<number>(0);
 
   // Only active when logged in as counselor
   const isCounselor = currentUser.role === 'counselor';
@@ -45,26 +46,38 @@ export default function CounselorNotificationToast() {
             const data = JSON.parse(event.data);
 
             if (data.reportId && data.contentSnippet) {
-              // 1. Play soft audio chime
-              playNotificationChime();
+              const now = Date.now();
 
-              const newItem: NotificationItem = {
-                id: `${data.reportId}-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
-                reportId: data.reportId,
-                senderName: data.senderName || 'Siswa Pelapor',
-                contentSnippet: data.contentSnippet,
-                timestamp: data.timestamp || new Date().toISOString(),
-              };
+              // 1. Play soft audio chime (Debounced by 2.5s to prevent audio spam)
+              if (now - lastChimeTimeRef.current > 2500) {
+                playNotificationChime();
+                lastChimeTimeRef.current = now;
+              }
 
-              // 2. Add to active notifications queue (limit max 3 on screen)
-              setNotifications((prev) => [newItem, ...prev.slice(0, 2)]);
-
-              // 3. Auto dismiss after 8.5 seconds
-              setTimeout(() => {
-                if (isMounted) {
-                  setNotifications((current) => current.filter((item) => item.id !== newItem.id));
+              // 2. Strict limit: MAXIMAL 2 POPUP TOASTS ON SCREEN
+              setNotifications((prev) => {
+                // If there are already 2 popups displayed, do not spawn extra popups
+                if (prev.length >= 2) {
+                  return prev;
                 }
-              }, 8500);
+
+                const newItem: NotificationItem = {
+                  id: `${data.reportId}-${now}-${Math.random().toString(36).substring(2, 5)}`,
+                  reportId: data.reportId,
+                  senderName: data.senderName || 'Siswa Pelapor',
+                  contentSnippet: data.contentSnippet,
+                  timestamp: data.timestamp || new Date().toISOString(),
+                };
+
+                // Auto dismiss this item after 7.5 seconds
+                setTimeout(() => {
+                  if (isMounted) {
+                    setNotifications((current) => current.filter((item) => item.id !== newItem.id));
+                  }
+                }, 7500);
+
+                return [newItem, ...prev].slice(0, 2);
+              });
             }
           } catch (err) {
             console.error('Error parsing counselor notification payload:', err);

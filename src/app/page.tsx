@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import HeroHeadlineTypewriter from '@/components/HeroHeadlineTypewriter';
 import SopWorkflowSection from '@/components/SopWorkflowSection';
-import { Plus, Minus, PhoneCall, ArrowRight, Clock, CheckCircle2 } from 'lucide-react';
+import { Plus, Minus, PhoneCall, Clock, ShieldCheck, Lock, HeartHandshake } from 'lucide-react';
 
 export default function RelasiHomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -201,36 +201,164 @@ export default function RelasiHomePage() {
                       >
                         <div className="row_col_wrap_12 col span_12 dark left w-full">
                           <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 w-full">
-                            <div className="flex flex-col items-start text-left max-w-2xl">
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
 
-                              {/* Dynamic Hero Headline with Typewriter Animation */}
-                              <HeroHeadlineTypewriter />
+                              {/* Left Column: Typographic Narrative & Actions */}
+                              <div className="lg:col-span-7 flex flex-col items-start text-left">
+                                {/* Eyebrow Pill */}
+                                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 border border-stone-200/90 shadow-2xs text-stone-800 text-xs font-semibold mb-6 tracking-wide backdrop-blur-xs">
+                                  <span className="w-2 h-2 rounded-full bg-[#E02B2B] animate-pulse" />
+                                  <span>Platform Perlindungan &amp; Konseling Siswa Terenkripsi</span>
+                                </div>
 
-                              {/* Subtitle Description */}
-                              <p 
-                                className="text-slate-600 text-base sm:text-lg font-normal mt-6 mb-8 sm:mb-9 leading-relaxed tether-hero-fade text-left max-w-xl" 
-                                style={{ animationDelay: '340ms' }}
-                              >
-                                Saluran aman dan rahasia untuk menyuarakan apa yang kamu alami. Identitasmu terjaga sepenuhnya, dipantau dan ditangani langsung oleh Guru BK terpercaya.
-                              </p>
+                                {/* Dynamic Hero Headline with Typewriter Animation */}
+                                <HeroHeadlineTypewriter />
 
-                              {/* Action Buttons */}
-                              <div className="flex items-center gap-4 mt-8 tether-hero-fade" style={{ animationDelay: '460ms' }}>
-                                {/* Tombol 1: Buat Laporan */}
-                                <Link
-                                  href="/report"
-                                  className="h-12 px-6 rounded-full bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-500/25 inline-flex items-center justify-center text-sm font-semibold tracking-tight transition-all duration-200 active:scale-[0.99]"
+                                {/* Subtitle Description */}
+                                <p 
+                                  className="text-stone-600 text-base sm:text-lg font-normal mt-5 mb-8 leading-relaxed max-w-xl text-left" 
                                 >
-                                  Buat Laporan
-                                </Link>
+                                  Saluran aman dan rahasia untuk menyuarakan apa yang kamu alami. Identitasmu terjaga sepenuhnya, dipantau dan ditangani langsung oleh Guru BK terpercaya.
+                                </p>
 
-                                {/* Tombol 2: Lacak Status PIN */}
-                                <Link
-                                  href="/track"
-                                  className="h-12 px-6 rounded-full bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shadow-sm inline-flex items-center justify-center text-sm font-semibold tracking-tight transition-all duration-200 active:scale-[0.99]"
-                                >
-                                  Lacak Status PIN
-                                </Link>
+                                {/* Action Buttons - Dribbble Modern Aesthetics */}
+                                <div className="flex flex-wrap items-center gap-3.5">
+                                  {/* Tombol 1: Buat Laporan */}
+                                  <Link
+                                    href="/report"
+                                    className="h-12 px-7 rounded-xl bg-[#E02B2B] hover:bg-[#c92424] text-white font-semibold text-sm shadow-sm hover:shadow-md transition-all active:scale-[0.99] cursor-pointer inline-flex items-center justify-center tracking-tight"
+                                  >
+                                    Buat Laporan Sekarang
+                                  </Link>
+
+                                  {/* Tombol 2: Pelajari Cara Kerja */}
+                                  <Link
+                                    href="/#cara-kerja"
+                                    className="h-12 px-6 rounded-xl bg-white hover:bg-stone-50 text-stone-800 border border-stone-200 font-semibold text-sm shadow-xs transition-all active:scale-[0.99] cursor-pointer inline-flex items-center justify-center tracking-tight"
+                                  >
+                                    Pelajari Cara Kerja
+                                  </Link>
+                                </div>
+
+                                {/* Quick Trust Micro-Metrics */}
+                                <div className="grid grid-cols-3 gap-4 pt-8 mt-8 border-t border-stone-200/70 w-full max-w-lg">
+                                  <div>
+                                    <div className="text-sm font-bold text-stone-900">100% Anonim</div>
+                                    <div className="text-[11px] text-stone-500 mt-0.5">Tanpa pelacakan IP</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-sm font-bold text-stone-900">Enkripsi 256-Bit</div>
+                                    <div className="text-[11px] text-stone-500 mt-0.5">Standar data rahasia</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-sm font-bold text-stone-900">Guru BK Siaga</div>
+                                    <div className="text-[11px] text-stone-500 mt-0.5">Etik resmi ABKIN</div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Right Column: Dribbble-Grade Live Security & Tracking Preview Widget */}
+                              <div className="lg:col-span-5 relative w-full pt-4 lg:pt-0">
+                                <div className="relative w-full max-w-md mx-auto lg:max-w-none">
+                                  
+                                  {/* Ambient Card Glow */}
+                                  <div className="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-red-500/12 via-amber-500/8 to-stone-400/10 blur-xl opacity-80 pointer-events-none" />
+
+                                  {/* Main Showcase Card */}
+                                  <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl border border-stone-200/90 shadow-[0_20px_50px_-12px_rgba(28,25,23,0.08)] p-6 sm:p-7 space-y-5">
+                                    
+                                    {/* Top Bar of Card */}
+                                    <div className="flex items-center justify-between pb-4 border-b border-stone-100">
+                                      <div className="flex items-center gap-2.5">
+                                        <div className="w-8 h-8 rounded-lg bg-red-50 text-[#E02B2B] flex items-center justify-center font-bold text-xs border border-red-100/80 shrink-0">
+                                          <ShieldCheck className="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                          <div className="text-xs font-bold text-stone-900">Tiket Terenkripsi</div>
+                                          <div className="text-[11px] font-mono text-stone-500">#RL-2026-9042</div>
+                                        </div>
+                                      </div>
+                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                        Dalam Penanganan
+                                      </span>
+                                    </div>
+
+                                    {/* Timeline Progress */}
+                                    <div className="space-y-3">
+                                      <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">Tahapan Penanganan</div>
+                                      
+                                      <div className="space-y-2.5">
+                                        {/* Step 1: Terkirim */}
+                                        <div className="flex items-center gap-3 text-xs">
+                                          <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                                            ✓
+                                          </div>
+                                          <div className="flex-1 flex items-center justify-between">
+                                            <span className="font-medium text-stone-800">Laporan Anonim Terkirim</span>
+                                            <span className="text-[11px] text-stone-400">08.12 WIB</span>
+                                          </div>
+                                        </div>
+
+                                        {/* Step 2: Enkripsi */}
+                                        <div className="flex items-center gap-3 text-xs">
+                                          <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                                            ✓
+                                          </div>
+                                          <div className="flex-1 flex items-center justify-between">
+                                            <span className="font-medium text-stone-800">Identitas Divalidasi &amp; Dienkripsi</span>
+                                            <span className="text-[11px] text-stone-400">08.13 WIB</span>
+                                          </div>
+                                        </div>
+
+                                        {/* Step 3: Pendampingan Aktif */}
+                                        <div className="flex items-center gap-3 text-xs">
+                                          <div className="w-5 h-5 rounded-full bg-[#E02B2B] text-white flex items-center justify-center text-[10px] font-bold shrink-0 animate-pulse">
+                                            •
+                                          </div>
+                                          <div className="flex-1 flex items-center justify-between">
+                                            <span className="font-semibold text-stone-900">Konseling Tertutup Guru BK</span>
+                                            <span className="text-[11px] font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded">Berlangsung</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Message Quote Box */}
+                                    <div className="bg-[#FAF8F5] border border-stone-200/80 rounded-2xl p-3.5 text-xs text-stone-700 leading-relaxed">
+                                      <div className="flex items-center gap-1.5 mb-1.5 font-bold text-stone-900 text-[11px]">
+                                        <Lock className="w-3.5 h-3.5 text-stone-600" />
+                                        <span>Catatan Rahasia Konselor</span>
+                                      </div>
+                                      &ldquo;Identitas pelapor sepenuhnya disamarkan. Jadwal klarifikasi tertutup telah disiapkan bersama TPPK sekolah.&rdquo;
+                                    </div>
+
+                                    {/* Counselor Profile Footer */}
+                                    <div className="flex items-center justify-between pt-2 text-xs border-t border-stone-100">
+                                      <div className="flex items-center gap-2.5">
+                                        <div className="w-7 h-7 rounded-full bg-stone-900 text-white flex items-center justify-center font-bold text-[10px]">
+                                          BK
+                                        </div>
+                                        <div>
+                                          <div className="font-bold text-stone-900 text-xs">Dra. Nurhayati, M.Pd</div>
+                                          <div className="text-[10px] text-stone-500">Konselor Berlisensi ABKIN</div>
+                                        </div>
+                                      </div>
+                                      <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60">
+                                        Siaga Hari Ini
+                                      </span>
+                                    </div>
+
+                                  </div>
+
+                                  {/* Floating Micro-Badge */}
+                                  <div className="hidden sm:flex absolute -top-4 -right-3 bg-white/95 backdrop-blur-md border border-stone-200 shadow-md rounded-2xl px-3.5 py-1.5 items-center gap-2 text-xs text-stone-800">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                    <span className="font-bold text-xs">Zero-Metadata</span>
+                                    <span className="text-stone-400 text-[11px]">Bebas Jejak</span>
+                                  </div>
+
+                                </div>
                               </div>
 
                             </div>
@@ -265,27 +393,38 @@ export default function RelasiHomePage() {
                     <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 w-full">
                       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
 
-                        {/* Left: Chat Thread Message Exchange */}
+                        {/* Left: Chat Thread Message Exchange - Dribbble Crafted Interface */}
                         <div className="lg:col-span-6 flex flex-col justify-center">
-                          <div className="p-5 sm:p-6 lg:p-7 bg-slate-900 rounded-3xl border border-slate-800 shadow-xl h-full flex flex-col justify-center overflow-hidden">
+                          <div className="p-6 sm:p-7 lg:p-8 bg-white rounded-3xl border border-stone-200/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-full flex flex-col justify-center overflow-hidden">
+                            {/* Panel Micro-Header */}
+                            <div className="flex items-center justify-between pb-4 mb-4 border-b border-stone-100 text-xs">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="font-semibold text-stone-800">Simulasi Ruang Aman Terenkripsi</span>
+                              </div>
+                              <span className="text-[11px] font-mono text-stone-400 bg-stone-50 px-2 py-0.5 rounded border border-stone-200/60">
+                                256-bit AES
+                              </span>
+                            </div>
+
                             <div className="flex flex-col gap-4 sm:gap-5 w-full">
                               
                               {/* Bubble 1: Incoming from BK */}
                               <div className="flex items-start gap-3 w-full">
-                                <div className="w-8 h-8 rounded-full bg-[#E02B2B] text-white flex items-center justify-center font-bold text-xs shrink-0 select-none shadow-sm mt-0.5">
+                                <div className="w-8 h-8 rounded-full bg-stone-900 text-white flex items-center justify-center font-bold text-xs shrink-0 select-none shadow-xs mt-0.5">
                                   BK
                                 </div>
-                                <div className="bg-white text-slate-900 rounded-2xl rounded-tl-xs p-3.5 sm:p-4 max-w-[85%] sm:max-w-[82%] shadow-sm">
-                                  <div className="text-xs font-bold text-slate-900 mb-1">Konselor RELASI</div>
-                                  <div className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                                    Halo, ceritakan apa yang kamu lihat atau alami. Ruang ini terenkripsi dan privasimu terjaga.
+                                <div className="bg-stone-100/90 text-stone-800 rounded-2xl rounded-tl-xs p-3.5 sm:p-4 max-w-[85%] sm:max-w-[82%] border border-stone-200/50">
+                                  <div className="text-xs font-bold text-stone-900 mb-1">Konselor RELASI</div>
+                                  <div className="text-xs sm:text-sm text-stone-700 leading-relaxed">
+                                    Halo, ceritakan apa yang kamu lihat atau alami. Ruang ini terenkripsi dan privasimu terjaga rapat.
                                   </div>
                                 </div>
                               </div>
 
                               {/* Bubble 2: Outgoing from Student */}
                               <div className="flex items-start justify-end w-full">
-                                <div className="bg-[#E02B2B] text-white rounded-2xl rounded-tr-xs p-3.5 sm:p-4 max-w-[88%] sm:max-w-[84%] shadow-md shadow-red-950/20">
+                                <div className="bg-[#E02B2B] text-white rounded-2xl rounded-tr-xs p-3.5 sm:p-4 max-w-[88%] sm:max-w-[84%] shadow-sm">
                                   <div className="text-xs font-bold text-white/90 mb-1 text-right">Saksi Murid (Anonim)</div>
                                   <div className="text-xs sm:text-sm text-white leading-relaxed">
                                     Saya melihat pemerasan dan perundungan di lorong lantai 2 saat jam istirahat. Tolong samarkan nama saya.
@@ -295,19 +434,19 @@ export default function RelasiHomePage() {
 
                               {/* Bubble 3: Confirmation from System */}
                               <div className="flex items-start gap-3 w-full">
-                                <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 select-none shadow-sm mt-0.5">
+                                <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 select-none shadow-xs mt-0.5">
                                   ✓
                                 </div>
-                                <div className="bg-white text-slate-900 rounded-2xl rounded-tl-xs p-3.5 sm:p-4 max-w-[88%] sm:max-w-[84%] shadow-sm">
-                                  <div className="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1.5 flex-wrap">
+                                <div className="bg-[#FAF8F5] text-stone-800 rounded-2xl rounded-tl-xs p-3.5 sm:p-4 max-w-[88%] sm:max-w-[84%] border border-stone-200/80 shadow-xs">
+                                  <div className="text-xs font-bold text-stone-900 mb-1 flex items-center gap-1.5 flex-wrap">
                                     <span>Sistem Keamanan</span>
                                     <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
                                       Terenkripsi
                                     </span>
                                   </div>
-                                  <div className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                                  <div className="text-xs sm:text-sm text-stone-700 leading-relaxed">
                                     Identitas Anda disamarkan. PIN pelacakan rahasia Anda telah diterbitkan:{' '}
-                                    <strong className="font-mono text-slate-950 font-bold bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                    <strong className="font-mono text-stone-900 font-bold bg-white px-2 py-0.5 rounded border border-stone-200 shadow-2xs">
                                       RL-7821
                                     </strong>
                                     . Guru BK akan menindaklanjuti secara tertutup.
@@ -323,41 +462,41 @@ export default function RelasiHomePage() {
                         <div className="lg:col-span-6 flex flex-col justify-center">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
 
-                            <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between shadow-2xs">
+                            <div className="p-6 bg-white border border-stone-200/90 rounded-2xl flex flex-col justify-between shadow-xs hover:border-stone-300 transition-colors">
                               <div>
                                 <span className="text-xs font-bold text-[#E02B2B] uppercase tracking-wider block mb-2">ZERO-METADATA</span>
-                                <h3 className="font-bold text-slate-900 text-base">Anonimitas Mutlak</h3>
-                                <p className="text-xs text-slate-600 mt-1 leading-relaxed">Siswa dapat melapor tanpa menyertakan nama, tanpa pelacakan alamat IP maupun identitas perangkat.</p>
+                                <h3 className="font-bold text-stone-900 text-base">Anonimitas Mutlak</h3>
+                                <p className="text-xs text-stone-600 mt-1.5 leading-relaxed">Siswa dapat melapor tanpa menyertakan nama, tanpa pelacakan alamat IP maupun identitas perangkat.</p>
                               </div>
-                              <span className="text-[11px] font-semibold text-slate-400 mt-4">Privasi Penuh Pelapor</span>
+                              <span className="text-[11px] font-semibold text-stone-400 mt-4">Privasi Penuh Pelapor</span>
                             </div>
 
-                            <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between shadow-2xs">
+                            <div className="p-6 bg-white border border-stone-200/90 rounded-2xl flex flex-col justify-between shadow-xs hover:border-stone-300 transition-colors">
                               <div>
-                                <span className="text-xs font-bold text-blue-700 uppercase tracking-wider block mb-2">ENKRIPSI KUAT</span>
-                                <h3 className="font-bold text-slate-900 text-base">PIN Akses Mandiri</h3>
-                                <p className="text-xs text-slate-600 mt-1 leading-relaxed">Pantau perkembangan langsung tanpa perlu registrasi akun publik bagi yang menginginkan kerahasiaan penuh.</p>
+                                <span className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">ENKRIPSI KUAT</span>
+                                <h3 className="font-bold text-stone-900 text-base">PIN Akses Mandiri</h3>
+                                <p className="text-xs text-stone-600 mt-1.5 leading-relaxed">Pantau perkembangan langsung tanpa perlu registrasi akun publik bagi yang menginginkan kerahasiaan penuh.</p>
                               </div>
-                              <span className="text-[11px] font-semibold text-slate-400 mt-4">Kunci 256-Bit Unik</span>
+                              <span className="text-[11px] font-semibold text-stone-400 mt-4">Kunci 256-Bit Unik</span>
                             </div>
 
-                            <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between shadow-2xs">
+                            <div className="p-6 bg-white border border-stone-200/90 rounded-2xl flex flex-col justify-between shadow-xs hover:border-stone-300 transition-colors">
                               <div>
-                                <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-2">KODE ETIK ABKIN</span>
-                                <h3 className="font-bold text-slate-900 text-base">Objektivitas Penuh</h3>
-                                <p className="text-xs text-slate-600 mt-1 leading-relaxed">Tim konselor menangani setiap aduan secara berimbang, empatik, dan bebas intimidasi sosial.</p>
+                                <span className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">KODE ETIK ABKIN</span>
+                                <h3 className="font-bold text-stone-900 text-base">Objektivitas Penuh</h3>
+                                <p className="text-xs text-stone-600 mt-1.5 leading-relaxed">Tim konselor menangani setiap aduan secara berimbang, empatik, dan bebas intimidasi sosial.</p>
                               </div>
-                              <span className="text-[11px] font-semibold text-slate-400 mt-4">Standar Profesi Konseling</span>
+                              <span className="text-[11px] font-semibold text-stone-400 mt-4">Standar Profesi Konseling</span>
                             </div>
 
-                            <div className="p-6 bg-[#0F172A] text-white rounded-2xl flex flex-col justify-between border border-slate-800 shadow-2xs">
+                            <div className="p-6 bg-stone-900 text-white rounded-2xl flex flex-col justify-between border border-stone-800 shadow-sm">
                               <div>
                                 <span className="text-xs font-bold text-red-400 uppercase tracking-wider">AKSES CEPAT</span>
                                 <h3 className="font-bold text-white text-base mt-1">Punya Info Kejadian?</h3>
-                                <p className="text-xs text-slate-300 mt-1 leading-relaxed">Jangan biarkan temanmu berjuang sendirian. Suaramu dilindungi penuh.</p>
+                                <p className="text-xs text-stone-300 mt-1 leading-relaxed">Jangan biarkan temanmu berjuang sendirian. Suaramu dilindungi penuh.</p>
                               </div>
-                              <Link href="/report" className="mt-4 px-4 py-2 !bg-[#E02B2B] hover:!bg-[#c92424] !text-white font-medium text-xs rounded-xl text-center transition shadow-sm hover:shadow-md cursor-pointer">
-                                Buat Laporan Sekarang →
+                              <Link href="/report" className="mt-4 px-4 py-2.5 bg-[#E02B2B] hover:bg-[#c92424] text-white font-medium text-xs rounded-xl text-center transition shadow-xs active:scale-[0.98] cursor-pointer">
+                                Buat Laporan Sekarang
                               </Link>
                             </div>
 
@@ -470,44 +609,42 @@ export default function RelasiHomePage() {
                     </div>
                   </section>
 
-                  {/* 9. DUAL-CARD FUNCTIONAL CTA BANNER (Opsi 3: Akses Cepat Pelaporan & Bantuan Darurat) */}
+                  {/* 9. DUAL-CARD FUNCTIONAL CTA BANNER (Akses Cepat Pelaporan & Bantuan Darurat - Dribbble Modern Luxury Design) */}
                   <section
                     className="w-full mt-4 mb-16 sm:mb-20"
                     aria-label="Akses Pelaporan dan Bantuan Cepat"
                   >
                     <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 w-full">
-                      <div className="bg-slate-900 rounded-3xl border border-slate-800 shadow-xl overflow-hidden p-6 sm:p-8 lg:p-10">
+                      <div className="bg-white rounded-3xl border border-stone-200/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden p-6 sm:p-8 lg:p-10">
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
 
                           {/* Sisi A: Akses Laporan Anonim */}
                           <div className="lg:col-span-7 flex flex-col justify-between">
                             <div>
-                              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 text-stone-700 text-xs font-semibold tracking-wide mb-4">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#E02B2B]" />
+                                <span>Saluran Pelaporan Terenkripsi</span>
+                              </div>
+                              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-stone-900 tracking-tight leading-[1.2]">
                                 Jangan Simpan Bebanmu Sendirian
                               </h3>
-                              <p className="text-slate-300 text-sm sm:text-base leading-relaxed mt-3 max-w-xl">
-                                Suaramu berharga. Laporkan insiden dengan proteksi identitas penuh dan tanpa risiko pembalasan.
+                              <p className="text-stone-600 text-sm sm:text-base leading-relaxed mt-3 max-w-xl">
+                                Suaramu berharga. Laporkan insiden dengan proteksi identitas penuh dan tanpa risiko pembalasan dari pihak mana pun.
                               </p>
 
-                              {/* Jaminan Keamanan Ringkas */}
-                              <div className="flex flex-wrap items-center gap-y-3 gap-x-6 mt-6 text-xs">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-4 h-4 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
-                                  </div>
-                                  <span className="text-slate-300 font-medium">Identitas Disamarkan</span>
+                              {/* Jaminan Keamanan Ringkas Bergaya Dribbble */}
+                              <div className="flex flex-wrap items-center gap-2.5 mt-6">
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-50 border border-stone-200/80 text-stone-700 text-xs font-medium">
+                                  <ShieldCheck className="w-3.5 h-3.5 text-stone-600" />
+                                  <span>Identitas Disamarkan</span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-4 h-4 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
-                                  </div>
-                                  <span className="text-slate-300 font-medium">Pantau Progres via PIN</span>
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-50 border border-stone-200/80 text-stone-700 text-xs font-medium">
+                                  <Lock className="w-3.5 h-3.5 text-stone-600" />
+                                  <span>Pantau Progres via PIN</span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-4 h-4 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
-                                  </div>
-                                  <span className="text-slate-300 font-medium">Didampingi Konselor BK</span>
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-50 border border-stone-200/80 text-stone-700 text-xs font-medium">
+                                  <HeartHandshake className="w-3.5 h-3.5 text-stone-600" />
+                                  <span>Didampingi Konselor BK</span>
                                 </div>
                               </div>
                             </div>
@@ -516,65 +653,58 @@ export default function RelasiHomePage() {
                             <div className="mt-8 flex flex-wrap items-center gap-3">
                               <Link
                                 href="/report"
-                                className="px-6 sm:px-7 py-3.5 rounded-full !bg-[#E02B2B] hover:!bg-[#c92424] !text-white font-semibold text-sm shadow-lg shadow-red-600/30 hover:shadow-red-600/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all inline-flex items-center gap-2 cursor-pointer"
+                                className="px-6 sm:px-7 py-3.5 rounded-xl bg-[#E02B2B] hover:bg-[#c92424] text-white font-semibold text-sm shadow-sm hover:shadow-md transition-all active:scale-[0.99] cursor-pointer inline-flex items-center justify-center"
                               >
                                 <span>Buat Laporan Sekarang</span>
-                                <ArrowRight className="w-4 h-4" />
                               </Link>
                               <Link
-                                href="/track"
-                                className="px-5 py-3.5 rounded-full bg-slate-800/90 hover:bg-slate-800 text-slate-200 border border-slate-700/80 font-semibold text-sm transition-all inline-flex items-center justify-center cursor-pointer"
+                                href="/#cara-kerja"
+                                className="px-5 py-3.5 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-stone-800 border border-stone-200 font-semibold text-sm transition-all cursor-pointer inline-flex items-center justify-center active:scale-[0.99]"
                               >
-                                <span>Lacak Status PIN</span>
+                                <span>Pelajari Cara Kerja</span>
                               </Link>
                             </div>
                           </div>
 
                           {/* Sisi B: Bantuan Cepat & Kontak Darurat */}
                           <div className="lg:col-span-5 flex flex-col justify-between">
-                            <div className="bg-slate-950/70 border border-slate-800/90 rounded-3xl p-5 sm:p-6 lg:p-7 flex flex-col justify-between h-full space-y-5">
+                            <div className="bg-[#FAF8F5] border border-stone-200/90 rounded-2xl p-5 sm:p-6 lg:p-7 flex flex-col justify-between h-full space-y-5">
                               <div>
-                                <span className="text-xs font-bold text-[#E02B2B] uppercase tracking-wider block mb-2">
-                                  BUTUH BANTUAN MENDESAK?
-                                </span>
-                                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                                  Jika kamu atau temanmu berada dalam situasi krisis atau butuh perlindungan segera, hubungi layanan siaga resmi ini:
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="w-2 h-2 rounded-full bg-[#E02B2B] animate-pulse" />
+                                  <span className="text-xs font-bold text-stone-800 uppercase tracking-wider">
+                                    Layanan Tanggap Darurat
+                                  </span>
+                                </div>
+                                <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+                                  Jika kamu atau temanmu berada dalam situasi krisis atau membutuhkan perlindungan fisik segera, hubungi kontak resmi ini:
                                 </p>
                               </div>
 
                               {/* Box Hotline SAPA 129 */}
-                              <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-3 shadow-sm">
+                              <div className="p-4 rounded-xl bg-white border border-stone-200/90 flex items-center justify-between gap-3 shadow-xs">
                                 <div className="flex items-center gap-3.5">
-                                  <div className="w-10 h-10 rounded-xl bg-red-600/15 text-[#E02B2B] flex items-center justify-center shrink-0 border border-red-500/20">
+                                  <div className="w-10 h-10 rounded-lg bg-red-50 text-[#E02B2B] flex items-center justify-center shrink-0 border border-red-100">
                                     <PhoneCall className="w-5 h-5" />
                                   </div>
                                   <div>
-                                    <div className="text-sm font-bold text-white tracking-tight">Hotline SAPA 129</div>
-                                    <div className="text-[11px] text-slate-400">KemenPPPA RI — Bebas Pulsa 24 Jam</div>
+                                    <div className="text-sm font-bold text-stone-900 tracking-tight">Hotline SAPA 129</div>
+                                    <div className="text-[11px] text-stone-500">KemenPPPA RI, Bebas Pulsa 24 Jam</div>
                                   </div>
                                 </div>
                                 <a
                                   href="tel:129"
-                                  className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition shrink-0 border border-slate-700/60"
+                                  className="px-4 py-2 rounded-lg bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold transition shrink-0 shadow-xs active:scale-[0.98]"
                                 >
                                   Panggil
                                 </a>
                               </div>
 
                               {/* Info Jam Pendampingan Guru BK */}
-                              <div className="flex items-start gap-2.5 text-xs text-slate-400">
-                                <Clock className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
-                                <span>Layanan Tatap Muka Ruang BK: Senin–Jumat, 07.30–15.00 WIB (Privat &amp; Tertutup)</span>
+                              <div className="flex items-start gap-2.5 text-xs text-stone-500 bg-white/70 p-3 rounded-lg border border-stone-200/50">
+                                <Clock className="w-4 h-4 text-stone-400 shrink-0 mt-0.5" />
+                                <span>Layanan Tatap Muka Ruang BK: Senin s.d. Jumat, 07.30 - 15.00 WIB (Privat &amp; Tertutup)</span>
                               </div>
-
-                              {/* Tombol Sekunder Hotline Langsung */}
-                              <a
-                                href="tel:129"
-                                className="w-full py-3.5 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs sm:text-sm text-center transition flex items-center justify-center gap-2 shadow-sm cursor-pointer active:scale-[0.99]"
-                              >
-                                <PhoneCall className="w-4 h-4 text-slate-900" />
-                                <span>Hubungi Layanan Darurat 129</span>
-                              </a>
                             </div>
                           </div>
 

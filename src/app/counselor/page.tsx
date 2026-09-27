@@ -33,7 +33,9 @@ function CounselorDashboardContent() {
   const [counselorReply, setCounselorReply] = useState('');
   const [isReplying, setIsReplying] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const counselorChatBottomRef = useRef<HTMLDivElement | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const counselorChatContainerRef = useRef<HTMLDivElement | null>(null);
 
   const {
     messages: realtimeMessages,
@@ -73,11 +75,62 @@ function CounselorDashboardContent() {
     }
   }, [urlReportId, reports]);
 
+  // WhatsApp-style real-time unread messages listener
   useEffect(() => {
-    if (selectedReport && counselorChatBottomRef.current) {
-      counselorChatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (currentUser.role !== 'counselor') return;
+
+    let es: EventSource | null = null;
+    try {
+      es = new EventSource('/api/counselor/notifications/stream');
+      es.onmessage = (event) => {
+        try {
+          if (!event.data || event.data === ':keepalive') return;
+          const data = JSON.parse(event.data);
+          if (data.reportId) {
+            setUnreadCounts((prev) => {
+              if (selectedReport?.id === data.reportId) return prev;
+              return {
+                ...prev,
+                [data.reportId]: (prev[data.reportId] || 0) + 1,
+              };
+            });
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      };
+    } catch (err) {
+      console.error(err);
     }
-  }, [realtimeMessages, selectedReport]);
+
+    return () => {
+      if (es) es.close();
+    };
+  }, [currentUser.role, selectedReport?.id]);
+
+  // Scroll ONLY the chat box internally without touching the browser window!
+  useEffect(() => {
+    if (counselorChatContainerRef.current) {
+      counselorChatContainerRef.current.scrollTop = counselorChatContainerRef.current.scrollHeight;
+    }
+  }, [realtimeMessages]);
+
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown((c) => c - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
+
+  const handleSelectReport = (r: Report) => {
+    setSelectedReport(r);
+    setUnreadCounts((prev) => {
+      if (!prev[r.id]) return prev;
+      const next = { ...prev };
+      delete next[r.id];
+      return next;
+    });
+  };
 
   // Metrik Utama Sesuai Dokumen PPKSP Permendikbudristek No. 46/2023
   const countNeedsReview = reports.filter(r => r.status === 'submitted').length;
@@ -118,11 +171,12 @@ function CounselorDashboardContent() {
 
   const handleSendCounselorMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedReport || !counselorReply.trim()) return;
+    if (!selectedReport || !counselorReply.trim() || cooldown > 0) return;
 
     const senderName = currentUser.name || 'Guru BK (Ibu Siti Rahmawati)';
     const textToSend = counselorReply.trim();
     setCounselorReply('');
+    setCooldown(2);
     setIsReplying(true);
 
     const success = await sendRealtimeMessage(textToSend, 'counselor', senderName);
@@ -324,7 +378,7 @@ function CounselorDashboardContent() {
                   return (
                     <div
                       key={r.id}
-                      onClick={() => setSelectedReport(r)}
+                      onClick={() => handleSelectReport(r)}
                       className={`p-4 rounded-xl border cursor-pointer transition text-left ${
                         isSelected 
                           ? 'border-[#E02B2B] bg-red-50/30 shadow-2xs' 
@@ -345,11 +399,23 @@ function CounselorDashboardContent() {
                           )}
                         </div>
 
-                        {r.urgency === 'urgent' && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider bg-red-100 text-red-700">
-                            Mendesak
-                          </span>
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          {/* WhatsApp-Style Unread Counter Badge */}
+                          {(unreadCounts[r.id] || 0) > 0 && (
+                            <span 
+                              title={`${unreadCounts[r.id]} pesan baru dari siswa`}
+                              className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#E02B2B] text-white text-[10px] font-bold shadow-xs animate-pulse"
+                            >
+                              {unreadCounts[r.id]}
+                            </span>
+                          )}
+
+                          {r.urgency === 'urgent' && (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider bg-red-100 text-red-700">
+                              Mendesak
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <p className="text-xs text-slate-700 line-clamp-2 font-normal leading-relaxed">
@@ -488,7 +554,10 @@ function CounselorDashboardContent() {
                   </div>
 
                   {/* Chat Messages */}
-                  <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 max-h-64 overflow-y-auto space-y-3">
+                  <div 
+                    ref={counselorChatContainerRef}
+                    className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 max-h-64 overflow-y-auto space-y-3"
+                  >
                     {realtimeMessages.length === 0 ? (
                       <p className="text-center text-xs text-slate-400 font-normal py-6">
                         Belum ada riwayat percakapan. Kirimkan pesan klarifikasi atau jadwalkan sesi tatap muka tertutup.
@@ -514,7 +583,6 @@ function CounselorDashboardContent() {
                         </div>
                       ))
                     )}
-                    <div ref={counselorChatBottomRef} />
                   </div>
 
                   {/* Send Form */}
@@ -524,16 +592,19 @@ function CounselorDashboardContent() {
                       required
                       value={counselorReply}
                       onChange={(e) => setCounselorReply(e.target.value)}
-                      placeholder="Tulis pesan klarifikasi atau jadwal sesi konseling terlindungi..."
-                      className="flex-1 px-4 py-2.5 text-xs rounded-xl border-2 border-slate-300 focus:outline-none focus:border-[#E02B2B] bg-white font-normal shadow-2xs"
+                      placeholder={cooldown > 0 ? `Menunggu proteksi anti-spam (${cooldown}d)...` : "Tulis pesan klarifikasi atau jadwal sesi konseling terlindungi..."}
+                      disabled={cooldown > 0}
+                      className="flex-1 px-4 py-2.5 text-xs rounded-xl border-2 border-slate-300 focus:outline-none focus:border-[#E02B2B] bg-white font-normal shadow-2xs disabled:bg-slate-100 disabled:text-slate-400"
                     />
                     <button
                       type="submit"
-                      disabled={isReplying}
+                      disabled={isReplying || cooldown > 0}
                       className="px-6 py-2.5 rounded-xl !bg-[#E02B2B] hover:!bg-[#c92424] !text-white font-medium text-xs shadow-2xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
                     >
                       {isReplying ? (
                         <span>Mengirim...</span>
+                      ) : cooldown > 0 ? (
+                        <span>{cooldown}s</span>
                       ) : (
                         <>
                           <Send className="w-3.5 h-3.5" />

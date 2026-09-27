@@ -4,6 +4,14 @@ import { chatEmitter, ChatMessagePayload, CounselorNotificationPayload } from '@
 
 export const dynamic = 'force-dynamic';
 
+// Anti-Spam & Rate Limiting tracking (Memory store)
+interface SpamTracker {
+  lastTimestamp: number;
+  lastContent: string;
+}
+
+const spamMap = new Map<string, SpamTracker>();
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -53,8 +61,46 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const trimmedContent = content.trim();
+
+    // 1. Max character length limit
+    if (trimmedContent.length > 1000) {
+      return NextResponse.json(
+        { error: 'Pesan terlalu panjang (maksimal 1.000 karakter).' },
+        { status: 400 }
+      );
+    }
+
     const validSender = sender === 'counselor' ? 'counselor' : 'student';
     const validSenderName = senderName?.trim() || (validSender === 'counselor' ? 'Guru BK' : 'Pelapor');
+
+    // 2. Anti-Spam Cooldown & Duplicate Check
+    const spamKey = `${reportId}:${validSender}`;
+    const now = Date.now();
+    const existingTracker = spamMap.get(spamKey);
+
+    if (existingTracker) {
+      // 1.5 seconds cooldown
+      if (now - existingTracker.lastTimestamp < 1500) {
+        return NextResponse.json(
+          { error: 'Mohon tunggu 2 detik sebelum mengirim pesan berikutnya (Anti-Spam).' },
+          { status: 429 }
+        );
+      }
+
+      // Duplicate message detection within 8 seconds
+      if (
+        now - existingTracker.lastTimestamp < 8000 &&
+        existingTracker.lastContent.toLowerCase() === trimmedContent.toLowerCase()
+      ) {
+        return NextResponse.json(
+          { error: 'Pesan serupa baru saja dikirim. Mohon hindari pengiriman berulang.' },
+          { status: 429 }
+        );
+      }
+    }
+
+    spamMap.set(spamKey, { lastTimestamp: now, lastContent: trimmedContent });
 
     // 1. Save to PostgreSQL
     const created = await prisma.message.create({
@@ -62,7 +108,7 @@ export async function POST(req: NextRequest) {
         reportId,
         sender: validSender,
         senderName: validSenderName,
-        content: content.trim(),
+        content: trimmedContent,
         isRead: false,
       },
     });

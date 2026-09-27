@@ -178,10 +178,11 @@ export default function TetherNavbar() {
     }
 
     if (role === 'counselor') {
-      // 3. Guru BK: Kasus, Dashboard, Konseling only
+      // 3. Guru BK: Kasus, Dashboard, Lacak Laporan, Konseling
       return [
         { label: 'Kasus', href: '/counselor/cases' },
         { label: 'Dashboard', href: '/counselor' },
+        { label: 'Lacak Laporan', href: '/track' },
         { label: 'Konseling', href: '/counselor/konseling' },
       ];
     }
@@ -195,13 +196,12 @@ export default function TetherNavbar() {
       ];
     }
 
-    // 1. Guest (Not logged in): Beranda, Cara Kerja, Keamanan, FAQ, Lacak Laporan
+    // 1. Guest (Not logged in): Beranda, Cara Kerja, Keamanan, FAQ
     return [
       { label: 'Beranda', href: '/' },
       { label: 'Cara Kerja', href: '/#cara-kerja' },
       { label: 'Keamanan', href: '/#keamanan' },
       { label: 'FAQ', href: '/#faq' },
-      { label: 'Lacak Laporan', href: '/track' },
     ];
   };
 
@@ -274,50 +274,6 @@ export default function TetherNavbar() {
 
   return (
     <>
-      {/* Role Switcher Demo Pill (bottom-left) for quick role toggle */}
-      <aside 
-        aria-label="Demo Role Switcher" 
-        className="fixed bottom-4 left-4 z-50 bg-white/95 backdrop-blur-md px-3 py-2 rounded-2xl shadow-xl border border-black/[0.08] flex items-center gap-1.5 text-xs font-sans"
-      >
-        <span className="text-[11px] font-bold text-slate-700 pl-0.5 pr-1">Peran:</span>
-        <button
-          type="button"
-          onClick={() => switchRole('guest')}
-          className={`px-2.5 py-1 rounded-xl font-medium transition cursor-pointer ${
-            role === 'guest' ? 'bg-[#E02B2B] text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          Guest
-        </button>
-        <button
-          type="button"
-          onClick={() => switchRole('student')}
-          className={`px-2.5 py-1 rounded-xl font-medium transition cursor-pointer ${
-            role === 'student' ? 'bg-[#E02B2B] text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          User (Siswa)
-        </button>
-        <button
-          type="button"
-          onClick={() => switchRole('counselor')}
-          className={`px-2.5 py-1 rounded-xl font-medium transition cursor-pointer ${
-            role === 'counselor' ? 'bg-[#E02B2B] text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          Guru BK
-        </button>
-        <button
-          type="button"
-          onClick={() => switchRole('super_admin')}
-          className={`px-2.5 py-1 rounded-xl font-medium transition cursor-pointer ${
-            role === 'super_admin' ? 'bg-[#E02B2B] text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          Super Admin
-        </button>
-      </aside>
-
       {/* Main Grid-Aligned Navigation Bar */}
       <header 
         id="header-outer"

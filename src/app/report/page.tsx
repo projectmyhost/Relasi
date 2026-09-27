@@ -24,9 +24,11 @@ import {
 } from 'lucide-react';
 import { RuangSuaraStore } from '@/lib/store';
 import { ReporterRole, ReportCategory, UrgencyLevel } from '@/lib/types';
+import { useAuth } from '@/lib/authContext';
 
 export default function ReportPage() {
   const router = useRouter();
+  const { currentUser } = useAuth();
   const [role, setRole] = useState<ReporterRole>('victim');
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [reporterName, setReporterName] = useState('');
@@ -166,18 +168,36 @@ export default function ReportPage() {
 
             {/* Next Steps Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-              <Link
-                href={`/track?id=${submittedData.id}&pin=${submittedData.pin}`}
-                style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
-                className="w-full sm:w-auto px-7 py-3 rounded-full !bg-[#E02B2B] hover:!bg-[#c92424] !text-white font-medium text-sm shadow-sm hover:shadow-md transition flex items-center justify-center gap-2"
-              >
-                <MessageSquare className="w-4 h-4" />
-                <span>Buka Ruang Lacak &amp; Chat BK</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              {currentUser.role === 'student' ? (
+                <Link
+                  href="/my-reports"
+                  className="w-full sm:w-auto px-7 py-3 rounded-xl bg-[#E02B2B] hover:bg-[#c92424] text-white font-medium text-sm shadow-sm hover:shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Buka Riwayat Laporan Saya</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              ) : currentUser.role === 'counselor' ? (
+                <Link
+                  href="/counselor/cases"
+                  className="w-full sm:w-auto px-7 py-3 rounded-xl bg-[#E02B2B] hover:bg-[#c92424] text-white font-medium text-sm shadow-sm hover:shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Buka Daftar Kasus BK</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  className="w-full sm:w-auto px-7 py-3 rounded-xl bg-[#E02B2B] hover:bg-[#c92424] text-white font-medium text-sm shadow-sm hover:shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+                >
+                  <User className="w-4 h-4" />
+                  <span>Masuk Akun Siswa</span>
+                </Link>
+              )}
               <Link
                 href="/"
-                className="w-full sm:w-auto px-7 py-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-sm transition text-center"
+                className="w-full sm:w-auto px-7 py-3 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-stone-800 border border-stone-200 font-medium text-sm transition text-center cursor-pointer active:scale-[0.99]"
               >
                 Kembali ke Beranda
               </Link>

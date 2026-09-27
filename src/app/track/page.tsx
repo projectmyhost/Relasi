@@ -113,36 +113,49 @@ function TrackReportContent() {
           </p>
         </div>
 
-        {/* Jika User Login Sebagai Siswa: Gabisa Cek Lacak PIN (Arahkan ke Laporan Saya) */}
-        {currentUser.role === 'student' ? (
-          <div className="bg-white rounded-3xl p-8 sm:p-10 border border-slate-200/90 shadow-sm text-center space-y-5 max-w-xl mx-auto">
-            <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto border border-amber-200/80">
+        {/* Jika User Bukan Guru BK (Guest atau Siswa): Tampilkan Pesan Akses Terbatas */}
+        {currentUser.role !== 'counselor' && currentUser.role !== 'super_admin' ? (
+          <div className="bg-white rounded-3xl p-8 sm:p-10 border border-stone-200/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-center space-y-5 max-w-xl mx-auto">
+            <div className="w-14 h-14 rounded-2xl bg-red-50 text-[#E02B2B] flex items-center justify-center mx-auto border border-red-100">
               <Shield className="w-7 h-7" />
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                Lacak PIN Khusus Guru BK &amp; Tamu
+              <h2 className="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
+                Akses Terbatas: Khusus Guru BK
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-md mx-auto">
-                Halo <strong className="text-slate-800">{currentUser.name}</strong>, akun Anda telah masuk sebagai <strong>Siswa</strong>. Seluruh riwayat laporan, perkembangan status investigasi, dan ruang chat rahasia Anda langsung terhubung di halaman <strong>Laporan Saya</strong> tanpa perlu mengingat PIN secara manual.
+              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-md mx-auto">
+                Halaman pelacakan dan verifikasi dossier laporan via PIN ini hanya dapat diakses oleh <strong>Guru Bimbingan Konseling (BK)</strong> yang berwenang menangani laporan siswa.
               </p>
             </div>
 
-            <div className="pt-2">
+            <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+              {currentUser.role === 'student' ? (
+                <Link
+                  href="/my-reports"
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#E02B2B] hover:bg-[#c92424] text-white font-semibold text-xs sm:text-sm shadow-sm transition active:scale-[0.99] cursor-pointer"
+                >
+                  <span>Buka Riwayat Laporan Saya</span>
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#E02B2B] hover:bg-[#c92424] text-white font-semibold text-xs sm:text-sm shadow-sm transition active:scale-[0.99] cursor-pointer"
+                >
+                  <span>Masuk sebagai Guru BK</span>
+                </Link>
+              )}
               <Link
-                href="/my-reports"
-                style={{ backgroundColor: '#E02B2B', color: '#ffffff' }}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full !bg-[#E02B2B] hover:!bg-[#c92424] !text-white font-semibold text-xs sm:text-sm shadow-[0_2px_10px_rgba(224,43,43,0.22)] hover:shadow-[0_4px_14px_rgba(224,43,43,0.3)] transition cursor-pointer"
+                href="/"
+                className="inline-flex items-center justify-center px-5 py-3 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-stone-800 border border-stone-200 font-semibold text-xs sm:text-sm transition active:scale-[0.99] cursor-pointer"
               >
-                <span>Buka Riwayat Laporan Saya</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>Kembali ke Beranda</span>
               </Link>
             </div>
           </div>
         ) : (
           <>
-            {/* Form Pencarian Tiket (Khusus Guru BK & Tamu) */}
+            {/* Form Pencarian Tiket (Khusus Guru BK & Super Admin) */}
             <div className="bg-white rounded-3xl p-6 sm:p-8 lg:p-9 border border-slate-200/90 shadow-sm space-y-6">
               <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end">
                 <div className="sm:col-span-6">

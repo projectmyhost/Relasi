@@ -37,6 +37,23 @@ html {
   box-sizing: border-box;
 }
 
+/* MODERN LUXURY CUSTOM CURSOR SUPPORT */
+@media (hover: hover) and (pointer: fine) {
+  body.luxury-cursor-active,
+  body.luxury-cursor-active a,
+  body.luxury-cursor-active button,
+  body.luxury-cursor-active [role="button"] {
+    cursor: none !important;
+  }
+
+  body.luxury-cursor-active input,
+  body.luxury-cursor-active textarea,
+  body.luxury-cursor-active select,
+  body.luxury-cursor-active [contenteditable="true"] {
+    cursor: text !important;
+  }
+}
+
 body,
 button,
 input,

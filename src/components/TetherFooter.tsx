@@ -61,7 +61,7 @@ export default function TetherFooter() {
             <div className="flex flex-col gap-3">
               <span className="text-slate-900 font-medium uppercase tracking-wider text-[11px]">Layanan</span>
               <Link href="/report" className="text-[#E02B2B] font-medium hover:underline transition">Buat Laporan</Link>
-              <Link href="/track" className="text-slate-600 hover:text-[#E02B2B] transition">Lacak Laporan</Link>
+              <Link href="/my-reports" className="text-slate-600 hover:text-[#E02B2B] transition">Riwayat Laporan Siswa</Link>
               <Link href="/counselor" className="text-slate-600 hover:text-[#E02B2B] transition">Portal Guru BK</Link>
               <Link href="/login" className="text-slate-600 hover:text-[#E02B2B] transition">Masuk Akun</Link>
               <Link href="/register" className="text-slate-600 hover:text-[#E02B2B] transition">Daftar Siswa</Link>
