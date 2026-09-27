@@ -171,15 +171,11 @@ export default function SuperAdminPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#F6F4F0] py-8 sm:py-14 px-4 sm:px-6 lg:px-8 text-slate-900 font-sans">
+    <div className="w-full min-h-screen bg-[#F6F4F0] pt-6 sm:pt-8 pb-12 lg:pb-16 px-4 sm:px-6 lg:px-8 text-slate-900 font-sans">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header Strip Super Admin */}
-        <div className="bg-slate-950 text-white rounded-[32px] p-6 sm:p-8 border border-slate-800 shadow-[0_12px_40px_rgba(0,0,0,0.06)] flex flex-wrap items-center justify-between gap-6">
+        <div className="bg-slate-950 text-white rounded-[32px] p-6 sm:p-8 border border-slate-800 shadow-[0_12px_40px_rgba(0,0,0,0.06)] flex flex-wrap items-center justify-between gap-6 relative overflow-hidden">
           <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-medium uppercase tracking-wider border border-slate-700">
-              <Lock className="w-3.5 h-3.5" />
-              <span>Panel Tata Kelola Sistem (Super Admin)</span>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-white">
               Tata Kelola Website &amp; Keamanan Sistem
             </h1>

@@ -393,17 +393,12 @@ export default function MyReportsPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#F6F4F0] py-8 sm:py-12 px-4 sm:px-6 lg:px-8 text-slate-900 font-sans">
+    <div className="w-full min-h-screen bg-[#F6F4F0] pt-6 sm:pt-8 pb-12 lg:pb-16 px-4 sm:px-6 lg:px-8 text-slate-900 font-sans">
       <div className="max-w-5xl mx-auto space-y-7">
         
         {/* Editorial Page Top Header */}
-        <div className="bg-white/95 backdrop-blur-xl rounded-[28px] p-6 sm:p-8 border border-black/[0.08] shadow-[0_10px_35px_rgba(0,0,0,0.03)] flex flex-wrap items-center justify-between gap-6">
+        <div className="bg-white/95 backdrop-blur-xl rounded-[28px] p-6 sm:p-8 border border-black/[0.08] shadow-[0_10px_35px_rgba(0,0,0,0.03)] flex flex-wrap items-center justify-between gap-6 relative overflow-hidden">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-red-50 text-[#E02B2B] text-xs font-medium tracking-wide border border-red-200/60">
-              <Shield className="w-3.5 h-3.5" />
-              <span>Portal Siswa &amp; Rekam Pengaduan Aman</span>
-            </div>
-            
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
               Pusat Pelaporan <span className="text-[#E02B2B]">Siswa</span>
             </h1>

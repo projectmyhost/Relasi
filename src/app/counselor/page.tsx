@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { 
-  Shield, 
   Inbox, 
   AlertTriangle, 
   GitMerge, 
@@ -391,15 +390,11 @@ function CounselorDashboardContent() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#F6F4F0] py-8 lg:py-12 text-slate-900 font-sans">
+    <div className="w-full min-h-screen bg-[#F6F4F0] pt-6 sm:pt-8 pb-12 lg:pb-16 text-slate-900 font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         {/* Top Header Card */}
-        <div className="bg-white/95 backdrop-blur-xl rounded-[32px] p-6 sm:p-8 border border-black/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.04)] flex flex-wrap items-center justify-between gap-6">
+        <div className="bg-white/95 backdrop-blur-xl rounded-[32px] p-6 sm:p-8 border border-black/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.04)] flex flex-wrap items-center justify-between gap-6 relative overflow-hidden">
           <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-red-50 text-[#E02B2B] text-xs font-medium uppercase tracking-wider border border-red-200/60">
-              <Shield className="w-3.5 h-3.5" />
-              <span>Ruang Kerja Bimbingan Konseling (Kanal Tertutup)</span>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-medium text-slate-950 tracking-tight">
               Dashboard Penanganan <span className="text-[#E02B2B]">Laporan Siswa</span>
             </h1>
@@ -411,49 +406,43 @@ function CounselorDashboardContent() {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/counselor/cases"
-              className="px-5 py-2.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-xs font-medium transition flex items-center gap-2 shadow-2xs"
+              className="px-5 py-2.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 hover:text-slate-950 text-xs sm:text-sm font-medium transition flex items-center gap-2 shadow-2xs whitespace-nowrap"
             >
-              <Layers className="w-4 h-4 text-amber-600" />
+              <Layers className="w-4 h-4 text-slate-500" />
               <span>Berkas Kasus ({cases.length})</span>
             </Link>
             <Link
               href="/counselor/signals"
-              className="px-5 py-2.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium transition flex items-center gap-2 shadow-2xs"
+              className="px-5 py-2.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 hover:text-slate-950 text-xs sm:text-sm font-medium transition flex items-center gap-2 shadow-2xs whitespace-nowrap"
             >
-              <GitMerge className="w-4 h-4 text-slate-300" />
+              <GitMerge className="w-4 h-4 text-slate-500" />
               <span>Korelasi Kejadian ({countSignals})</span>
             </Link>
           </div>
         </div>
 
-        {/* 5 Metrik Inti (Kartu Biasa yang Bersih & Berbobot) */}
+        {/* 5 Metrik Inti */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           <div 
             onClick={() => setActiveTab('needs_review')}
-            className={`p-5 rounded-2xl border transition cursor-pointer ${
-              activeTab === 'needs_review' ? 'border-[#E02B2B] bg-red-50/40 shadow-xs' : 'border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
-            }`}
+            className="p-5 rounded-2xl border border-slate-200/90 bg-white hover:border-slate-300 transition shadow-2xs cursor-pointer"
           >
             <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Perlu Ditinjau</span>
               <Inbox className="w-4 h-4 text-amber-600" />
             </div>
             <div className="text-2xl sm:text-3xl font-medium text-slate-900">{countNeedsReview}</div>
-            <span className="text-[11px] text-amber-700 font-normal mt-1 block">Laporan baru masuk</span>
           </div>
 
           <div 
             onClick={() => setActiveTab('urgent')}
-            className={`p-5 rounded-2xl border transition cursor-pointer ${
-              activeTab === 'urgent' ? 'border-[#E02B2B] bg-red-50/40 shadow-xs' : 'border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
-            }`}
+            className="p-5 rounded-2xl border border-slate-200/90 bg-white hover:border-slate-300 transition shadow-2xs cursor-pointer"
           >
             <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Mendesak</span>
               <AlertTriangle className="w-4 h-4 text-[#E02B2B]" />
             </div>
             <div className="text-2xl sm:text-3xl font-medium text-[#E02B2B]">{countUrgent}</div>
-            <span className="text-[11px] text-red-600 font-normal mt-1 block">Tindakan pencegahan cepat</span>
           </div>
 
           <Link 
@@ -465,7 +454,6 @@ function CounselorDashboardContent() {
               <GitMerge className="w-4 h-4 text-slate-600 group-hover:text-slate-900 transition" />
             </div>
             <div className="text-2xl sm:text-3xl font-medium text-slate-900">{countSignals}</div>
-            <span className="text-[11px] text-slate-600 font-normal mt-1 block">Indikasi saling terkait &rarr;</span>
           </Link>
 
           <Link 
@@ -477,21 +465,17 @@ function CounselorDashboardContent() {
               <Layers className="w-4 h-4 text-slate-600 group-hover:text-slate-900 transition" />
             </div>
             <div className="text-2xl sm:text-3xl font-medium text-slate-900">{countActiveCases}</div>
-            <span className="text-[11px] text-slate-600 font-normal mt-1 block">Investigasi &amp; mediasi</span>
           </Link>
 
           <div 
             onClick={() => setActiveTab('all')}
-            className={`p-5 rounded-2xl border transition cursor-pointer col-span-2 sm:col-span-1 ${
-              activeTab === 'all' ? 'border-[#E02B2B] bg-red-50/40 shadow-xs' : 'border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
-            }`}
+            className="p-5 rounded-2xl border border-slate-200/90 bg-white hover:border-slate-300 transition shadow-2xs cursor-pointer col-span-2 sm:col-span-1"
           >
             <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Tindak Lanjut</span>
               <Clock className="w-4 h-4 text-emerald-600" />
             </div>
             <div className="text-2xl sm:text-3xl font-medium text-slate-900">{countFollowup}</div>
-            <span className="text-[11px] text-emerald-700 font-normal mt-1 block">Pendampingan siswa</span>
           </div>
         </div>
 

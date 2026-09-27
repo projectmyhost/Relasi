@@ -101,7 +101,7 @@ export default function CounselorCasesPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#F6F4F0] py-8 sm:py-14 px-4 sm:px-6 lg:px-8 text-slate-900 font-sans">
+    <div className="w-full min-h-screen bg-[#F6F4F0] pt-6 sm:pt-8 pb-12 lg:pb-16 px-4 sm:px-6 lg:px-8 text-slate-900 font-sans">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Navigation & Header Card */}
         <div className="bg-white/95 backdrop-blur-xl rounded-[32px] p-6 sm:p-8 border border-black/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.04)] flex flex-wrap items-center justify-between gap-4">
