@@ -71,7 +71,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const validSender = sender === 'counselor' ? 'counselor' : 'student';
+    // 2. Strict Role Constraint: Only Counselor and Student are allowed to exchange messages
+    if (sender !== 'counselor' && sender !== 'student') {
+      return NextResponse.json(
+        { error: 'Akses ditolak: Sistem chat tertutup hanya mengizinkan komunikasi antara Guru BK dan Siswa Pelapor.' },
+        { status: 403 }
+      );
+    }
+
+    const validSender = sender;
     const validSenderName = senderName?.trim() || (validSender === 'counselor' ? 'Guru BK' : 'Pelapor');
 
     // 2. Anti-Spam Cooldown & Duplicate Check

@@ -588,7 +588,7 @@ function CounselorDashboardContent() {
                                     className="inline-flex items-center gap-0.5 text-[10px] text-sky-600 font-semibold pl-1"
                                   >
                                     <Eye className="w-3 h-3 text-sky-600" />
-                                    <span>Melihat</span>
+                                    <span>Dilihat</span>
                                   </span>
                                 ) : (
                                   <span 

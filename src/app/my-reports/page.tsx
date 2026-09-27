@@ -491,7 +491,7 @@ export default function MyReportsPage() {
                                       className="inline-flex items-center gap-0.5 text-[10px] text-sky-300 font-semibold"
                                     >
                                       <Eye className="w-3 h-3 text-sky-300" />
-                                      <span>Melihat</span>
+                                      <span>Dilihat</span>
                                     </span>
                                   ) : (
                                     <span 
