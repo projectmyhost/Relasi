@@ -18,6 +18,8 @@ import {
   AlertTriangle,
   FileText,
   ChevronRight,
+  Eye,
+  Check,
   ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
@@ -38,7 +40,9 @@ export default function MyReportsPage() {
     messages: realtimeMessages,
     isConnected,
     isSending,
+    typingStatus,
     sendMessage: sendRealtimeMessage,
+    sendTypingIndicator,
   } = useRealtimeChat({
     reportId: selectedReport?.id,
     currentRole: 'student',
@@ -457,33 +461,75 @@ export default function MyReportsPage() {
 
                 <div 
                   ref={chatContainerRef}
-                  className="bg-slate-50/70 p-4 rounded-2xl border border-slate-200/70 min-h-[160px] max-h-[240px] overflow-y-auto space-y-2.5"
+                  className="bg-slate-50/70 p-4 rounded-2xl border border-slate-200/70 min-h-[160px] max-h-[260px] overflow-y-auto space-y-2.5"
                 >
                   {realtimeMessages && realtimeMessages.length > 0 ? (
-                    realtimeMessages.map((m) => (
-                      <div 
-                        key={m.id}
-                        className={`flex flex-col ${m.sender === 'student' ? 'items-end' : 'items-start'}`}
-                      >
-                        <div className={`p-3 rounded-2xl max-w-[85%] text-xs leading-relaxed break-words shadow-2xs ${
-                          m.sender === 'student' 
-                            ? 'bg-slate-900 text-white rounded-br-xs' 
-                            : 'bg-white text-slate-800 border border-slate-200 rounded-bl-xs'
-                        }`}>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-[11px] opacity-80">{m.senderName}</span>
-                            <span className="text-[10px] opacity-60">
-                              {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
+                    realtimeMessages.map((m) => {
+                      const isMe = m.sender === 'student';
+                      return (
+                        <div 
+                          key={m.id}
+                          className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
+                        >
+                          <div className={`p-3.5 rounded-2xl max-w-[85%] text-xs leading-relaxed break-words shadow-2xs ${
+                            isMe 
+                              ? 'bg-slate-900 !text-white rounded-br-xs' 
+                              : 'bg-white !text-slate-900 border border-slate-200/90 rounded-bl-xs'
+                          }`}>
+                            <div className="flex items-center justify-between gap-3 mb-1.5">
+                              <span className={`font-semibold text-[11px] ${isMe ? 'text-slate-200' : 'text-slate-800'}`}>
+                                {m.senderName}
+                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <span className={`text-[10px] ${isMe ? 'text-slate-300' : 'text-slate-500'}`}>
+                                  {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                                {isMe && (
+                                  m.isRead ? (
+                                    <span 
+                                      title="Pesan sudah dibuka oleh Guru BK" 
+                                      className="inline-flex items-center gap-0.5 text-[10px] text-sky-300 font-semibold"
+                                    >
+                                      <Eye className="w-3 h-3 text-sky-300" />
+                                      <span>Melihat</span>
+                                    </span>
+                                  ) : (
+                                    <span 
+                                      title="Pesan terkirim" 
+                                      className="inline-flex items-center gap-0.5 text-[10px] text-slate-400"
+                                    >
+                                      <Check className="w-3 h-3 text-slate-400" />
+                                      <span>Terkirim</span>
+                                    </span>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                            <p className={`${isMe ? '!text-white' : '!text-slate-900'} text-xs leading-relaxed font-normal`}>
+                              {m.content}
+                            </p>
                           </div>
-                          <p>{m.content}</p>
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <div className="py-6 text-center text-xs text-slate-400 space-y-1">
                       <p>Belum ada pesan tercatat pada berkas ini.</p>
                       <p className="text-[11px]">Anda dapat mengirim pesan keterangan tambahan kepada Guru BK di bawah ini.</p>
+                    </div>
+                  )}
+
+                  {/* Realtime Typing Indicator */}
+                  {typingStatus?.isTyping && (
+                    <div className="flex items-center gap-2 pt-1 animate-fade-in">
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 shadow-2xs text-[11px] text-slate-700">
+                        <span className="flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 bg-[#E02B2B] rounded-full animate-bounce [animation-delay:-0.3s]" />
+                          <span className="w-1.5 h-1.5 bg-[#E02B2B] rounded-full animate-bounce [animation-delay:-0.15s]" />
+                          <span className="w-1.5 h-1.5 bg-[#E02B2B] rounded-full animate-bounce" />
+                        </span>
+                        <span className="font-medium text-slate-800">{typingStatus.senderName} sedang mengetik...</span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -494,7 +540,15 @@ export default function MyReportsPage() {
                     type="text"
                     required
                     value={chatMessage}
-                    onChange={(e) => setChatMessage(e.target.value)}
+                    onChange={(e) => {
+                      setChatMessage(e.target.value);
+                      const sName = selectedReport?.isAnonymous ? 'Pelapor (Anonim)' : (selectedReport?.reporterName || 'Siswa');
+                      sendTypingIndicator(e.target.value.length > 0, sName);
+                    }}
+                    onBlur={() => {
+                      const sName = selectedReport?.isAnonymous ? 'Pelapor (Anonim)' : (selectedReport?.reporterName || 'Siswa');
+                      sendTypingIndicator(false, sName);
+                    }}
                     placeholder={cooldown > 0 ? `Menunggu proteksi anti-spam (${cooldown}d)...` : "Tulis pesan atau keterangan tambahan ke Guru BK..."}
                     disabled={cooldown > 0}
                     className="flex-1 px-4 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#E02B2B]/20 focus:border-[#E02B2B] bg-white transition disabled:bg-slate-100 disabled:text-slate-400"

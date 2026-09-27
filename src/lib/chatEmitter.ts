@@ -17,6 +17,21 @@ export interface CounselorNotificationPayload {
   timestamp: string;
 }
 
+export interface ChatTypingPayload {
+  type: 'typing';
+  reportId: string;
+  senderRole: 'student' | 'counselor';
+  senderName: string;
+  isTyping: boolean;
+}
+
+export interface ChatReadPayload {
+  type: 'read';
+  reportId: string;
+  readerRole: 'student' | 'counselor';
+  timestamp: string;
+}
+
 class ChatEventEmitter extends EventEmitter {}
 
 const globalForEmitter = globalThis as unknown as {

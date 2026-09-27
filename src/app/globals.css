@@ -355,7 +355,7 @@ h6,
 
 p {
   line-height: 1.7;
-  color: #475569;
+  color: inherit;
 }
 
 /* ACCESSIBLE FOCUS INDICATORS (WCAG AA) */
