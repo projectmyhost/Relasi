@@ -178,6 +178,8 @@ Menggunakan instance `EventEmitter` global singleton pada runtime Node.js Next.j
    Menerima payload JSON `{ reportId, sender, senderName, content }`. Memvalidasi teks, menyimpan ke tabel `Message` PostgreSQL, mencatat ke `AuditLog`, lalu memancarkan event ke emitter.
 3. **`GET /api/chat/stream?reportId=[ID]`**:
    Menginisialisasi koneksi `ReadableStream` dengan format `text/event-stream`. Mengirimkan heartbeat (`:keep-alive\n\n`) setiap 15 detik dan mengirim data pesan `data: JSON.stringify(msg)\n\n` begitu event terpancar.
+4. **`GET /api/counselor/notifications/stream`**:
+   Saluran SSE global khusus Guru BK. Begitu murid mengirim pesan pada laporan *mana pun*, server memancarkan sinyal notifikasi instan `{ type: 'NEW_STUDENT_MESSAGE', reportId, senderName, contentSnippet, timestamp }` ke sesi aktif Guru BK.
 
 ---
 
@@ -199,6 +201,11 @@ Menggunakan instance `EventEmitter` global singleton pada runtime Node.js Next.j
 ### 4.3 Sisi Guru BK ([src/app/counselor/page.tsx](file:///c:/laragon/www/18September2026/src/app/counselor/page.tsx))
 - Mengintegrasikan obrolan di panel kanan dengan `useRealtimeChat(selectedReport.id)`.
 - Pesan klarifikasi dari murid langsung muncul di layar tanpa guru BK perlu berpindah halaman atau merefresh peramban.
+
+### 4.4 Sistem Notifikasi Real-time Guru BK (`src/components/CounselorNotificationToast.tsx`)
+- **Toast Melayang (Floating In-App Alert)**: Muncul di pojok kanan atas ketika ada pesan baru dari siswa di laporan mana pun, lengkap dengan cuplikan pesan, label laporan, dan tombol cepat "Buka Chat Kasus".
+- **Audio Chime Lembut**: Menghasilkan nada notifikasi tenang berbasis Web Audio API (dua nada harmonis 520Hz & 680Hz) tanpa memerlukan file audio eksternal.
+- **Badge Unread**: Menampilkan counter titik merah/angka notifikasi di header Guru BK dan daftar kasus ketika ada pesan baru yang belum dibuka.
 
 ---
 
