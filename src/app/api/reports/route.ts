@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { chatEmitter } from '@/lib/chatEmitter';
+import { getCurrentDateWIB, getCurrentTimeWIB } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -114,8 +115,8 @@ export async function POST(req: NextRequest) {
         reporterName: reporterName || null,
         reporterClass: reporterClass || null,
         reporterContact: reporterContact || null,
-        incidentDate: incidentDate || new Date().toISOString().split('T')[0],
-        incidentTime: incidentTime || '10:00 WIB',
+        incidentDate: incidentDate || getCurrentDateWIB(),
+        incidentTime: incidentTime || getCurrentTimeWIB(),
         description,
         location,
         partiesInvolved: partiesInvolved || 'Dalam Penyelidikan',

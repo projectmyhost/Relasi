@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { chatEmitter, ChatMessagePayload, CounselorNotificationPayload, StudentNotificationPayload } from '@/lib/chatEmitter';
+import { getCurrentDateWIB, getCurrentTimeWIB } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -139,8 +140,8 @@ export async function POST(req: NextRequest) {
           pin: '000000',
           role: 'victim',
           isAnonymous: true,
-          incidentDate: new Date().toISOString().split('T')[0],
-          incidentTime: '10:00 WIB',
+          incidentDate: getCurrentDateWIB(),
+          incidentTime: getCurrentTimeWIB(),
           location: 'Sekolah',
           partiesInvolved: 'Dalam Penyelidikan',
           description: 'Laporan aduan siswa',

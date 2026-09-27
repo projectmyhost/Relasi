@@ -25,6 +25,7 @@ import {
 import { RuangSuaraStore } from '@/lib/store';
 import { ReporterRole, ReportCategory, UrgencyLevel } from '@/lib/types';
 import { useAuth } from '@/lib/authContext';
+import { getCurrentDateWIB, getCurrentTimeWIB } from '@/lib/utils';
 
 export default function ReportPage() {
   const router = useRouter();
@@ -34,8 +35,8 @@ export default function ReportPage() {
   const [reporterName, setReporterName] = useState('');
   const [reporterClass, setReporterClass] = useState('');
   const [reporterContact, setReporterContact] = useState('');
-  const [incidentDate, setIncidentDate] = useState(new Date().toISOString().split('T')[0]);
-  const [incidentTime, setIncidentTime] = useState('10:15 WIB (Jam Istirahat)');
+  const [incidentDate, setIncidentDate] = useState(() => getCurrentDateWIB());
+  const [incidentTime, setIncidentTime] = useState(() => getCurrentTimeWIB());
   const [location, setLocation] = useState('');
   const [partiesInvolved, setPartiesInvolved] = useState('');
   const [category, setCategory] = useState<ReportCategory>('fisik');

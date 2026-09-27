@@ -20,6 +20,7 @@ import { RuangSuaraStore } from '@/lib/store';
 import { Report } from '@/lib/types';
 import { useAuth } from '@/lib/authContext';
 import { ArrowRight } from 'lucide-react';
+import { formatTimeWIB } from '@/lib/utils';
 
 function TrackReportContent() {
   const { currentUser } = useAuth();
@@ -45,8 +46,26 @@ function TrackReportContent() {
     if (found && found.pin === pin.trim()) {
       setReport(found);
     } else {
-      setReport(null);
-      setErrorMessage('Nomor Report ID atau PIN tidak cocok. Pastikan kombinasi angka sudah sesuai.');
+      // Also check PostgreSQL database
+      fetch('/api/reports')
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data.reports)) {
+            const matched = data.reports.find(
+              (r: any) => r.id === id.trim() && r.pin === pin.trim()
+            );
+            if (matched) {
+              setReport(matched);
+              return;
+            }
+          }
+          setReport(null);
+          setErrorMessage('Nomor Report ID atau PIN tidak cocok. Pastikan kombinasi angka sudah sesuai.');
+        })
+        .catch(() => {
+          setReport(null);
+          setErrorMessage('Nomor Report ID atau PIN tidak cocok. Pastikan kombinasi angka sudah sesuai.');
+        });
     }
   };
 
@@ -56,29 +75,63 @@ function TrackReportContent() {
     }
   }, [initialId, initialPin]);
 
+  // Periodic polling for new messages when viewing report on track page
+  useEffect(() => {
+    if (!report) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/chat/messages?reportId=${encodeURIComponent(report.id)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.messages)) {
+            setReport((prev) => (prev ? { ...prev, messages: data.messages } : null));
+          }
+        }
+      } catch {}
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [report?.id]);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     performLookup(reportIdInput, pinInput);
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!report || !newMessage.trim()) return;
 
+    const content = newMessage.trim();
     setIsSending(true);
-    setTimeout(() => {
-      const updated = RuangSuaraStore.addReportMessage(report.id, {
-        sender: 'student',
-        senderName: report.isAnonymous ? 'Pelapor (Anonim)' : (report.reporterName || 'Siswa'),
-        content: newMessage.trim(),
+
+    try {
+      const res = await fetch('/api/chat/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reportId: report.id,
+          sender: 'student',
+          senderName: report.isAnonymous ? 'Pelapor (Anonim)' : (report.reporterName || 'Siswa'),
+          content,
+        }),
       });
 
-      if (updated) {
-        setReport(updated);
+      if (res.ok) {
         setNewMessage('');
+        const chatRes = await fetch(`/api/chat/messages?reportId=${encodeURIComponent(report.id)}`);
+        if (chatRes.ok) {
+          const chatData = await chatRes.json();
+          if (Array.isArray(chatData.messages)) {
+            setReport((prev) => (prev ? { ...prev, messages: chatData.messages } : null));
+          }
+        }
       }
+    } catch (e) {
+      console.error('Failed to post message on track page:', e);
+    } finally {
       setIsSending(false);
-    }, 400);
+    }
   };
 
   const getStatusBadge = (status: Report['status']) => {
@@ -329,7 +382,7 @@ function TrackReportContent() {
                       <div className="flex items-center gap-2 mb-1 text-[11px] text-slate-500">
                         <span className="font-medium text-slate-800">{msg.senderName}</span>
                         <span>•</span>
-                        <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span>{formatTimeWIB(msg.timestamp)}</span>
                       </div>
                       <div
                         className={`p-4 rounded-2xl max-w-lg text-xs sm:text-sm leading-relaxed ${

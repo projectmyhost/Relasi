@@ -100,10 +100,55 @@ export function useRealtimeChat({
       return;
     }
 
-    // Load initial messages and mark as read
+    // 1. Initial message load
     loadMessages();
 
     let isMounted = true;
+    let pollInterval: NodeJS.Timeout | null = null;
+
+    // 2. High-Frequency Smart Polling (2.5s) to guarantee instant delivery on Vercel/serverless
+    async function pollChatMessages() {
+      if (!isMounted || !reportId) return;
+      try {
+        const res = await fetch(`/api/chat/messages?reportId=${encodeURIComponent(reportId)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (isMounted && currentReportIdRef.current === reportId && Array.isArray(data.messages)) {
+          setMessages((prev) => {
+            const prevIds = new Set(prev.map((m) => m.id));
+            let hasChanges = false;
+            let hasNewIncoming = false;
+
+            for (const incoming of data.messages) {
+              if (!prevIds.has(incoming.id)) {
+                hasChanges = true;
+                if (currentRole && incoming.sender !== currentRole) {
+                  hasNewIncoming = true;
+                }
+              }
+            }
+
+            if (!hasChanges && prev.length === data.messages.length) {
+              const statusChanged = data.messages.some((m: ChatMessagePayload, idx: number) => {
+                return prev[idx] && prev[idx].isRead !== m.isRead;
+              });
+              if (statusChanged) hasChanges = true;
+            }
+
+            if (hasNewIncoming) {
+              playNotificationChime();
+              markAsRead();
+            }
+
+            return hasChanges ? data.messages : prev;
+          });
+        }
+      } catch {
+        // Silent fail on polling interval
+      }
+    }
+
+    pollInterval = setInterval(pollChatMessages, 2500);
 
     function connectSSE() {
       if (!reportId) return;
@@ -160,7 +205,6 @@ export function useRealtimeChat({
           // Handle incoming chat message with strict reportId match
           const msg: ChatMessagePayload = incoming;
           if (msg.reportId && msg.reportId !== reportId) {
-            // Discard message meant for another report
             return;
           }
 
@@ -170,7 +214,6 @@ export function useRealtimeChat({
               return prev.map((m) => (m.id === msg.id ? msg : m));
             }
 
-            // Play gentle chime if message is from the other party
             if (currentRole && msg.sender !== currentRole) {
               playNotificationChime();
               markAsRead();
@@ -209,6 +252,9 @@ export function useRealtimeChat({
       }
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
+      }
+      if (pollInterval) {
+        clearInterval(pollInterval);
       }
     };
   }, [reportId, currentRole, loadMessages, markAsRead]);

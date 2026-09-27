@@ -13,6 +13,7 @@ import {
 import { RuangSuaraStore } from '@/lib/store';
 import { CaseDossier, CaseStatus } from '@/lib/types';
 import { useAuth } from '@/lib/authContext';
+import { formatDateTimeWIB } from '@/lib/utils';
 
 export default function CounselorCasesPage() {
   const { currentUser } = useAuth();
@@ -65,7 +66,7 @@ export default function CounselorCasesPage() {
       author: newNoteAuthor,
       content: newNoteContent.trim(),
       type: newNoteType,
-      date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+      date: formatDateTimeWIB(new Date())
     });
 
     setNewNoteContent('');

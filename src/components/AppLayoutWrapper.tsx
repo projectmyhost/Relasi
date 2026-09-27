@@ -7,6 +7,7 @@ import TetherFooter from "@/components/TetherFooter";
 import ModalDialogs from "@/components/ModalDialogs";
 import LuxuryCursor from "@/components/LuxuryCursor";
 import CounselorNotificationToast from "@/components/CounselorNotificationToast";
+import StudentNotificationToast from "@/components/StudentNotificationToast";
 import UserStatusWatcher from "@/components/UserStatusWatcher";
 
 export default function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
@@ -33,6 +34,7 @@ export default function AppLayoutWrapper({ children }: { children: React.ReactNo
       {!isAuthPage && <TetherFooter />}
       <ModalDialogs />
       <CounselorNotificationToast />
+      <StudentNotificationToast />
       <UserStatusWatcher />
       <LuxuryCursor />
     </div>

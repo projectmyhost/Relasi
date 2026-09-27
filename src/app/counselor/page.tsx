@@ -26,6 +26,7 @@ import { RuangSuaraStore } from '@/lib/store';
 import { Report, ReportStatus } from '@/lib/types';
 import { useAuth } from '@/lib/authContext';
 import { useRealtimeChat } from '@/hooks/useRealtimeChat';
+import { formatTimeWIB, formatDateTimeWIB } from '@/lib/utils';
 
 function CounselorDashboardContent() {
   const { currentUser } = useAuth();
@@ -143,6 +144,8 @@ function CounselorDashboardContent() {
 
   useEffect(() => {
     loadData();
+    const interval = setInterval(() => loadData(), 5000);
+    return () => clearInterval(interval);
   }, []);
 
   // WhatsApp-style real-time unread messages listener & live new report listener
@@ -659,7 +662,7 @@ function CounselorDashboardContent() {
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 font-normal">
-                      Diterima: {new Date(selectedReport.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB
+                      Diterima: {formatDateTimeWIB(selectedReport.createdAt)}
                     </p>
                   </div>
 
@@ -854,7 +857,7 @@ function CounselorDashboardContent() {
                             <div className="flex items-center gap-2 text-[10px] text-slate-500 mb-1 px-1">
                               <span className="font-semibold text-slate-800">{msg.senderName}</span>
                               <span>•</span>
-                              <span>{new Date(msg.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB</span>
+                              <span>{formatTimeWIB(msg.timestamp)}</span>
                               {isCounselor && (
                                 msg.isRead ? (
                                   <span 

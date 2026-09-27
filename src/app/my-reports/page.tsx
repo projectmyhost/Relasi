@@ -30,6 +30,7 @@ import { useAuth } from '@/lib/authContext';
 import { RuangSuaraStore } from '@/lib/store';
 import { Report } from '@/lib/types';
 import { useRealtimeChat } from '@/hooks/useRealtimeChat';
+import { formatTimeWIB } from '@/lib/utils';
 
 export default function MyReportsPage() {
   const { currentUser } = useAuth();
@@ -181,6 +182,8 @@ export default function MyReportsPage() {
 
   useEffect(() => {
     loadReports();
+    const interval = setInterval(loadReports, 5000);
+    return () => clearInterval(interval);
   }, [currentUser]);
 
   // Real-time Student Notifications Stream Listener (incoming chat from Counselor)
@@ -844,7 +847,7 @@ export default function MyReportsPage() {
                                   </span>
                                   <div className="flex items-center gap-1.5">
                                     <span className={`text-[10px] ${isMe ? 'text-slate-300' : 'text-slate-500'}`}>
-                                      {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                      {formatTimeWIB(m.timestamp)}
                                     </span>
                                     {isMe && (
                                       m.isRead ? (
