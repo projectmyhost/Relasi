@@ -21,12 +21,13 @@ import {
   Sparkles,
   Image as ImageIcon,
   X,
+  Download,
 } from 'lucide-react';
 import { RuangSuaraStore } from '@/lib/store';
 import { Report, ReportStatus } from '@/lib/types';
 import { useAuth } from '@/lib/authContext';
 import { useRealtimeChat } from '@/hooks/useRealtimeChat';
-import { formatTimeWIB, formatDateTimeWIB } from '@/lib/utils';
+import { formatTimeWIB, formatDateTimeWIB, compressImageFileToBase64 } from '@/lib/utils';
 
 function CounselorDashboardContent() {
   const { currentUser } = useAuth();
@@ -101,13 +102,6 @@ function CounselorDashboardContent() {
   };
 
   const loadData = async (preferredReportId?: string) => {
-    // 1. Immediately show cached reports from local store if available
-    const localList = RuangSuaraStore.getReports();
-    if (localList.length > 0) {
-      setReports(localList);
-    }
-
-    // 2. Fetch fresh reports from PostgreSQL database
     try {
       const res = await fetch('/api/reports');
       if (res.ok) {
@@ -115,7 +109,6 @@ function CounselorDashboardContent() {
         if (Array.isArray(data.reports)) {
           const dbList: Report[] = data.reports;
           setReports(dbList);
-          dbList.forEach((r) => RuangSuaraStore.addReport(r));
 
           setSelectedReport((prevSelected) => {
             // 1. Explicitly preferred report (e.g. from click or message action)
@@ -275,26 +268,23 @@ function CounselorDashboardContent() {
 
   const handleUpdateStatus = async (newStatus: ReportStatus) => {
     if (!selectedReport) return;
-    RuangSuaraStore.updateReportStatus(selectedReport.id, newStatus);
-    RuangSuaraStore.addAuditLog({
-      actor: currentUser.name || 'Guru BK',
-      role: 'counselor',
-      action: 'UPDATE_STATUS',
-      target: selectedReport.id,
-      detail: `Mengubah status laporan menjadi ${newStatus}`,
-    });
+    const targetId = selectedReport.id;
+
+    // Optimistic update: instantly update UI so buttons and badge change without delay or jumping
+    setSelectedReport((prev) => (prev && prev.id === targetId ? { ...prev, status: newStatus } : prev));
+    setReports((prev) =>
+      prev.map((r) => (r.id === targetId ? { ...r, status: newStatus } : r))
+    );
 
     try {
       await fetch('/api/reports', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selectedReport.id, status: newStatus }),
+        body: JSON.stringify({ id: targetId, status: newStatus }),
       });
     } catch (e) {
       console.error('Failed to sync status to database:', e);
     }
-
-    loadData(selectedReport.id);
   };
 
   const handleAnalyzeReportWithAI = async (targetReport: Report) => {
@@ -363,21 +353,9 @@ function CounselorDashboardContent() {
     if (attachedImage) {
       setIsUploadingImage(true);
       try {
-        const formData = new FormData();
-        formData.append('file', attachedImage.file);
-        const upRes = await fetch('/api/chat/upload', {
-          method: 'POST',
-          body: formData,
-        });
-        const upData = await upRes.json();
-        if (upRes.ok && upData.url) {
-          uploadedImageUrl = upData.url;
-        } else {
-          uploadedImageUrl = attachedImage.previewUrl;
-        }
+        uploadedImageUrl = await compressImageFileToBase64(attachedImage.file);
       } catch (err) {
-        console.error('Failed to upload image:', err);
-        uploadedImageUrl = attachedImage.previewUrl;
+        console.error('Failed to compress counselor image:', err);
       } finally {
         setIsUploadingImage(false);
       }
@@ -884,13 +862,34 @@ function CounselorDashboardContent() {
                                 : 'bg-white border border-slate-200/90 !text-slate-900 rounded-tl-xs'
                             }`}>
                               {msg.imageUrl && (
-                                <div className="mb-2 overflow-hidden rounded-lg border border-black/10">
+                                <div className="mb-2.5 overflow-hidden rounded-xl border border-black/15 shadow-sm bg-black/5 group relative">
                                   <img 
                                     src={msg.imageUrl} 
-                                    alt="Lampiran foto"
+                                    alt="Lampiran foto obrolan"
                                     onClick={() => setSelectedPreviewImage(msg.imageUrl || null)}
-                                    className="max-h-60 w-auto rounded-lg object-cover cursor-pointer hover:opacity-90 transition transform hover:scale-[1.01]" 
+                                    onError={(e) => {
+                                      (e.currentTarget as HTMLElement).style.display = 'none';
+                                      const fallback = e.currentTarget.parentElement?.querySelector('.img-err-fallback');
+                                      if (fallback) (fallback as HTMLElement).style.display = 'flex';
+                                    }}
+                                    className="max-h-72 w-full object-cover rounded-xl cursor-zoom-in hover:brightness-95 transition-all duration-200" 
                                   />
+                                  <div 
+                                    className="img-err-fallback hidden p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-[11px] items-center gap-2"
+                                  >
+                                    <ImageIcon className="w-4 h-4 text-amber-600 shrink-0" />
+                                    <span>Lampiran foto sebelumnya telah kedaluwarsa.</span>
+                                  </div>
+                                  <div className="absolute bottom-2 right-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                      type="button"
+                                      onClick={() => setSelectedPreviewImage(msg.imageUrl || null)}
+                                      className="px-2.5 py-1 rounded-lg bg-black/75 backdrop-blur-md text-white text-[10px] font-medium flex items-center gap-1 hover:bg-black transition shadow-xs cursor-pointer"
+                                    >
+                                      <Eye className="w-3 h-3" />
+                                      <span>Perbesar</span>
+                                    </button>
+                                  </div>
                                 </div>
                               )}
                               {msg.content ? (
@@ -1070,13 +1069,23 @@ function CounselorDashboardContent() {
                   <ImageIcon className="w-4 h-4 text-[#E02B2B]" />
                   <span>Pratinjau Foto Lampiran Chat</span>
                 </span>
-                <button
-                  type="button"
-                  onClick={() => setSelectedPreviewImage(null)}
-                  className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={selectedPreviewImage}
+                    download="relasi_lampiran_foto.jpg"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Unduh Foto</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPreviewImage(null)}
+                    className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
               <div className="p-2 flex items-center justify-center overflow-auto max-h-[80vh]">
                 <img

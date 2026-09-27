@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
+import { RuangSuaraStore } from '@/lib/store';
 import { playNotificationChime } from '@/lib/audioNotification';
 import { formatTimeWIB } from '@/lib/utils';
 
@@ -25,8 +26,8 @@ export default function StudentNotificationToast() {
   const knownMessageIdsRef = useRef<Set<string>>(new Set());
   const initialFetchDoneRef = useRef(false);
 
-  // Active for student
-  const isStudent = currentUser.role === 'student';
+  // Active for student or guest who has submitted reports
+  const isStudent = currentUser.role === 'student' || currentUser.role === 'guest';
 
   useEffect(() => {
     if (!isStudent) {
@@ -46,6 +47,11 @@ export default function StudentNotificationToast() {
         params.set('role', 'student');
         if (currentUser.email) params.set('userEmail', currentUser.email);
         if (currentUser.id) params.set('userId', currentUser.id);
+
+        const myReportIds = RuangSuaraStore.getMyReportIds();
+        if (myReportIds.length > 0) {
+          params.set('reportIds', myReportIds.slice(0, 20).join(','));
+        }
 
         const res = await fetch(`/api/notifications/unread?${params.toString()}`);
         if (!res.ok) return;

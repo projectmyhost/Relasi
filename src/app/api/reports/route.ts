@@ -40,14 +40,30 @@ export async function GET(req: NextRequest) {
       ...r,
       createdAt: r.createdAt.toISOString(),
       updatedAt: r.updatedAt.toISOString(),
-      messages: r.messages.map((m) => ({
-        id: m.id,
-        sender: m.sender as 'student' | 'counselor',
-        senderName: m.senderName,
-        content: m.content,
-        timestamp: m.timestamp.toISOString(),
-        isRead: m.isRead,
-      })),
+      messages: r.messages.map((m) => {
+        let text = m.content;
+        let imageUrl: string | null = null;
+        if (m.content.startsWith('{') && m.content.includes('__isImage')) {
+          try {
+            const parsed = JSON.parse(m.content);
+            if (parsed && typeof parsed === 'object' && parsed.__isImage) {
+              text = parsed.text || '';
+              imageUrl = parsed.imageUrl || null;
+            }
+          } catch {
+            // Keep raw text
+          }
+        }
+        return {
+          id: m.id,
+          sender: m.sender as 'student' | 'counselor',
+          senderName: m.senderName,
+          content: text,
+          imageUrl,
+          timestamp: m.timestamp.toISOString(),
+          isRead: m.isRead,
+        };
+      }),
     }));
 
     return NextResponse.json({ reports: formatted });

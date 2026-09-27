@@ -9,9 +9,13 @@ export async function GET(req: NextRequest) {
     const role = searchParams.get('role');
     const userEmail = searchParams.get('userEmail')?.trim().toLowerCase();
     const userId = searchParams.get('userId')?.trim();
+    const rawReportIds = searchParams.get('reportIds')?.trim();
+    const reportIdsList = rawReportIds
+      ? rawReportIds.split(',').map((id) => id.trim()).filter(Boolean)
+      : [];
 
     if (role === 'student') {
-      if (!userEmail && !userId) {
+      if (!userEmail && !userId && reportIdsList.length === 0) {
         return NextResponse.json({ unreadCount: 0, notifications: [] });
       }
 
@@ -22,6 +26,9 @@ export async function GET(req: NextRequest) {
       }
       if (userId) {
         orConditions.push({ userId });
+      }
+      if (reportIdsList.length > 0) {
+        orConditions.push({ id: { in: reportIdsList } });
       }
 
       const unreadMessages = await prisma.message.findMany({

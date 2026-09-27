@@ -12,7 +12,7 @@ const INITIAL_SIGNALS: RelationshipSignal[] = [];
 const INITIAL_AUDIT_LOGS: AuditLogItem[] = [];
 
 // Automatic storage migration to wipe previous mock and test reports cleanly
-const CLEAN_STORAGE_VERSION = 'ruangsuara_v3_clean_slate';
+const CLEAN_STORAGE_VERSION = 'ruangsuara_v4_no_bot_realtime';
 if (typeof window !== 'undefined') {
   try {
     if (window.localStorage.getItem('ruangsuara_version_tag') !== CLEAN_STORAGE_VERSION) {
@@ -49,6 +49,11 @@ function setToStorage<T>(key: string, value: T): void {
 }
 
 export const Store = {
+  getMyReportIds(): string[] {
+    const reports = this.getReports();
+    return reports.map((r) => r.id);
+  },
+
   getReports(): Report[] {
     return getFromStorage<Report[]>(STORAGE_KEY_REPORTS, INITIAL_REPORTS);
   },
@@ -100,16 +105,7 @@ export const Store = {
       pin,
       createdAt: now,
       updatedAt: now,
-      messages: [
-        {
-          id: `msg-welcome-${Date.now()}`,
-          sender: 'counselor',
-          senderName: 'Sistem RELASI',
-          content: 'Laporanmu telah berhasil diterima dengan aman. Guru BK akan meninjau laporan ini secara rahasia. Kamu dapat menggunakan kolom pesan ini untuk memberikan info tambahan kapan saja.',
-          timestamp: now,
-          isRead: false,
-        }
-      ],
+      messages: [],
     };
 
     const updated = [report, ...reports];

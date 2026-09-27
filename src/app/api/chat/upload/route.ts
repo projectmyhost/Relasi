@@ -42,26 +42,25 @@ export async function POST(req: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    const mimeType = file.type || 'image/jpeg';
+    const base64Data = buffer.toString('base64');
+    const dataUrl = `data:${mimeType};base64,${base64Data}`;
 
-    // Simpan ke direktori public/uploads/chat
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'chat');
-    await fs.promises.mkdir(uploadDir, { recursive: true });
-
-    const rawExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const safeExt = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'heic', 'heif'].includes(rawExt)
-      ? rawExt
-      : 'jpg';
-    const filename = `chat_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${safeExt}`;
-    const filePath = path.join(uploadDir, filename);
-
-    await fs.promises.writeFile(filePath, buffer);
-
-    const publicUrl = `/uploads/chat/${filename}`;
+    // Gracefully attempt local file save if filesystem is writable
+    try {
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'chat');
+      await fs.promises.mkdir(uploadDir, { recursive: true });
+      const rawExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const safeExt = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'heic', 'heif'].includes(rawExt) ? rawExt : 'jpg';
+      const filename = `chat_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${safeExt}`;
+      await fs.promises.writeFile(path.join(uploadDir, filename), buffer);
+    } catch {
+      // Ignored: Vercel serverless has read-only filesystem, dataUrl is the resilient fallback
+    }
 
     return NextResponse.json({
       success: true,
-      url: publicUrl,
-      filename,
+      url: dataUrl,
       size: file.size,
     });
   } catch (error) {

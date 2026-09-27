@@ -25,12 +25,13 @@ import {
   ShieldAlert,
   Bell,
   Image as ImageIcon,
+  Download,
 } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
 import { RuangSuaraStore } from '@/lib/store';
 import { Report } from '@/lib/types';
 import { useRealtimeChat } from '@/hooks/useRealtimeChat';
-import { formatTimeWIB } from '@/lib/utils';
+import { formatTimeWIB, compressImageFileToBase64 } from '@/lib/utils';
 
 export default function MyReportsPage() {
   const { currentUser } = useAuth();
@@ -128,6 +129,16 @@ export default function MyReportsPage() {
     // Match by reporterName
     if (r.reporterName && currentUser.name && r.reporterName.toLowerCase() === currentUser.name.toLowerCase()) return true;
 
+    // Match if submitted on this device/browser
+    const myIds = RuangSuaraStore.getMyReportIds();
+    if (myIds.includes(r.id)) return true;
+
+    // Match if opened via explicit reportId in URL search params
+    if (typeof window !== 'undefined') {
+      const urlId = new URLSearchParams(window.location.search).get('reportId');
+      if (urlId && urlId === r.id) return true;
+    }
+
     return false;
   };
 
@@ -161,18 +172,12 @@ export default function MyReportsPage() {
   }, [cooldown]);
 
   const loadReports = async () => {
-    const all = RuangSuaraStore.getReports();
-    if (all.length > 0) {
-      setReports(all);
-    }
-
     try {
       const res = await fetch('/api/reports');
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data.reports)) {
           setReports(data.reports);
-          data.reports.forEach((r: Report) => RuangSuaraStore.addReport(r));
         }
       }
     } catch (e) {
@@ -182,9 +187,29 @@ export default function MyReportsPage() {
 
   useEffect(() => {
     loadReports();
-    const interval = setInterval(loadReports, 5000);
+    const interval = setInterval(loadReports, 4000);
     return () => clearInterval(interval);
   }, [currentUser]);
+
+  // Auto-open report if reportId is passed in URL (e.g. from Notification Toast "Buka Chat")
+  useEffect(() => {
+    if (typeof window !== 'undefined' && reports.length > 0) {
+      const params = new URLSearchParams(window.location.search);
+      const urlReportId = params.get('reportId');
+      if (urlReportId) {
+        const found = reports.find((r) => r.id === urlReportId);
+        if (found) {
+          setSelectedReport(found);
+          setUnreadCounts((prev) => {
+            if (!prev[urlReportId]) return prev;
+            const next = { ...prev };
+            delete next[urlReportId];
+            return next;
+          });
+        }
+      }
+    }
+  }, [reports]);
 
   // Real-time Student Notifications Stream Listener (incoming chat from Counselor)
   useEffect(() => {
@@ -242,10 +267,10 @@ export default function MyReportsPage() {
     };
   }, [currentUser.email, currentUser.id, reports, selectedReport?.id]);
 
-  // Keep selected report updated with fresh store data
+  // Keep selected report updated with fresh database data
   useEffect(() => {
     if (selectedReport) {
-      const fresh = RuangSuaraStore.getReportById(selectedReport.id);
+      const fresh = reports.find((r) => r.id === selectedReport.id);
       if (fresh) setSelectedReport(fresh);
     }
   }, [reports]);
@@ -270,21 +295,9 @@ export default function MyReportsPage() {
     if (attachedImage) {
       setIsUploadingImage(true);
       try {
-        const formData = new FormData();
-        formData.append('file', attachedImage.file);
-        const upRes = await fetch('/api/chat/upload', {
-          method: 'POST',
-          body: formData,
-        });
-        const upData = await upRes.json();
-        if (upRes.ok && upData.url) {
-          uploadedImageUrl = upData.url;
-        } else {
-          uploadedImageUrl = attachedImage.previewUrl;
-        }
+        uploadedImageUrl = await compressImageFileToBase64(attachedImage.file);
       } catch (err) {
-        console.error('Failed to upload student image:', err);
-        uploadedImageUrl = attachedImage.previewUrl;
+        console.error('Failed to compress student image:', err);
       } finally {
         setIsUploadingImage(false);
       }
@@ -871,13 +884,34 @@ export default function MyReportsPage() {
                                   </div>
                                 </div>
                                 {m.imageUrl && (
-                                  <div className="mb-2 overflow-hidden rounded-xl border border-black/10">
+                                  <div className="mb-2.5 overflow-hidden rounded-xl border border-black/15 shadow-sm bg-black/5 group relative">
                                     <img 
                                       src={m.imageUrl} 
-                                      alt="Lampiran foto"
+                                      alt="Lampiran foto obrolan"
                                       onClick={() => setSelectedPreviewImage(m.imageUrl || null)}
-                                      className="max-h-60 w-auto rounded-lg object-cover cursor-pointer hover:opacity-90 transition transform hover:scale-[1.01]" 
+                                      onError={(e) => {
+                                        (e.currentTarget as HTMLElement).style.display = 'none';
+                                        const fallback = e.currentTarget.parentElement?.querySelector('.img-err-fallback');
+                                        if (fallback) (fallback as HTMLElement).style.display = 'flex';
+                                      }}
+                                      className="max-h-72 w-full object-cover rounded-xl cursor-zoom-in hover:brightness-95 transition-all duration-200" 
                                     />
+                                    <div 
+                                      className="img-err-fallback hidden p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-[11px] items-center gap-2"
+                                    >
+                                      <ImageIcon className="w-4 h-4 text-amber-600 shrink-0" />
+                                      <span>Lampiran foto sebelumnya telah kedaluwarsa.</span>
+                                    </div>
+                                    <div className="absolute bottom-2 right-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <button
+                                        type="button"
+                                        onClick={() => setSelectedPreviewImage(m.imageUrl || null)}
+                                        className="px-2.5 py-1 rounded-lg bg-black/75 backdrop-blur-md text-white text-[10px] font-medium flex items-center gap-1 hover:bg-black transition shadow-xs cursor-pointer"
+                                      >
+                                        <Eye className="w-3 h-3" />
+                                        <span>Perbesar</span>
+                                      </button>
+                                    </div>
                                   </div>
                                 )}
                                 {m.content ? (
@@ -1092,13 +1126,23 @@ export default function MyReportsPage() {
                 <ImageIcon className="w-4 h-4 text-[#E02B2B]" />
                 <span>Pratinjau Foto Lampiran Chat</span>
               </span>
-              <button
-                type="button"
-                onClick={() => setSelectedPreviewImage(null)}
-                className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <a
+                  href={selectedPreviewImage}
+                  download="relasi_lampiran_foto.jpg"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Unduh Foto</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPreviewImage(null)}
+                  className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
             <div className="p-2 flex items-center justify-center overflow-auto max-h-[80vh]">
               <img

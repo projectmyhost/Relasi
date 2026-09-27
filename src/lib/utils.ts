@@ -97,3 +97,69 @@ export function getCurrentTimeWIB(): string {
   }
 }
 
+/**
+ * Compress and convert image File to Base64 data URL for instant and serverless-safe transport
+ */
+export async function compressImageFileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    // If not a browser environment or FileReader unavailable, fallback
+    if (typeof window === 'undefined' || typeof FileReader === 'undefined') {
+      reject(new Error('FileReader unavailable in current context'));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const rawResult = e.target?.result as string;
+      if (!rawResult) {
+        reject(new Error('Failed to read file as data URL'));
+        return;
+      }
+
+      // If already small (< 100KB), return as is
+      if (file.size < 100 * 1024) {
+        resolve(rawResult);
+        return;
+      }
+
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          let { width, height } = img;
+          const maxDimension = 1200;
+
+          if (width > maxDimension || height > maxDimension) {
+            if (width > height) {
+              height = Math.round((height * maxDimension) / width);
+              width = maxDimension;
+            } else {
+              width = Math.round((width * maxDimension) / height);
+              height = maxDimension;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(rawResult);
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          // Compress to quality 0.82 JPEG for optimal balance of sharpness and light payload size (~80-160KB)
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          resolve(dataUrl);
+        } catch {
+          resolve(rawResult);
+        }
+      };
+      img.onerror = () => resolve(rawResult);
+      img.src = rawResult;
+    };
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+}
+

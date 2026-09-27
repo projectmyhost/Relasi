@@ -116,7 +116,7 @@ export function useRealtimeChat({
         if (isMounted && currentReportIdRef.current === reportId && Array.isArray(data.messages)) {
           setMessages((prev) => {
             const prevIds = new Set(prev.map((m) => m.id));
-            let hasChanges = false;
+            let hasChanges = prev.length !== data.messages.length;
             let hasNewIncoming = false;
 
             for (const incoming of data.messages) {
