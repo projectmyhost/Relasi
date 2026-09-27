@@ -76,6 +76,10 @@ export async function POST(req: NextRequest) {
       category = 'fisik',
       urgency = 'normal',
       description,
+      aiUrgency,
+      aiCategory,
+      aiReasoning,
+      aiConfidence,
     } = body;
 
     if (!id || !description || !location) {
@@ -95,6 +99,10 @@ export async function POST(req: NextRequest) {
         partiesInvolved: partiesInvolved || '',
         category,
         urgency,
+        aiUrgency: aiUrgency || null,
+        aiCategory: aiCategory || null,
+        aiReasoning: aiReasoning || null,
+        aiConfidence: typeof aiConfidence === 'number' ? aiConfidence : null,
       },
       create: {
         id,
@@ -114,6 +122,10 @@ export async function POST(req: NextRequest) {
         category,
         urgency,
         status: 'submitted',
+        aiUrgency: aiUrgency || null,
+        aiCategory: aiCategory || null,
+        aiReasoning: aiReasoning || null,
+        aiConfidence: typeof aiConfidence === 'number' ? aiConfidence : null,
       },
     });
 
@@ -144,7 +156,7 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
-    const { id, status, urgency, caseId } = body;
+    const { id, status, urgency, caseId, aiUrgency, aiCategory, aiReasoning, aiConfidence } = body;
     if (!id) {
       return NextResponse.json({ error: 'Missing report id' }, { status: 400 });
     }
@@ -155,6 +167,10 @@ export async function PATCH(req: NextRequest) {
         ...(status ? { status } : {}),
         ...(urgency ? { urgency } : {}),
         ...(caseId !== undefined ? { caseId } : {}),
+        ...(aiUrgency !== undefined ? { aiUrgency } : {}),
+        ...(aiCategory !== undefined ? { aiCategory } : {}),
+        ...(aiReasoning !== undefined ? { aiReasoning } : {}),
+        ...(aiConfidence !== undefined ? { aiConfidence } : {}),
       },
     });
 

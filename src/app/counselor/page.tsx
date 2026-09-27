@@ -18,6 +18,7 @@ import {
   ArrowRight,
   Eye,
   Check,
+  Sparkles,
 } from 'lucide-react';
 import { RuangSuaraStore } from '@/lib/store';
 import { Report, ReportStatus } from '@/lib/types';
@@ -37,6 +38,7 @@ function CounselorDashboardContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [cooldown, setCooldown] = useState(0);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [isAnalyzingAI, setIsAnalyzingAI] = useState(false);
   const [activeToasts, setActiveToasts] = useState<
     Array<{
       id: string;
@@ -265,6 +267,51 @@ function CounselorDashboardContent() {
     }
 
     loadData(selectedReport.id);
+  };
+
+  const handleAnalyzeReportWithAI = async (targetReport: Report) => {
+    if (!targetReport.description || isAnalyzingAI) return;
+    setIsAnalyzingAI(true);
+    try {
+      const res = await fetch('/api/ai/triage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: targetReport.description }),
+      });
+      const data = await res.json();
+      if (data.success && data.result) {
+        const { urgency, category, reasoning, confidence } = data.result;
+
+        await fetch('/api/reports', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: targetReport.id,
+            urgency,
+            aiUrgency: urgency,
+            aiCategory: category,
+            aiReasoning: reasoning,
+            aiConfidence: confidence,
+          }),
+        });
+
+        const updated: Report = {
+          ...targetReport,
+          urgency,
+          aiUrgency: urgency,
+          aiCategory: category,
+          aiReasoning: reasoning,
+          aiConfidence: confidence,
+        };
+        setSelectedReport(updated);
+        setReports((prev) => prev.map((r) => (r.id === targetReport.id ? updated : r)));
+        RuangSuaraStore.addReport(updated);
+      }
+    } catch (e) {
+      console.error('Failed to run AI analysis for report:', e);
+    } finally {
+      setIsAnalyzingAI(false);
+    }
   };
 
   const handleSendCounselorMessage = async (e: React.FormEvent) => {
@@ -603,6 +650,77 @@ function CounselorDashboardContent() {
                     <p className="font-medium text-slate-900">{selectedReport.partiesInvolved || 'Tidak ada nama spesifik'}</p>
                     <p className="text-slate-600 mt-0.5 font-normal">Peran Pelapor: <span className="font-medium uppercase">{selectedReport.role}</span></p>
                   </div>
+                </div>
+
+                {/* Hasil Analisis Cerdas AI Triage (NVIDIA Llama 3.2 Vision) */}
+                <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/50 border border-indigo-200/90 shadow-2xs space-y-3.5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-semibold text-indigo-950 uppercase tracking-wide block">
+                          AI Triage Intel (NVIDIA Llama 3.2 Vision)
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-normal">
+                          Deteksi otomatis tingkat urgensi &amp; klasifikasi perundungan PPKSP
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {selectedReport.aiConfidence && (
+                        <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-medium">
+                          Confidence: {Math.round(selectedReport.aiConfidence * 100)}%
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleAnalyzeReportWithAI(selectedReport)}
+                        disabled={isAnalyzingAI}
+                        className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-indigo-700 text-xs font-medium border border-indigo-200 shadow-2xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      >
+                        <Sparkles className={`w-3.5 h-3.5 text-indigo-600 ${isAnalyzingAI ? 'animate-spin' : ''}`} />
+                        <span>{isAnalyzingAI ? 'Menganalisis...' : selectedReport.aiReasoning ? 'Analisis Ulang AI' : 'Jalankan Analisis AI'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="p-3 rounded-xl bg-white/90 border border-indigo-100/80 flex items-center justify-between">
+                      <span className="text-slate-600">Deteksi Urgensi AI:</span>
+                      <span className={`px-2.5 py-0.5 rounded-full font-bold uppercase text-[11px] ${
+                        (selectedReport.aiUrgency || selectedReport.urgency) === 'urgent'
+                          ? 'bg-red-100 text-red-700 border border-red-200'
+                          : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                      }`}>
+                        {(selectedReport.aiUrgency || selectedReport.urgency) === 'urgent' ? '🔴 Mendesak (Urgent)' : '🟢 Normal'}
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-white/90 border border-indigo-100/80 flex items-center justify-between">
+                      <span className="text-slate-600">Kategori Terdeteksi:</span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 font-semibold text-[11px] border border-slate-200 uppercase">
+                        {(selectedReport.aiCategory || selectedReport.category).toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {selectedReport.aiReasoning ? (
+                    <div className="p-3.5 rounded-xl bg-white border border-indigo-100 text-xs text-slate-700 leading-relaxed space-y-1 shadow-2xs">
+                      <span className="font-semibold text-indigo-950 block text-[11px] uppercase tracking-wider">
+                        Pertimbangan Logika AI:
+                      </span>
+                      <p className="font-normal italic text-slate-800">
+                        &ldquo;{selectedReport.aiReasoning}&rdquo;
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-500 italic">
+                      Laporan ini belum memiliki pertimbangan AI tersimpan. Klik tombol &quot;Jalankan Analisis AI&quot; di atas untuk menganalisis kronologi secara instan.
+                    </p>
+                  )}
                 </div>
 
                 {/* Kesaksian Asli (Verbatim) */}

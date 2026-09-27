@@ -72,6 +72,10 @@ model Report {
   urgency         UrgencyLevel   @default(normal)
   category        ReportCategory @default(fisik)
   status          ReportStatus   @default(submitted)
+  aiUrgency       UrgencyLevel?
+  aiCategory      ReportCategory?
+  aiReasoning     String?        @db.Text
+  aiConfidence    Float?
   caseId          String?
   caseDossier     CaseDossier?   @relation(fields: [caseId], references: [id])
   createdAt       DateTime       @default(now())

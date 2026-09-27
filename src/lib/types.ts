@@ -37,6 +37,10 @@ export interface Report {
   urgency: UrgencyLevel;   // normal vs urgent
   category: ReportCategory;
   status: ReportStatus;
+  aiUrgency?: UrgencyLevel;
+  aiCategory?: ReportCategory;
+  aiReasoning?: string;
+  aiConfidence?: number;
   caseId?: string | null;  // Link ke Case Dossier jika dikelompokkan
   createdAt: string;
   updatedAt: string;

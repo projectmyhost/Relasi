@@ -42,9 +42,39 @@ export default function ReportPage() {
   const [urgency, setUrgency] = useState<UrgencyLevel>('normal');
   const [description, setDescription] = useState('');
   
+  const [isAnalyzingAI, setIsAnalyzingAI] = useState(false);
+  const [aiResult, setAiResult] = useState<{
+    urgency: UrgencyLevel;
+    category: ReportCategory;
+    reasoning: string;
+    confidence: number;
+  } | null>(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedData, setSubmittedData] = useState<{ id: string; pin: string } | null>(null);
   const [copiedPin, setCopiedPin] = useState(false);
+
+  const handleRunAITriage = async () => {
+    if (!description.trim() || isAnalyzingAI) return;
+    setIsAnalyzingAI(true);
+    try {
+      const res = await fetch('/api/ai/triage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description }),
+      });
+      const data = await res.json();
+      if (data.success && data.result) {
+        setAiResult(data.result);
+        if (data.result.urgency) setUrgency(data.result.urgency);
+        if (data.result.category) setCategory(data.result.category);
+      }
+    } catch (e) {
+      console.error('Failed to run AI triage:', e);
+    } finally {
+      setIsAnalyzingAI(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +85,23 @@ export default function ReportPage() {
 
     setIsSubmitting(true);
     setTimeout(async () => {
+      let finalAI = aiResult;
+      if (!finalAI && description.trim().length > 10) {
+        try {
+          const aiRes = await fetch('/api/ai/triage', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ description }),
+          });
+          const aiData = await aiRes.json();
+          if (aiData.success && aiData.result) {
+            finalAI = aiData.result;
+          }
+        } catch (e) {
+          console.error('Silent AI triage error:', e);
+        }
+      }
+
       const reportPayload = {
         role,
         isAnonymous,
@@ -67,9 +114,13 @@ export default function ReportPage() {
         incidentTime,
         location,
         partiesInvolved,
-        category,
-        urgency,
+        category: finalAI?.category || category,
+        urgency: finalAI?.urgency || urgency,
         description,
+        aiUrgency: finalAI?.urgency || undefined,
+        aiCategory: finalAI?.category || undefined,
+        aiReasoning: finalAI?.reasoning || undefined,
+        aiConfidence: finalAI?.confidence || undefined,
       };
 
       const created = RuangSuaraStore.submitReport(reportPayload);
@@ -481,10 +532,22 @@ export default function ReportPage() {
                 </h2>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-slate-700 block">
-                  Ceritakan Apa yang Sebenarnya Terjadi *
-                </label>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <label className="text-xs font-medium text-slate-700 block">
+                    Ceritakan Apa yang Sebenarnya Terjadi *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleRunAITriage}
+                    disabled={isAnalyzingAI || !description.trim()}
+                    className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 text-indigo-700 text-xs font-medium border border-indigo-200/90 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-2xs"
+                  >
+                    <Sparkles className={`w-3.5 h-3.5 text-indigo-600 ${isAnalyzingAI ? 'animate-spin' : ''}`} />
+                    <span>{isAnalyzingAI ? 'Menganalisis Kronologi...' : 'Deteksi Otomatis AI (NVIDIA)'}</span>
+                  </button>
+                </div>
+
                 <textarea
                   rows={6}
                   required
@@ -493,6 +556,50 @@ export default function ReportPage() {
                   placeholder="Tuliskan secara runtut apa yang terjadi, apa yang mereka katakan atau lakukan, siapa saja yang ada di sekitar tempat kejadian, dan apa yang Anda rasakan..."
                   className="w-full p-4 sm:p-5 text-xs sm:text-sm rounded-xl border-2 border-slate-300 focus:outline-none focus:border-[#E02B2B] focus:ring-4 focus:ring-red-500/10 leading-relaxed bg-white transition-all font-normal shadow-2xs"
                 ></textarea>
+
+                {/* Hasil Deteksi AI Card */}
+                {aiResult && (
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/50 border border-indigo-200/90 shadow-xs space-y-2.5 animate-fade-in text-left">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold">
+                          AI
+                        </span>
+                        <span className="text-xs font-semibold text-indigo-950">
+                          Hasil Deteksi AI (NVIDIA Llama 3.2 Vision)
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-medium">
+                        Akurasi: {Math.round(aiResult.confidence * 100)}%
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className="text-slate-600 text-[11px]">Rekomendasi Respons:</span>
+                      <span className={`px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider text-[11px] ${
+                        aiResult.urgency === 'urgent' 
+                          ? 'bg-red-100 text-red-700 border border-red-200' 
+                          : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                      }`}>
+                        {aiResult.urgency === 'urgent' ? '🔴 Mendesak (Urgent)' : '🟢 Normal'}
+                      </span>
+                      <span className="text-slate-400">•</span>
+                      <span className="text-slate-600 text-[11px]">Kategori:</span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 font-semibold text-[11px] border border-slate-200 uppercase">
+                        {aiResult.category}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-700 leading-relaxed bg-white/80 p-2.5 rounded-xl border border-indigo-100/80 font-normal">
+                      &ldquo;{aiResult.reasoning}&rdquo;
+                    </p>
+
+                    <span className="text-[10px] text-indigo-600 block">
+                      ✨ Kategori dan tingkat urgensi pada formulir di atas telah otomatis disesuaikan oleh sistem AI.
+                    </span>
+                  </div>
+                )}
+
                 <span className="text-[11px] text-slate-500 block">
                   Prinsip sistem PPKSP: «Original report remains intact». Laporan asli Anda disimpan utuh tanpa diubah atau dipotong.
                 </span>
