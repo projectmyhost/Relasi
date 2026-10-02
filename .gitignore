@@ -24,8 +24,10 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env*.local
 .env
+.env.*
+.env*.local
+!.env.example
 
 # vercel
 .vercel
@@ -42,7 +44,3 @@ skills-lock.json
 # user uploads
 /public/uploads/chat/*
 !/public/uploads/chat/.gitkeep
-
-
-.vercel
-.env*

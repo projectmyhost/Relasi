@@ -41,7 +41,7 @@ cp .env.example .env
 Sesuaikan nilai `DATABASE_URL` dengan kredensial PostgreSQL lokal Anda:
 ```env
 DATABASE_URL="postgresql://postgres:password_anda@localhost:5432/relasi_db?schema=public"
-NVIDIA_API_KEY="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"
+NVIDIA_API_KEY="your_nvidia_api_key_here"
 ```
 *(Catatan: Pastikan database `relasi_db` telah dibuat di PostgreSQL).*
 
